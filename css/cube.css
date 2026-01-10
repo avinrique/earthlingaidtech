@@ -1,0 +1,269 @@
+/* ==========================================================================
+   EarthlingAidTech - TRUE 3D CUBE Navigation
+   Sections as faces of a cube that rotates sideways on scroll
+   ========================================================================== */
+
+/* Cube Container - Full viewport */
+.cube-viewport {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    perspective: 1200px;
+    overflow: hidden;
+}
+
+/* The 3D Cube - shifted back so front face satisfies Z=0 */
+.cube {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateZ(-50vw);
+}
+
+/* Each face of the cube */
+.cube__face {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--color-bg-primary);
+    /* Hide scrollbar for cleaner look */
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE/Edge */
+}
+
+.cube__face::-webkit-scrollbar {
+    display: none;
+    /* Chrome/Safari */
+}
+
+/* Position each face - rotated around Y axis */
+.cube__face--1 {
+    transform: rotateY(0deg) translateZ(50vw);
+}
+
+.cube__face--2 {
+    transform: rotateY(90deg) translateZ(50vw);
+}
+
+.cube__face--3 {
+    transform: rotateY(180deg) translateZ(50vw);
+}
+
+.cube__face--4 {
+    transform: rotateY(-90deg) translateZ(50vw);
+}
+
+/* Cube rotation states - keep cube pushed back by radius */
+.cube[data-face="1"] {
+    transform: translateZ(-50vw) rotateY(0deg);
+}
+
+.cube[data-face="2"] {
+    transform: translateZ(-50vw) rotateY(-90deg);
+}
+
+.cube[data-face="3"] {
+    transform: translateZ(-50vw) rotateY(-180deg);
+}
+
+.cube[data-face="4"] {
+    transform: translateZ(-50vw) rotateY(-270deg);
+}
+
+/* Navigation dots */
+.cube-nav {
+    position: fixed;
+    right: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.cube-nav__dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.cube-nav__dot:hover {
+    background: rgba(74, 158, 255, 0.5);
+    border-color: rgba(74, 158, 255, 0.8);
+}
+
+.cube-nav__dot.active {
+    background: #4A9EFF;
+    border-color: #4A9EFF;
+    transform: scale(1.3);
+}
+
+/* Progress bar at bottom */
+.cube-progress {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+}
+
+.cube-progress__bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4A9EFF, #5ECFCF);
+    width: 25%;
+    transition: width 0.5s ease, transform 0.5s ease;
+}
+
+/* Arrow navigation */
+.cube-arrows {
+    position: fixed;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+    z-index: 1000;
+}
+
+.cube-arrow {
+    width: 50px;
+    height: 50px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    background: rgba(11, 13, 16, 0.8);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    font-size: 20px;
+}
+
+.cube-arrow:hover {
+    border-color: #4A9EFF;
+    background: rgba(74, 158, 255, 0.2);
+}
+
+.cube-arrow:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* Face labels */
+.cube-label {
+    position: fixed;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+/* Scroll hint on first face */
+.scroll-hint {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    animation: bounce 2s infinite;
+}
+
+.scroll-hint__icon {
+    width: 30px;
+    height: 50px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 15px;
+    position: relative;
+}
+
+.scroll-hint__icon::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 2px;
+    animation: scrollDown 2s infinite;
+}
+
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateX(-50%) translateY(0);
+    }
+
+    50% {
+        transform: translateX(-50%) translateY(-10px);
+    }
+}
+
+@keyframes scrollDown {
+    0% {
+        opacity: 1;
+        top: 8px;
+    }
+
+    100% {
+        opacity: 0;
+        top: 25px;
+    }
+}
+
+/* Hide original body scroll when cube is active */
+body.cube-mode {
+    overflow: hidden;
+}
+
+/* Cube face content container for scrollable faces */
+.cube-face-content {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--color-bg-primary);
+}
+
+/* Ensure sections inside faces have proper backgrounds */
+.cube__face .section {
+    background: var(--color-bg-primary);
+}
+
+.cube__face .section.services,
+.cube__face .section.why-us,
+.cube__face .section.workshops {
+    background: var(--color-bg-secondary);
+}

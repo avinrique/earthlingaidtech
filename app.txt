@@ -1,0 +1,165 @@
+EARTHLINGAIDTECH
+Hero Section
+
+Headline
+Engineering Intelligence. Empowering Humans.
+
+Subtext
+EarthlingAidTech is a multidisciplinary technology company building advanced solutions across education technology, agentic AI, automation, robotics, and software systems—designed for real-world impact and long-term scale.
+
+Primary CTA
+Explore Our Work
+
+Secondary CTA
+Talk to Us
+
+Who We Are
+
+EarthlingAidTech is a technology-first company focused on designing and deploying intelligent systems that augment human capability.
+
+We operate at the intersection of education, artificial intelligence, automation, and robotics, combining deep engineering expertise with a product-driven mindset. Our work spans software platforms, autonomous agents, hardware-integrated systems, and institutional training—delivered with precision, ethics, and scalability in mind.
+
+We are not a services-only firm. We build products, platforms, and partnerships that endure.
+
+What We Do
+Education Technology
+
+We build next-generation learning and assessment platforms tailored for modern institutions and evolving academic needs.
+
+Prepzer0 is our flagship EdTech product—an AI-powered examination and assessment platform designed for placements, certifications, and large-scale testing environments.
+
+Key capabilities include:
+
+Intelligent exam workflows
+
+Scalable and secure assessment infrastructure
+
+AI-assisted monitoring and evaluation
+
+Customizable deployment for institutions and organizations
+
+Prepzer0 is built to move beyond traditional testing and toward future-ready evaluation systems.
+
+Agentic AI & Automation
+
+We design and deploy agentic AI systems—autonomous agents capable of reasoning, planning, and executing tasks with minimal human intervention.
+
+Our expertise includes:
+
+Multi-agent AI architectures
+
+LLM-powered automation pipelines
+
+Operating system and workflow automation
+
+Retrieval-Augmented Generation (RAG) systems
+
+Decision-oriented AI tools
+
+These systems are built to reduce complexity, eliminate manual overhead, and enable intelligent operations at scale.
+
+Robotics & Hardware Intelligence
+
+We build hardware–software integrated intelligent systems that connect AI reasoning with physical execution.
+
+Our work includes:
+
+Embedded systems and microcontroller-based platforms
+
+AI-powered companion and interactive robots
+
+Sensor-driven smart systems
+
+Real-time perception, control, and actuation
+
+This vertical enables intelligent machines that interact naturally with the physical world—beyond screens and dashboards.
+
+Software, Web & Application Development
+
+We deliver high-performance digital solutions for startups, institutions, and enterprises.
+
+Our services include:
+
+Custom web applications
+
+Cross-platform desktop and mobile applications
+
+Backend systems, APIs, and dashboards
+
+Secure, scalable, and maintainable architectures
+
+Every solution is engineered with a focus on performance, reliability, and longevity.
+
+Workshops & Training
+
+We conduct hands-on workshops and technical training programs focused on emerging technologies and real-world implementation.
+
+Our sessions cover:
+
+Agentic AI and modern AI workflows
+
+Automation and system design
+
+Practical AI deployment strategies
+
+Recent workshops include Agentic AI sessions at Sai Vidya, emphasizing applied learning over theory.
+
+Products
+Prepzer0
+
+AI-Powered Examination & Assessment Platform
+
+Prepzer0 is designed for institutions that require secure, scalable, and intelligent assessment systems.
+
+It supports modern testing workflows while remaining flexible enough to adapt to institutional requirements, placement-driven evaluations, and certification programs.
+
+Clients & Collaborations
+
+We have collaborated with and delivered solutions for organizations across industries and geographies, including:
+
+Woostaa.com
+
+Halde20.ch
+
+Chillaxmandu
+
+OrynConsulting
+
+Our partnerships reflect our ability to execute across technical complexity, domains, and international contexts.
+
+Why EarthlingAidTech
+
+Multidisciplinary expertise across AI, software, and hardware
+
+Strong foundation in education-focused technology
+
+Product-first thinking with execution discipline
+
+Ethical, scalable, and future-oriented systems
+
+Proven delivery for clients, institutions, and platforms
+
+Leadership
+Abhinav Gupta
+
+Chief Executive Officer (CEO)
+
+Abhinav Gupta is a technologist and founder with deep expertise in artificial intelligence, automation, robotics, and software engineering. His work focuses on building intelligent systems that translate cutting-edge research into practical, scalable products—particularly in education and autonomous technologies.
+
+Sai Kartik Ketha
+
+Chief Technology Officer (CTO)
+
+Sai Kartik Ketha leads technology strategy and execution at EarthlingAidTech. He specializes in system architecture, product engineering, and applied AI, ensuring that complex technologies are transformed into reliable, deployable solutions.
+
+Vision
+
+To build intelligent systems that responsibly augment human potential, redefine education, and shape the future of AI-driven technology—across software, automation, and the physical world.
+
+Call to Action
+
+Let’s build what’s next.
+
+Whether you are an institution, startup, or enterprise, we partner to design intelligent systems that matter.
+
+Get in Touch
