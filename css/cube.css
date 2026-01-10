@@ -255,6 +255,17 @@ body.cube-mode {
     /* CRITICAL FIX: Add buffer at bottom so user feels the scroll before rotating using min-height or padding */
     padding-bottom: 0;
     box-sizing: border-box;
+
+    /* Hide scrollbar completely */
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE/Edge */
+}
+
+.cube-face-content::-webkit-scrollbar {
+    display: none;
+    /* Chrome/Safari */
 }
 
 /* Ensure content is always tall enough to require at least some scrolling */

@@ -87,12 +87,20 @@ class Cube3D {
 
         // EDGE BRAKE LOGIC:
         // If we just hit the edge, STOP. User must pause or scroll again.
-        if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) {
+        // EXCEPTION: Face 1 (Hero) should transition directly (no brake)
+        const hittingEdge = (atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0);
+
+        if (this.currentFace !== 1 && hittingEdge) {
             if (!this.wasAtEdge) {
                 // Just hit the edge!
                 this.wasAtEdge = true;
                 this.edgeEntryTime = now;
                 this.scrollAccumulator = 0;
+
+                // VISUAL HINT: "Nod" towards the direction they are trying to go
+                if (atBottom && e.deltaY > 0) this.triggerPeek(1); // Peek Next
+                else if (atTop && e.deltaY < 0) this.triggerPeek(-1); // Peek Prev
+
                 e.preventDefault();
                 return; // STOP!
             } else {
@@ -104,11 +112,12 @@ class Cube3D {
                 }
                 // Cooldown passed, ALLOW ROTATION logic below...
             }
-        } else {
-            // Not pushing against an edge
+        } else if (!hittingEdge) {
+            // Not pushing against an edge (Normal scrolling inside face)
             this.wasAtEdge = false;
             this.scrollAccumulator = 0;
         }
+        // IF Face 1 && hittingEdge -> Fall through to Accumulation (No brake, No reset)
 
         // SCROLL DOWN
         if (e.deltaY > 0) {
@@ -236,6 +245,32 @@ class Cube3D {
         });
         const activeFace = document.querySelector(`.cube__face--${this.currentFace}`);
         if (activeFace) activeFace.classList.add('active');
+    }
+
+    triggerPeek(direction) {
+        if (this.isAnimating) return;
+
+        // Don't peek if there is no face in that direction
+        if (direction > 0 && this.currentFace === this.totalFaces) return;
+        if (direction < 0 && this.currentFace === 1) return;
+
+        const baseAngle = (this.currentFace - 1) * -90;
+        const peekAngle = baseAngle + (direction * -30); // Peek 20 degrees (Strong nod)
+
+        // Override CSS transition for a snappy peek
+        this.cube.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        this.cube.style.transform = `translateZ(-50vw) rotateY(${peekAngle}deg)`;
+
+        // Bounce back
+        setTimeout(() => {
+            this.cube.style.transform = `translateZ(-50vw) rotateY(${baseAngle}deg)`;
+
+            // Clear inline styles after animation to return control to CSS classes
+            setTimeout(() => {
+                this.cube.style.transition = '';
+                this.cube.style.transform = '';
+            }, 300);
+        }, 300);
     }
 }
 
