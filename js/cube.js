@@ -12,7 +12,14 @@ class Cube3D {
         // Interaction Logic
         this.scrollAccumulator = 0; // Accumulates intention to rotate
         this.SCROLL_THRESHOLD = 50; // Pixels of "virtual" scroll needed to trigger
+        this.scrollAccumulator = 0; // Accumulates intention to rotate
+        this.SCROLL_THRESHOLD = 50; // Pixels of "virtual" scroll needed to trigger
         this.lastScrollTime = 0;
+
+        // Edge Brake Logic (Stop-and-Go)
+        this.wasAtEdge = false;
+        this.edgeEntryTime = 0;
+        this.EDGE_BRAKE_DURATION = 500; // ms to wait after hitting edge
 
         this.cube = document.querySelector('.cube');
         this.dots = document.querySelectorAll('.cube-nav__dot');
@@ -78,6 +85,31 @@ class Cube3D {
         const atTop = scrollTop <= 5;
         const atBottom = scrollTop + clientHeight >= scrollHeight - 5;
 
+        // EDGE BRAKE LOGIC:
+        // If we just hit the edge, STOP. User must pause or scroll again.
+        if ((atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0)) {
+            if (!this.wasAtEdge) {
+                // Just hit the edge!
+                this.wasAtEdge = true;
+                this.edgeEntryTime = now;
+                this.scrollAccumulator = 0;
+                e.preventDefault();
+                return; // STOP!
+            } else {
+                // Already at edge. Check if cooldown passed.
+                if (now - this.edgeEntryTime < this.EDGE_BRAKE_DURATION) {
+                    this.scrollAccumulator = 0;
+                    e.preventDefault();
+                    return; // STILL WAITING
+                }
+                // Cooldown passed, ALLOW ROTATION logic below...
+            }
+        } else {
+            // Not pushing against an edge
+            this.wasAtEdge = false;
+            this.scrollAccumulator = 0;
+        }
+
         // SCROLL DOWN
         if (e.deltaY > 0) {
             if (atBottom) {
@@ -93,9 +125,6 @@ class Cube3D {
                     this.scrollAccumulator = 0;
                     this.lastScrollTime = now;
                 }
-            } else {
-                // Not at bottom -> Reset accumulator actions
-                this.scrollAccumulator = 0;
             }
         }
         // SCROLL UP
@@ -112,9 +141,6 @@ class Cube3D {
                     this.scrollAccumulator = 0;
                     this.lastScrollTime = now;
                 }
-            } else {
-                // Not at top -> Reset
-                this.scrollAccumulator = 0;
             }
         }
 
