@@ -268,13 +268,15 @@ body.cube-mode {
     overflow-x: hidden;
     background: var(--color-bg-primary);
     /* CRITICAL FIX: Add buffer at bottom so user feels the scroll before rotating using min-height or padding */
-    padding-bottom: 25vh;
+    padding-bottom: 0;
     box-sizing: border-box;
 }
 
 /* Ensure content is always tall enough to require at least some scrolling */
-.cube-face-content>* {
-    min-height: 105vh;
+/* REMOVED aggressive 105vh per section to fix gaps. 
+   Rotation logic now relies on padding-bottom buffer. */
+.cube-face-content> :last-child {
+    margin-bottom: 0;
 }
 
 /* Ensure sections inside faces have proper backgrounds */
