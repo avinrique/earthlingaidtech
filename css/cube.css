@@ -40,6 +40,14 @@
     /* Firefox */
     -ms-overflow-style: none;
     /* IE/Edge */
+
+    /* CRITICAL FIX: Disable pointer events by default to prevent overlapping faces from blocking clicks */
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+}
+
+.cube__face.active {
+    pointer-events: auto;
 }
 
 .cube__face::-webkit-scrollbar {
@@ -91,6 +99,8 @@
     display: flex;
     flex-direction: column;
     gap: 15px;
+    /* Allow scrolling comfortably "through" the nav area */
+    pointer-events: none;
 }
 
 .cube-nav__dot {
@@ -101,6 +111,8 @@
     border: 2px solid rgba(255, 255, 255, 0.5);
     cursor: pointer;
     transition: all 0.3s ease;
+    /* Re-enable pointer events for the dots themselves */
+    pointer-events: auto;
 }
 
 .cube-nav__dot:hover {
@@ -255,6 +267,14 @@ body.cube-mode {
     overflow-y: auto;
     overflow-x: hidden;
     background: var(--color-bg-primary);
+    /* CRITICAL FIX: Add buffer at bottom so user feels the scroll before rotating using min-height or padding */
+    padding-bottom: 25vh;
+    box-sizing: border-box;
+}
+
+/* Ensure content is always tall enough to require at least some scrolling */
+.cube-face-content>* {
+    min-height: 105vh;
 }
 
 /* Ensure sections inside faces have proper backgrounds */

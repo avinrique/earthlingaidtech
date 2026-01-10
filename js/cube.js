@@ -8,8 +8,11 @@ class Cube3D {
         this.currentFace = 1;
         this.totalFaces = 4;
         this.isAnimating = false;
-        this.touchStartX = 0;
-        this.touchStartY = 0;
+
+        // Interaction Logic
+        this.scrollAccumulator = 0; // Accumulates intention to rotate
+        this.SCROLL_THRESHOLD = 50; // Pixels of "virtual" scroll needed to trigger
+        this.lastScrollTime = 0;
 
         this.cube = document.querySelector('.cube');
         this.dots = document.querySelectorAll('.cube-nav__dot');
@@ -19,7 +22,7 @@ class Cube3D {
         this.label = document.querySelector('.cube-label');
         this.scrollHint = document.querySelector('.scroll-hint');
 
-        this.faceLabels = ['Home', 'About Us', 'Our Work', 'Contact'];
+        this.faceLabels = ['Home', 'Identity', 'Impact', 'Network'];
 
         if (!this.cube) return;
 
@@ -27,46 +30,101 @@ class Cube3D {
     }
 
     init() {
-        // Set initial state
         document.body.classList.add('cube-mode');
         this.updateUI();
 
-        // Scroll/wheel to rotate
+        // Main Scroll Handler
         window.addEventListener('wheel', (e) => this.handleWheel(e), { passive: false });
 
-        // Touch swipe support
+        // Touch/Swipe Logic
         window.addEventListener('touchstart', (e) => this.handleTouchStart(e));
         window.addEventListener('touchend', (e) => this.handleTouchEnd(e));
 
-        // Keyboard navigation
         window.addEventListener('keydown', (e) => this.handleKeydown(e));
 
-        // Navigation dots
+        // UI Controls
         this.dots.forEach((dot, i) => {
             dot.addEventListener('click', () => this.goToFace(i + 1));
         });
 
-        // Arrow buttons
-        if (this.prevBtn) {
-            this.prevBtn.addEventListener('click', () => this.prevFace());
-        }
-        if (this.nextBtn) {
-            this.nextBtn.addEventListener('click', () => this.nextFace());
-        }
+        if (this.prevBtn) this.prevBtn.addEventListener('click', () => this.prevFace());
+        if (this.nextBtn) this.nextBtn.addEventListener('click', () => this.nextFace());
     }
 
     handleWheel(e) {
-        e.preventDefault();
+        if (this.isAnimating) {
+            e.preventDefault();
+            return;
+        }
 
-        if (this.isAnimating) return;
+        const now = Date.now();
+        // Prevent rapid re-triggers
+        if (now - this.lastScrollTime < 500) {
+            this.scrollAccumulator = 0;
+            return;
+        }
 
-        // Determine direction based on horizontal scroll or vertical scroll
-        const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+        const activeFace = document.querySelector(`.cube__face--${this.currentFace}`);
+        if (!activeFace) return;
 
-        if (delta > 30) {
-            this.nextFace();
-        } else if (delta < -30) {
-            this.prevFace();
+        let scrollContainer = activeFace.querySelector('.cube-face-content');
+        if (!scrollContainer) scrollContainer = activeFace;
+
+        const scrollTop = scrollContainer.scrollTop;
+        const scrollHeight = scrollContainer.scrollHeight;
+        const clientHeight = scrollContainer.clientHeight;
+
+        // Looser detection for "At Edge" (5px buffer) covers precision issues
+        const atTop = scrollTop <= 5;
+        const atBottom = scrollTop + clientHeight >= scrollHeight - 5;
+
+        // SCROLL DOWN
+        if (e.deltaY > 0) {
+            if (atBottom) {
+                // We are at the bottom -> Accumulate intent
+                this.scrollAccumulator += e.deltaY;
+
+                // Prevent overscroll bounce
+                e.preventDefault();
+
+                // Check Threshold
+                if (this.scrollAccumulator > this.SCROLL_THRESHOLD) {
+                    this.nextFace();
+                    this.scrollAccumulator = 0;
+                    this.lastScrollTime = now;
+                }
+            } else {
+                // Not at bottom -> Reset accumulator actions
+                this.scrollAccumulator = 0;
+            }
+        }
+        // SCROLL UP
+        else if (e.deltaY < 0) {
+            if (atTop) {
+                // We are at the top -> Accumulate intent (deltaY is negative)
+                this.scrollAccumulator += e.deltaY;
+
+                e.preventDefault();
+
+                // Check Threshold (negative)
+                if (this.scrollAccumulator < -this.SCROLL_THRESHOLD) {
+                    this.prevFace();
+                    this.scrollAccumulator = 0;
+                    this.lastScrollTime = now;
+                }
+            } else {
+                // Not at top -> Reset
+                this.scrollAccumulator = 0;
+            }
+        }
+
+        // Horizontal Support (Immediate)
+        if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 20) {
+            e.preventDefault();
+            if (e.deltaX > 0) this.nextFace();
+            else this.prevFace();
+            this.scrollAccumulator = 0;
+            this.lastScrollTime = now;
         }
     }
 
@@ -79,31 +137,22 @@ class Cube3D {
         if (this.isAnimating) return;
 
         const touchEndX = e.changedTouches[0].clientX;
-        const touchEndY = e.changedTouches[0].clientY;
         const deltaX = this.touchStartX - touchEndX;
-        const deltaY = this.touchStartY - touchEndY;
 
-        // Use horizontal swipe primarily
-        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
-            if (deltaX > 0) {
-                this.nextFace();
-            } else {
-                this.prevFace();
-            }
+        if (Math.abs(deltaX) > 50) {
+            if (deltaX > 0) this.nextFace();
+            else this.prevFace();
         }
     }
 
     handleKeydown(e) {
         if (this.isAnimating) return;
-
         switch (e.key) {
             case 'ArrowRight':
-            case 'ArrowDown':
                 e.preventDefault();
                 this.nextFace();
                 break;
             case 'ArrowLeft':
-            case 'ArrowUp':
                 e.preventDefault();
                 this.prevFace();
                 break;
@@ -123,60 +172,47 @@ class Cube3D {
     }
 
     goToFace(faceNumber) {
-        if (faceNumber === this.currentFace || this.isAnimating) return;
-        if (faceNumber < 1 || faceNumber > this.totalFaces) return;
+        if (this.isAnimating) return;
 
         this.isAnimating = true;
         this.currentFace = faceNumber;
+        this.scrollAccumulator = 0; // Reset intent
 
-        // Rotate the cube
         this.cube.setAttribute('data-face', faceNumber);
 
-        // Hide scroll hint after first rotation
-        if (this.scrollHint && faceNumber > 1) {
+        if (this.scrollHint) {
             this.scrollHint.style.opacity = '0';
             setTimeout(() => {
-                this.scrollHint.style.display = 'none';
+                if (this.scrollHint) this.scrollHint.style.display = 'none';
             }, 300);
         }
 
-        // Update UI
         this.updateUI();
 
-        // Reset animation lock
         setTimeout(() => {
             this.isAnimating = false;
-        }, 800);
+        }, 1200); // Slightly longer lock to prevent bounce
     }
 
     updateUI() {
-        // Update dots
-        this.dots.forEach((dot, i) => {
-            dot.classList.toggle('active', i + 1 === this.currentFace);
-        });
-
-        // Update progress bar
+        this.dots.forEach((dot, i) => dot.classList.toggle('active', i + 1 === this.currentFace));
         if (this.progressBar) {
             const progress = (this.currentFace / this.totalFaces) * 100;
             this.progressBar.style.width = `${progress}%`;
         }
+        if (this.prevBtn) this.prevBtn.disabled = this.currentFace === 1;
+        if (this.nextBtn) this.nextBtn.disabled = this.currentFace === this.totalFaces;
+        if (this.label) this.label.textContent = this.faceLabels[this.currentFace - 1] || '';
 
-        // Update arrows
-        if (this.prevBtn) {
-            this.prevBtn.disabled = this.currentFace === 1;
-        }
-        if (this.nextBtn) {
-            this.nextBtn.disabled = this.currentFace === this.totalFaces;
-        }
-
-        // Update label
-        if (this.label) {
-            this.label.textContent = this.faceLabels[this.currentFace - 1] || '';
-        }
+        // Toggle active class on actual faces to manage pointer-events
+        document.querySelectorAll('.cube__face').forEach(face => {
+            face.classList.remove('active');
+        });
+        const activeFace = document.querySelector(`.cube__face--${this.currentFace}`);
+        if (activeFace) activeFace.classList.add('active');
     }
 }
 
-// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    new Cube3D();
+    window.cube3d = new Cube3D();
 });

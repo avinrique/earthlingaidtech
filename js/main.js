@@ -8,189 +8,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check for reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Initialize GSAP ScrollTrigger
-    if (typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined') {
-        gsap.registerPlugin(ScrollTrigger);
-        initScrollAnimations();
-    } else {
-        // Fallback: Show all elements if GSAP isn't loaded
-        document.querySelectorAll('.fade-in').forEach(el => {
-            el.classList.add('visible');
-        });
-    }
-
-    // Initialize other interactions
-    initSmoothScroll();
+    // Initialize Hero Animation directly
     initHeroAnimation();
+
+    // Organic touches can stay as they don't depend on scroll
 });
-
-/* ===== Scroll Animations ===== */
-function initScrollAnimations() {
-    // Fade in elements on scroll
-    const fadeElements = document.querySelectorAll('.fade-in');
-
-    fadeElements.forEach((el, index) => {
-        // Get stagger delay if exists
-        let delay = 0;
-        for (let i = 1; i <= 5; i++) {
-            if (el.classList.contains(`stagger-${i}`)) {
-                delay = i * 0.1;
-                break;
-            }
-        }
-
-        gsap.fromTo(el,
-            {
-                opacity: 0,
-                y: 30
-            },
-            {
-                opacity: 1,
-                y: 0,
-                duration: 0.8,
-                delay: delay,
-                ease: 'power3.out',
-                scrollTrigger: {
-                    trigger: el,
-                    start: 'top 85%',
-                    toggleActions: 'play none none none'
-                }
-            }
-        );
-    });
-
-    // Parallax effect for sections
-    gsap.utils.toArray('.section').forEach(section => {
-        gsap.fromTo(section,
-            { opacity: 0.8 },
-            {
-                opacity: 1,
-                scrollTrigger: {
-                    trigger: section,
-                    start: 'top bottom',
-                    end: 'top center',
-                    scrub: true
-                }
-            }
-        );
-    });
-
-    // Service cards stagger animation
-    const serviceCards = document.querySelectorAll('.service-card');
-    if (serviceCards.length > 0) {
-        gsap.fromTo(serviceCards,
-            {
-                opacity: 0,
-                y: 40,
-                scale: 0.95
-            },
-            {
-                opacity: 1,
-                y: 0,
-                scale: 1,
-                duration: 0.6,
-                stagger: 0.1,
-                ease: 'power2.out',
-                scrollTrigger: {
-                    trigger: '.services__grid',
-                    start: 'top 80%'
-                }
-            }
-        );
-    }
-
-    // Stats counter animation
-    const statNumbers = document.querySelectorAll('.stat-card__number');
-    statNumbers.forEach(stat => {
-        const text = stat.textContent;
-        const number = parseInt(text);
-
-        if (!isNaN(number)) {
-            gsap.fromTo(stat,
-                { innerText: 0 },
-                {
-                    innerText: number,
-                    duration: 2,
-                    ease: 'power1.out',
-                    snap: { innerText: 1 },
-                    scrollTrigger: {
-                        trigger: stat,
-                        start: 'top 85%'
-                    },
-                    onUpdate: function () {
-                        stat.textContent = Math.ceil(this.targets()[0].innerText) + (text.includes('+') ? '+' : '');
-                    }
-                }
-            );
-        }
-    });
-
-    // Why us items
-    const whyUsItems = document.querySelectorAll('.why-us__item');
-    if (whyUsItems.length > 0) {
-        gsap.fromTo(whyUsItems,
-            {
-                opacity: 0,
-                x: -20
-            },
-            {
-                opacity: 1,
-                x: 0,
-                duration: 0.5,
-                stagger: 0.1,
-                ease: 'power2.out',
-                scrollTrigger: {
-                    trigger: '.why-us__list',
-                    start: 'top 80%'
-                }
-            }
-        );
-    }
-
-    // Leadership cards
-    const leaderCards = document.querySelectorAll('.leader-card');
-    if (leaderCards.length > 0) {
-        gsap.fromTo(leaderCards,
-            {
-                opacity: 0,
-                y: 30
-            },
-            {
-                opacity: 1,
-                y: 0,
-                duration: 0.8,
-                stagger: 0.2,
-                ease: 'power3.out',
-                scrollTrigger: {
-                    trigger: '.leadership__grid',
-                    start: 'top 80%'
-                }
-            }
-        );
-    }
-
-    // Client logos
-    const clientLogos = document.querySelectorAll('.client-logo');
-    if (clientLogos.length > 0) {
-        gsap.fromTo(clientLogos,
-            {
-                opacity: 0,
-                scale: 0.8
-            },
-            {
-                opacity: 0.8,
-                scale: 1,
-                duration: 0.5,
-                stagger: 0.1,
-                ease: 'back.out(1.7)',
-                scrollTrigger: {
-                    trigger: '.clients__logos',
-                    start: 'top 85%'
-                }
-            }
-        );
-    }
-}
 
 /* ===== Hero Animation ===== */
 function initHeroAnimation() {
@@ -216,26 +38,6 @@ function initHeroAnimation() {
             { opacity: 1, y: 0, duration: 0.8 },
             '-=0.5'
         );
-}
-
-/* ===== Smooth Scroll ===== */
-function initSmoothScroll() {
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-
-            if (target) {
-                const offset = 80; // Account for any fixed header
-                const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - offset;
-
-                window.scrollTo({
-                    top: targetPosition,
-                    behavior: 'smooth'
-                });
-            }
-        });
-    });
 }
 
 /* ===== Button Hover Effects ===== */
@@ -301,68 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
         yoyo: true,
         ease: 'sine.inOut',
         transformOrigin: '100px 100px'
-    });
-});
-
-/* ==========================================================================
-   CUBE SCROLL EFFECT
-   3D cube-like transitions - SIDEWAYS rotation
-   ========================================================================== */
-
-document.addEventListener('DOMContentLoaded', () => {
-    // Check for reduced motion
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    if (typeof gsap === 'undefined') return;
-
-    // Get all sections for cube effect
-    const sections = document.querySelectorAll('.section, .hero, .footer');
-
-    sections.forEach((section, index) => {
-        // Add cube class
-        section.classList.add('cube-section');
-
-        // Alternate direction for each section (left/right)
-        const direction = index % 2 === 0 ? 1 : -1;
-
-        // Create scroll-triggered 3D SIDEWAYS rotation
-        gsap.fromTo(section,
-            {
-                rotateY: 15 * direction,  // Rotate from side
-                x: 100 * direction,       // Slide from side
-                z: -80,
-                opacity: 0.6,
-                transformOrigin: direction > 0 ? 'left center' : 'right center'
-            },
-            {
-                rotateY: 0,
-                x: 0,
-                z: 0,
-                opacity: 1,
-                ease: 'power2.out',
-                scrollTrigger: {
-                    trigger: section,
-                    start: 'top 90%',
-                    end: 'top 30%',
-                    scrub: 1,
-                    // Rotate out to opposite side when leaving
-                    onLeave: () => {
-                        gsap.to(section, {
-                            rotateY: -8 * direction,
-                            x: -50 * direction,
-                            transformOrigin: direction > 0 ? 'right center' : 'left center',
-                            duration: 0.4
-                        });
-                    },
-                    onEnterBack: () => {
-                        gsap.to(section, {
-                            rotateY: 0,
-                            x: 0,
-                            duration: 0.4
-                        });
-                    }
-                }
-            }
-        );
     });
 });
 
@@ -443,3 +183,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     animateParallax();
 });
+
