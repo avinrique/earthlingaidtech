@@ -67,19 +67,21 @@ Sensor-based smart systems
 
 Real-time control, perception, and actuation
 
-Software, Web & Application Development
+Software, Web & Application Development (Enterprise & Consumer)
 
 We deliver high-quality digital solutions engineered for performance, security, and scalability.
 
 Our services include:
 
-Custom web applications
+Custom ERP (Enterprise Resource Planning) & CRM Systems
 
-Mobile and desktop applications
+Desktop Software (Windows, Mac, Linux)
+
+High-performance Websites & Web Applications
+
+Mobile Apps (iOS & Android)
 
 Backend systems, APIs, and dashboards
-
-Enterprise-grade software solutions
 
 Workshops & Technical Training
 
