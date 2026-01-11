@@ -21,7 +21,8 @@
     height: 100%;
     transform-style: preserve-3d;
     transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: translateZ(-50vw);
+    /* Hexagon radius = 86.6vw (approx) for 100vw width */
+    transform: translateZ(-86.6vw);
 }
 
 /* Each face of the cube */
@@ -56,37 +57,54 @@
 }
 
 /* Position each face - rotated around Y axis */
+/* Position each face - rotated around Y axis (Hexagon: 60 degrees) */
 .cube__face--1 {
-    transform: rotateY(0deg) translateZ(50vw);
+    transform: rotateY(0deg) translateZ(86.6vw);
 }
 
 .cube__face--2 {
-    transform: rotateY(90deg) translateZ(50vw);
+    transform: rotateY(60deg) translateZ(86.6vw);
 }
 
 .cube__face--3 {
-    transform: rotateY(180deg) translateZ(50vw);
+    transform: rotateY(120deg) translateZ(86.6vw);
 }
 
 .cube__face--4 {
-    transform: rotateY(-90deg) translateZ(50vw);
+    transform: rotateY(180deg) translateZ(86.6vw);
+}
+
+.cube__face--5 {
+    transform: rotateY(240deg) translateZ(86.6vw);
+}
+
+.cube__face--6 {
+    transform: rotateY(300deg) translateZ(86.6vw);
 }
 
 /* Cube rotation states - keep cube pushed back by radius */
 .cube[data-face="1"] {
-    transform: translateZ(-50vw) rotateY(0deg);
+    transform: translateZ(-86.6vw) rotateY(0deg);
 }
 
 .cube[data-face="2"] {
-    transform: translateZ(-50vw) rotateY(-90deg);
+    transform: translateZ(-86.6vw) rotateY(-60deg);
 }
 
 .cube[data-face="3"] {
-    transform: translateZ(-50vw) rotateY(-180deg);
+    transform: translateZ(-86.6vw) rotateY(-120deg);
 }
 
 .cube[data-face="4"] {
-    transform: translateZ(-50vw) rotateY(-270deg);
+    transform: translateZ(-86.6vw) rotateY(-180deg);
+}
+
+.cube[data-face="5"] {
+    transform: translateZ(-86.6vw) rotateY(-240deg);
+}
+
+.cube[data-face="6"] {
+    transform: translateZ(-86.6vw) rotateY(-300deg);
 }
 
 /* Navigation dots */
@@ -282,6 +300,8 @@ body.cube-mode {
 
 .cube__face .section.services,
 .cube__face .section.why-us,
-.cube__face .section.workshops {
+.cube__face .section.workshops,
+.cube__face .section.products,
+.cube__face .section.innovation {
     background: var(--color-bg-secondary);
 }

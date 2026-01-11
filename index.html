@@ -86,38 +86,7 @@
                         </div>
                     </section>
 
-                    <!-- Leadership -->
-                    <section class="section leadership">
-                        <div class="container">
-                            <div class="section__header">
-                                <h2 class="section__title">Leadership</h2>
-                            </div>
-                            <div class="leadership__grid">
-                                <div class="leader-card">
-                                    <div class="leader-card__image"></div>
-                                    <h3 class="leader-card__name">Abhinav Gupta</h3>
-                                    <span class="leader-card__title">Chief Executive Officer</span>
-                                    <p class="leader-card__bio">
-                                        A technologist and founder with deep expertise in AI, automation, robotics, and
-                                        software engineering.
-                                        Focused on building intelligent systems that translate cutting-edge research
-                                        into practical solutions.
-                                    </p>
-                                </div>
-                                <div class="leader-card">
-                                    <div class="leader-card__image"></div>
-                                    <h3 class="leader-card__name">Sai Kartik Ketha</h3>
-                                    <span class="leader-card__title">Chief Technology Officer</span>
-                                    <p class="leader-card__bio">
-                                        Leads technology strategy and execution. Specializes in system architecture,
-                                        product engineering,
-                                        and applied AI, ensuring complex technologies are transformed into reliable,
-                                        deployable solutions.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
+                    <!-- Leadership Section REMOVED -->
 
                     <!-- Vision -->
                     <section class="section about" style="background: var(--color-bg-secondary);">
@@ -204,7 +173,13 @@
                         </div>
                     </section>
 
-                    <!-- Prepzer0 Spotlight -->
+                </div>
+            </div>
+
+            <!-- ===== FACE 4: PRODUCTS (NEW) ===== -->
+            <div class="cube__face cube__face--4">
+                <div class="cube-face-content">
+                    <!-- Prepzer0 -->
                     <section class="section spotlight">
                         <div class="container">
                             <div class="spotlight__content">
@@ -213,49 +188,30 @@
                                     <h2 class="spotlight__title">Prepzer0</h2>
                                     <p class="spotlight__subtitle">AI-Powered Examination & Assessment Platform</p>
                                     <p class="spotlight__description">
-                                        Designed for institutions that require secure, scalable, and intelligent
-                                        assessment systems.
-                                        Prepzer0 supports modern testing workflows while remaining flexible enough to
-                                        adapt to
-                                        institutional requirements.
+                                        Secure, scalable, and intelligent assessment system for modern institutions.
+                                        Currently deployed at SVIT and East Horizon School.
                                     </p>
                                     <div class="spotlight__features">
                                         <div class="spotlight__feature">
-                                            <svg class="spotlight__feature-icon" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2">
-                                                <polyline points="20 6 9 17 4 12" />
-                                            </svg>
-                                            <span>Intelligent exam workflows</span>
+                                            <span>Secure Exam Workflows</span>
                                         </div>
                                         <div class="spotlight__feature">
-                                            <svg class="spotlight__feature-icon" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2">
-                                                <polyline points="20 6 9 17 4 12" />
-                                            </svg>
-                                            <span>Scalable and secure infrastructure</span>
+                                            <span>AI Monitoring</span>
                                         </div>
                                         <div class="spotlight__feature">
-                                            <svg class="spotlight__feature-icon" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor" stroke-width="2">
-                                                <polyline points="20 6 9 17 4 12" />
-                                            </svg>
-                                            <span>AI-assisted monitoring</span>
+                                            <span>Custom Deployment</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="spotlight__visual">
                                     <div class="spotlight__diagram">
-                                        <!-- Simple SVG representation -->
+                                        <!-- Placeholder Diagram -->
                                         <svg width="200" height="200" viewBox="0 0 200 200" fill="none">
                                             <circle cx="100" cy="100" r="60" stroke="#4A9EFF" stroke-width="2"
                                                 stroke-opacity="0.3" />
                                             <circle cx="100" cy="100" r="40" stroke="#4A9EFF" stroke-width="2"
                                                 stroke-opacity="0.5" />
                                             <circle cx="100" cy="100" r="20" fill="#4A9EFF" fill-opacity="0.8" />
-                                            <circle cx="40" cy="100" r="6" fill="#5ECFCF" />
-                                            <circle cx="160" cy="100" r="6" fill="#5ECFCF" />
-                                            <circle cx="100" cy="40" r="6" fill="#5ECFCF" />
-                                            <circle cx="100" cy="160" r="6" fill="#5ECFCF" />
                                         </svg>
                                     </div>
                                 </div>
@@ -263,35 +219,40 @@
                         </div>
                     </section>
 
-                    <!-- Workshops -->
-                    <section class="section workshops">
+                    <!-- Other Products (Split Columns) -->
+                    <section class="section products">
                         <div class="container">
-                            <div class="section__header">
-                                <h2 class="section__title">Workshops & Impact</h2>
-                                <p class="section__subtitle">Applied learning over theory</p>
-                            </div>
-                            <div class="workshops__content">
-                                <div class="workshops__text">
-                                    <h3>Training the Next Generation</h3>
-                                    <p>
-                                        We conduct hands-on workshops and technical training programs focused on
-                                        emerging technologies
-                                        and real-world implementation.
+                            <div class="leadership__grid"> <!-- Reusing grid layout -->
+                                <div class="leader-card"> <!-- Reusing card style -->
+                                    <div class="service-card__icon"
+                                        style="margin-bottom: 20px; color: var(--color-secondary);">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z">
+                                            </path>
+                                        </svg>
+                                    </div>
+                                    <h3 class="leader-card__name">Newsletter Creator</h3>
+                                    <span class="leader-card__title">AI Content Automation</span>
+                                    <p class="leader-card__bio">
+                                        Automated content generation for institutions and events.
+                                        Creates consistent, high-quality newsletters with minimal human effort.
                                     </p>
-                                    <div class="workshop-highlight">
-                                        <h4 class="workshop-highlight__title">Agentic AI Workshop</h4>
-                                        <span class="workshop-highlight__venue">Sai Vidya Institute of Technology</span>
-                                    </div>
                                 </div>
-                                <div class="workshops__stats">
-                                    <div class="stat-card">
-                                        <div class="stat-card__number">100+</div>
-                                        <div class="stat-card__label">Students</div>
+                                <div class="leader-card">
+                                    <div class="service-card__icon"
+                                        style="margin-bottom: 20px; color: var(--color-accent);">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="3" y="11" width="18" height="10" rx="2"></rect>
+                                            <circle cx="12" cy="5" r="2"></circle>
+                                            <path d="M12 7v4"></path>
+                                        </svg>
                                     </div>
-                                    <div class="stat-card">
-                                        <div class="stat-card__number">5+</div>
-                                        <div class="stat-card__label">Workshops</div>
-                                    </div>
+                                    <h3 class="leader-card__name">AI Info Robot</h3>
+                                    <span class="leader-card__title">Physical Companion</span>
+                                    <p class="leader-card__bio">
+                                        Interactive hardware robot with LLM intelligence.
+                                        Tablet-based face, natural movement, and organizational knowledge base.
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -299,8 +260,73 @@
                 </div>
             </div>
 
-            <!-- ===== FACE 4: NETWORK (SCROLLABLE) ===== -->
-            <div class="cube__face cube__face--4">
+            <!-- ===== FACE 5: INNOVATION (NEW) ===== -->
+            <div class="cube__face cube__face--5">
+                <div class="cube-face-content">
+                    <!-- Workshops (Moved & Updated) -->
+                    <section class="section workshops">
+                        <div class="container">
+                            <div class="section__header">
+                                <h2 class="section__title">Workshops & Training</h2>
+                                <p class="section__subtitle">600+ Students Trained Across Institutions</p>
+                            </div>
+                            <div class="workshops__content">
+                                <div class="workshops__text">
+                                    <h3>Practical Technical Training</h3>
+                                    <p>
+                                        We conduct hands-on sessions at institutions like BMSIT and SVIT, and extend
+                                        our programs to other organizations. Domains include App Development,
+                                        Automation,
+                                        Cloud Computing, and Agentic AI.
+                                    </p>
+                                    <div class="workshop-highlight">
+                                        <h4 class="workshop-highlight__title">Domains</h4>
+                                        <p style="color: var(--color-text-secondary);">Web & App Dev, AI Agents, Cloud,
+                                            Automation</p>
+                                    </div>
+                                </div>
+                                <div class="workshops__stats">
+                                    <div class="stat-card">
+                                        <div class="stat-card__number">600+</div>
+                                        <div class="stat-card__label">Students</div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-card__number">6+</div>
+                                        <div class="stat-card__label">Workshops</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- R&D Section -->
+                    <section class="section innovation" style="background: var(--color-bg-primary);">
+                        <div class="container">
+                            <div class="section__header">
+                                <h2 class="section__title">Research & Development</h2>
+                                <p class="section__subtitle">Exploring fundamental technologies</p>
+                            </div>
+                            <div class="about__highlight" style="text-align: left; font-size: 1rem;">
+                                <ul style="list-style: none; padding: 0; display: grid; gap: 15px;">
+                                    <li style="display: flex; gap: 10px; align-items: center;">
+                                        <span style="color: var(--color-accent);">→</span> Advanced Agentic AI Systems
+                                    </li>
+                                    <li style="display: flex; gap: 10px; align-items: center;">
+                                        <span style="color: var(--color-secondary);">→</span> Human-Machine Interaction
+                                    </li>
+                                    <li style="display: flex; gap: 10px; align-items: center;">
+                                        <span style="color: var(--color-accent);">→</span> Robotics & Embedded
+                                        Intelligence
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- ===== FACE 6: NETWORK (Was Face 4) ===== -->
+            <div class="cube__face cube__face--6">
                 <div class="cube-face-content">
                     <!-- Clients -->
                     <section class="section clients">
@@ -310,27 +336,49 @@
                                 <p class="section__subtitle">Delivering solutions across industries</p>
                             </div>
                             <div class="clients__logos">
-                                <div class="client-logo">Woostaa</div>
-                                <div class="client-logo">Halde20.ch</div>
-                                <div class="client-logo">Chillaxmandu</div>
-                                <div class="client-logo">OrynConsulting</div>
+                                <a href="https://woostaa.com" target="_blank" class="client-logo">Woostaa</a>
+                                <a href="https://halde20.ch" target="_blank" class="client-logo">Halde20.ch</a>
+                                <a href="https://chillaxmandu.com" target="_blank" class="client-logo">Chillaxmandu</a>
+                                <a href="https://orynconsulting.com" target="_blank"
+                                    class="client-logo">OrynConsulting</a>
+                                <a href="https://thepixelsphere.com" target="_blank"
+                                    class="client-logo">ThePixelSphere</a>
                             </div>
                         </div>
                     </section>
 
                     <!-- Footer / Contact -->
-                    <footer class="footer" id="contact" style="padding-top: var(--space-12);">
+                    <!-- Contact Section -->
+                    <section class="section contact" id="contact">
                         <div class="container">
-                            <div class="footer__cta">
-                                <h2 class="footer__cta-title">Let's build what's next.</h2>
-                                <p class="footer__cta-text">
-                                    Whether you are an institution, startup, or enterprise, we partner to design
-                                    intelligent systems
-                                    that matter.
-                                </p>
-                                <a href="mailto:contact@earthlingaidtech.com" class="btn btn--primary btn--large">Get in
-                                    Touch</a>
+                            <div class="spotlight__content"> <!-- Reusing spotlight layout for impact -->
+                                <div class="spotlight__text" style="width: 100%;">
+                                    <h2 class="section__title" style="font-size: var(--text-4xl);">Get In Touch</h2>
+                                    <p class="section__subtitle" style="text-align: left; margin-bottom: 2rem;">
+                                        Let’s build intelligent systems that matter.
+                                    </p>
+                                    <p class="about__text" style="margin-bottom: 2rem;">
+                                        Partner with EarthlingAidTech to create products, platforms, and experiences
+                                        driven by intelligence, precision, and impact.
+                                    </p>
+                                    <div class="hero__ctas" style="justify-content: flex-start;">
+                                        <a href="mailto:contact@earthlingaidtech.com"
+                                            class="btn btn--primary btn--large">Email Us</a>
+                                        <div
+                                            style="display: flex; flex-direction: column; justify-content: center; margin-left: 20px;">
+                                            <span style="color: var(--color-text-secondary); font-size: 0.9rem;">General
+                                                Inquiries</span>
+                                            <span
+                                                style="color: var(--color-accent);">contact@earthlingaidtech.com</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+                    </section>
+
+                    <footer class="footer" style="padding-top: var(--space-8);">
+                        <div class="container">
                             <div class="footer__bottom">
                                 <span class="footer__logo">EarthlingAidTech</span>
                                 <span class="footer__copyright">© 2026 EarthlingAidTech. All rights reserved.</span>

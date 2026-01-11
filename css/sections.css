@@ -414,6 +414,8 @@
     font-weight: var(--font-semibold);
     color: var(--color-text-muted);
     letter-spacing: var(--tracking-wide);
+    text-decoration: none;
+    cursor: pointer;
 }
 
 .client-logo:hover {

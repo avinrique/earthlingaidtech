@@ -6,7 +6,7 @@
 class Cube3D {
     constructor() {
         this.currentFace = 1;
-        this.totalFaces = 4;
+        this.totalFaces = 6;
         this.isAnimating = false;
 
         // Interaction Logic
@@ -29,7 +29,7 @@ class Cube3D {
         this.label = document.querySelector('.cube-label');
         this.scrollHint = document.querySelector('.scroll-hint');
 
-        this.faceLabels = ['Home', 'Identity', 'Impact', 'Network'];
+        this.faceLabels = ['Home', 'Identity', 'Services', 'Products', 'Innovation', 'Network'];
 
         if (!this.cube) return;
 
@@ -254,16 +254,16 @@ class Cube3D {
         if (direction > 0 && this.currentFace === this.totalFaces) return;
         if (direction < 0 && this.currentFace === 1) return;
 
-        const baseAngle = (this.currentFace - 1) * -90;
-        const peekAngle = baseAngle + (direction * -30); // Peek 20 degrees (Strong nod)
+        const baseAngle = (this.currentFace - 1) * -60;
+        const peekAngle = baseAngle + (direction * -20); // Peek 20 degrees (Strong nod on 60deg face)
 
         // Override CSS transition for a snappy peek
         this.cube.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-        this.cube.style.transform = `translateZ(-50vw) rotateY(${peekAngle}deg)`;
+        this.cube.style.transform = `translateZ(-86.6vw) rotateY(${peekAngle}deg)`;
 
         // Bounce back
         setTimeout(() => {
-            this.cube.style.transform = `translateZ(-50vw) rotateY(${baseAngle}deg)`;
+            this.cube.style.transform = `translateZ(-86.6vw) rotateY(${baseAngle}deg)`;
 
             // Clear inline styles after animation to return control to CSS classes
             setTimeout(() => {
