@@ -1,0 +1,193 @@
+/* ==========================================================================
+   EarthlingAidTech - Product Page Template
+   Shared styles for individual product pages
+   ========================================================================== */
+
+/* Use existing variables but add specific overrides if needed */
+
+.product-page {
+    background: var(--color-bg-primary);
+    min-height: 100vh;
+}
+
+/* ===== Navigation ===== */
+.product-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: var(--space-6) var(--space-8);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    background: rgba(11, 13, 16, 0.8);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.product-nav__logo {
+    font-family: var(--font-display);
+    font-weight: var(--font-bold);
+    font-size: var(--text-lg);
+    color: var(--color-text-primary);
+}
+
+.back-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wide);
+    transition: all var(--duration-fast) ease;
+}
+
+.back-link:hover {
+    color: var(--color-accent);
+    transform: translateX(-4px);
+}
+
+/* ===== Product Hero ===== */
+.product-hero {
+    padding-top: var(--space-32);
+    padding-bottom: var(--space-16);
+    position: relative;
+    overflow: hidden;
+}
+
+.product-hero__content {
+    text-align: center;
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 10;
+}
+
+.product-tag {
+    display: inline-block;
+    padding: var(--space-2) var(--space-4);
+    background: var(--color-accent-subtle);
+    color: var(--color-accent);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    margin-bottom: var(--space-6);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
+}
+
+.product-title {
+    font-size: var(--text-6xl);
+    margin-bottom: var(--space-6);
+    background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0.7));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.product-subtitle {
+    font-size: var(--text-xl);
+    color: var(--color-text-secondary);
+    max-width: 700px;
+    margin: 0 auto var(--space-10);
+    line-height: var(--leading-relaxed);
+}
+
+.product-hero__visual {
+    margin-top: var(--space-16);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-16);
+    position: relative;
+    overflow: hidden;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ===== Features Grid ===== */
+.product-features {
+    padding: var(--space-24) 0;
+    background: var(--color-bg-secondary);
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-8);
+    margin-top: var(--space-12);
+}
+
+.feature-card {
+    background: var(--color-bg-card);
+    padding: var(--space-8);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--color-border);
+    transition: transform var(--duration-normal) var(--ease-out);
+}
+
+.feature-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--color-accent);
+}
+
+.feature-icon {
+    width: 48px;
+    height: 48px;
+    color: var(--color-accent);
+    margin-bottom: var(--space-6);
+}
+
+/* ===== Specs Section ===== */
+.product-specs {
+    padding: var(--space-24) 0;
+}
+
+.specs-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-6);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.spec-item {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--space-4) 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.spec-label {
+    color: var(--color-text-secondary);
+}
+
+.spec-value {
+    color: var(--color-text-primary);
+    font-weight: var(--font-medium);
+    text-align: right;
+}
+
+/* ===== CTA Section ===== */
+.product-cta {
+    padding: var(--space-24) 0;
+    text-align: center;
+    background: linear-gradient(180deg, var(--color-bg-secondary) 0%, var(--color-bg-primary) 100%);
+}
+
+@media (max-width: 768px) {
+    .product-title {
+        font-size: var(--text-4xl);
+    }
+    
+    .feature-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .specs-list {
+        grid-template-columns: 1fr;
+    }
+}

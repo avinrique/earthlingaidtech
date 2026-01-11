@@ -194,7 +194,15 @@
     font-weight: 500;
     color: rgba(255, 255, 255, 0.6);
     letter-spacing: 2px;
+    letter-spacing: 2px;
     text-transform: uppercase;
+    background: rgba(11, 13, 16, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: opacity 0.3s ease;
 }
 
 /* Scroll hint on first face */
