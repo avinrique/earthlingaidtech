@@ -85,12 +85,29 @@ class Cube3D {
         const atTop = scrollTop <= 5;
         const atBottom = scrollTop + clientHeight >= scrollHeight - 5;
 
+        // VELOCITY CHECK: Is the user scrolling efficiently/hard?
+        // If so, we bypass the "Edge Brake" and allow immediate transition.
+        const HARD_SCROLL_THRESHOLD = 60;
+        const isHardScroll = Math.abs(e.deltaY) > HARD_SCROLL_THRESHOLD;
+
         // EDGE BRAKE LOGIC:
         // If we just hit the edge, STOP. User must pause or scroll again.
-        // EXCEPTION: Face 1 (Hero) should transition directly (no brake)
+        // EXCEPTION 1: Face 1 (Hero) should transition directly (no brake)
+        // EXCEPTION 2: Hard Scroll (Velocity Bypass)
         const hittingEdge = (atTop && e.deltaY < 0) || (atBottom && e.deltaY > 0);
 
-        if (this.currentFace !== 1 && hittingEdge) {
+        if (this.currentFace !== 1 && hittingEdge && !isHardScroll) {
+            // PEEK THRESHOLD CHECK: Only peek if scroll is "medium" strength
+            const PEEK_THRESHOLD = 20; // Ignore unintentional micro-scrolls
+            const magnitude = Math.abs(e.deltaY);
+
+            if (magnitude < PEEK_THRESHOLD) {
+                // Too slow? Ignore completely (no brake, no peek, just stop)
+                this.scrollAccumulator = 0;
+                e.preventDefault();
+                return;
+            }
+
             if (!this.wasAtEdge) {
                 // Just hit the edge!
                 this.wasAtEdge = true;
@@ -117,7 +134,7 @@ class Cube3D {
             this.wasAtEdge = false;
             this.scrollAccumulator = 0;
         }
-        // IF Face 1 && hittingEdge -> Fall through to Accumulation (No brake, No reset)
+        // IF Face 1 OR Hard Scroll -> Fall through to Accumulation (No brake, No reset)
 
         // SCROLL DOWN
         if (e.deltaY > 0) {
@@ -129,6 +146,9 @@ class Cube3D {
                 e.preventDefault();
 
                 // Check Threshold
+                // If hard scroll, add bonus accumulator to ensure instant trigger
+                if (isHardScroll) this.scrollAccumulator += (this.SCROLL_THRESHOLD * 2);
+
                 if (this.scrollAccumulator > this.SCROLL_THRESHOLD) {
                     this.nextFace();
                     this.scrollAccumulator = 0;
@@ -145,6 +165,8 @@ class Cube3D {
                 e.preventDefault();
 
                 // Check Threshold (negative)
+                if (isHardScroll) this.scrollAccumulator -= (this.SCROLL_THRESHOLD * 2);
+
                 if (this.scrollAccumulator < -this.SCROLL_THRESHOLD) {
                     this.prevFace();
                     this.scrollAccumulator = 0;
