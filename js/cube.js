@@ -87,7 +87,7 @@ class Cube3D {
 
         // VELOCITY CHECK: Is the user scrolling efficiently/hard?
         // If so, we bypass the "Edge Brake" and allow immediate transition.
-        const HARD_SCROLL_THRESHOLD = 60;
+        const HARD_SCROLL_THRESHOLD = 45; // Lowered from 60 to make it easier to trigger
         const isHardScroll = Math.abs(e.deltaY) > HARD_SCROLL_THRESHOLD;
 
         // EDGE BRAKE LOGIC:
@@ -98,7 +98,7 @@ class Cube3D {
 
         if (this.currentFace !== 1 && hittingEdge && !isHardScroll) {
             // PEEK THRESHOLD CHECK: Only peek if scroll is "medium" strength
-            const PEEK_THRESHOLD = 20; // Ignore unintentional micro-scrolls
+            const PEEK_THRESHOLD = 25; // Lowered from 35 to regain some responsiveness
             const magnitude = Math.abs(e.deltaY);
 
             if (magnitude < PEEK_THRESHOLD) {
@@ -277,7 +277,7 @@ class Cube3D {
         if (direction < 0 && this.currentFace === 1) return;
 
         const baseAngle = (this.currentFace - 1) * -60;
-        const peekAngle = baseAngle + (direction * -20); // Peek 20 degrees (Strong nod on 60deg face)
+        const peekAngle = baseAngle + (direction * -12); // Peek 12 degrees (Subtler nod)
 
         // Override CSS transition for a snappy peek
         this.cube.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';

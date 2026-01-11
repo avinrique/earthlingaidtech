@@ -17,7 +17,7 @@ Education Technology
 
 We design and deploy modern education platforms that address real institutional needs.
 
-Prepzer0 is our flagship EdTech product—an AI-powered examination and assessment platform built for colleges, schools, and organizations.
+Prepzer0 is our flagship EdTech product—an AI-powered examination and assessment platform built for colleges, schools, and organizations. We also build custom LMS (Learning Management Systems) for institutional needs.
 
 Key capabilities:
 
@@ -77,9 +77,9 @@ Custom ERP (Enterprise Resource Planning) & CRM Systems
 
 Desktop Software (Windows, Mac, Linux)
 
-High-performance Websites & Web Applications
+High-performance Websites & Web Applications (MERN Stack)
 
-Mobile Apps (iOS & Android)
+Mobile Apps (Flutter - iOS & Android)
 
 Backend systems, APIs, and dashboards
 
