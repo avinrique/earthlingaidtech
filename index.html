@@ -405,6 +405,12 @@
                                     class="client-logo">SalesSphere360</a>
                                 <a href="https://thepixelsphere.com" target="_blank"
                                     class="client-logo">ThePixelSphere</a>
+                                <a href="https://admissionprime.com" target="_blank"
+                                    class="client-logo">AdmissionPrime</a>
+                                <a href="https://myadmissionguide.com" target="_blank"
+                                    class="client-logo">MyAdmissionGuide</a>
+                                <a href="https://howsingcrew.com" target="_blank"
+                                    class="client-logo">Howsing Crew</a>
                             </div>
                         </div>
                     </section>
@@ -473,18 +479,57 @@
 
     <div class="scroll-hint">
         <div class="scroll-hint__icon"></div>
-        <span>Swipe to rotate • Scroll to read</span>
+        <span>Swipe or scroll to explore the cube</span>
+    </div>
+
+    <!-- ===== MINI CUBE NAVIGATOR ===== -->
+    <div class="mini-cube-wrap">
+        <div class="mini-cube-viewport">
+            <div class="mini-cube">
+                <div class="mini-cube__face mini-cube__face--1 active" data-face="1">
+                    <div class="mini-cube__face-inner">
+                        <span class="mini-cube__face-icon">&#9750;</span>
+                        <span class="mini-cube__face-label">Home</span>
+                    </div>
+                </div>
+                <div class="mini-cube__face mini-cube__face--2" data-face="2">
+                    <div class="mini-cube__face-inner">
+                        <span class="mini-cube__face-icon">&#9673;</span>
+                        <span class="mini-cube__face-label">Identity</span>
+                    </div>
+                </div>
+                <div class="mini-cube__face mini-cube__face--3" data-face="3">
+                    <div class="mini-cube__face-inner">
+                        <span class="mini-cube__face-icon">&#9881;</span>
+                        <span class="mini-cube__face-label">Services</span>
+                    </div>
+                </div>
+                <div class="mini-cube__face mini-cube__face--4" data-face="4">
+                    <div class="mini-cube__face-inner">
+                        <span class="mini-cube__face-icon">&#9733;</span>
+                        <span class="mini-cube__face-label">Products</span>
+                    </div>
+                </div>
+                <div class="mini-cube__face mini-cube__face--5" data-face="5">
+                    <div class="mini-cube__face-inner">
+                        <span class="mini-cube__face-icon">&#9889;</span>
+                        <span class="mini-cube__face-label">Innovation</span>
+                    </div>
+                </div>
+                <div class="mini-cube__face mini-cube__face--6" data-face="6">
+                    <div class="mini-cube__face-inner">
+                        <span class="mini-cube__face-icon">&#9992;</span>
+                        <span class="mini-cube__face-label">Network</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <span class="mini-cube-caption">Navigate</span>
     </div>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="js/cube.js"></script>
-    <script>
-        // Make cube accessible globally for button clicks
-        document.addEventListener('DOMContentLoaded', () => {
-            window.cube3d = new Cube3D();
-        });
-    </script>
 </body>
 
 </html>

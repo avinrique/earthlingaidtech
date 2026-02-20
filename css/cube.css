@@ -1,6 +1,6 @@
 /* ==========================================================================
    EarthlingAidTech - TRUE 3D CUBE Navigation
-   Sections as faces of a cube that rotates sideways on scroll
+   4 side faces (Y-axis) + top & bottom (X-axis)
    ========================================================================== */
 
 /* Cube Container - Full viewport */
@@ -11,18 +11,18 @@
     width: 100vw;
     height: 100vh;
     perspective: 1200px;
+    perspective-origin: 50% 50%;
     overflow: hidden;
 }
 
-/* The 3D Cube - shifted back so front face satisfies Z=0 */
+/* The 3D Cube */
 .cube {
     position: relative;
     width: 100%;
     height: 100%;
     transform-style: preserve-3d;
     transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    /* Hexagon radius = 86.6vw (approx) for 100vw width */
-    transform: translateZ(-86.6vw);
+    transform: translateZ(-50vw);
 }
 
 /* Each face of the cube */
@@ -36,13 +36,8 @@
     overflow-y: auto;
     overflow-x: hidden;
     background: var(--color-bg-primary);
-    /* Hide scrollbar for cleaner look */
     scrollbar-width: none;
-    /* Firefox */
     -ms-overflow-style: none;
-    /* IE/Edge */
-
-    /* CRITICAL FIX: Disable pointer events by default to prevent overlapping faces from blocking clicks */
     pointer-events: none;
     transition: opacity 0.5s ease;
 }
@@ -53,61 +48,102 @@
 
 .cube__face::-webkit-scrollbar {
     display: none;
-    /* Chrome/Safari */
 }
 
-/* Position each face - rotated around Y axis */
-/* Position each face - rotated around Y axis (Hexagon: 60 degrees) */
+/* ===== Face Positions - True Cube Geometry ===== */
+/* 4 Side faces (rotated around Y-axis) */
 .cube__face--1 {
-    transform: rotateY(0deg) translateZ(86.6vw);
+    transform: rotateY(0deg) translateZ(50vw);
 }
 
 .cube__face--2 {
-    transform: rotateY(60deg) translateZ(86.6vw);
+    transform: rotateY(90deg) translateZ(50vw);
 }
 
 .cube__face--3 {
-    transform: rotateY(120deg) translateZ(86.6vw);
+    transform: rotateY(180deg) translateZ(50vw);
 }
 
 .cube__face--4 {
-    transform: rotateY(180deg) translateZ(86.6vw);
+    transform: rotateY(-90deg) translateZ(50vw);
 }
 
+/* Top & Bottom faces (rotated around X-axis) */
 .cube__face--5 {
-    transform: rotateY(240deg) translateZ(86.6vw);
+    transform: rotateX(90deg) translateZ(50vw);
 }
 
 .cube__face--6 {
-    transform: rotateY(300deg) translateZ(86.6vw);
+    transform: rotateX(-90deg) translateZ(50vw);
 }
 
-/* Cube rotation states - keep cube pushed back by radius */
+/* ===== Cube rotation states ===== */
+/* Side faces */
 .cube[data-face="1"] {
-    transform: translateZ(-86.6vw) rotateY(0deg);
+    transform: translateZ(-50vw) rotateX(0deg) rotateY(0deg);
 }
 
 .cube[data-face="2"] {
-    transform: translateZ(-86.6vw) rotateY(-60deg);
+    transform: translateZ(-50vw) rotateX(0deg) rotateY(-90deg);
 }
 
 .cube[data-face="3"] {
-    transform: translateZ(-86.6vw) rotateY(-120deg);
+    transform: translateZ(-50vw) rotateX(0deg) rotateY(-180deg);
 }
 
 .cube[data-face="4"] {
-    transform: translateZ(-86.6vw) rotateY(-180deg);
+    transform: translateZ(-50vw) rotateX(0deg) rotateY(90deg);
 }
 
+/* Top & Bottom */
 .cube[data-face="5"] {
-    transform: translateZ(-86.6vw) rotateY(-240deg);
+    transform: translateZ(-50vw) rotateX(-90deg) rotateY(0deg);
 }
 
 .cube[data-face="6"] {
-    transform: translateZ(-86.6vw) rotateY(-300deg);
+    transform: translateZ(-50vw) rotateX(90deg) rotateY(0deg);
 }
 
-/* Navigation dots */
+/* ===== Face label ===== */
+.cube-label {
+    position: fixed;
+    top: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: rgba(11, 13, 16, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: opacity 0.3s ease;
+}
+
+/* ===== Progress bar ===== */
+.cube-progress {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    z-index: 1000;
+}
+
+.cube-progress__bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4A9EFF, #5ECFCF);
+    width: 16.66%;
+    transition: width 0.5s ease;
+}
+
+/* ===== Navigation dots (hidden by default) ===== */
 .cube-nav {
     display: none;
 }
@@ -120,7 +156,6 @@
     border: 2px solid rgba(255, 255, 255, 0.5);
     cursor: pointer;
     transition: all 0.3s ease;
-    /* Re-enable pointer events for the dots themselves */
     pointer-events: auto;
 }
 
@@ -135,25 +170,7 @@
     transform: scale(1.3);
 }
 
-/* Progress bar at bottom */
-.cube-progress {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.1);
-    z-index: 1000;
-}
-
-.cube-progress__bar {
-    height: 100%;
-    background: linear-gradient(90deg, #4A9EFF, #5ECFCF);
-    width: 25%;
-    transition: width 0.5s ease, transform 0.5s ease;
-}
-
-/* Arrow navigation */
+/* ===== Arrow navigation (hidden) ===== */
 .cube-arrows {
     display: none;
 }
@@ -183,29 +200,7 @@
     cursor: not-allowed;
 }
 
-/* Face labels */
-.cube-label {
-    position: fixed;
-    top: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    font-size: 14px;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.6);
-    letter-spacing: 2px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    background: rgba(11, 13, 16, 0.7);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    padding: 8px 16px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: opacity 0.3s ease;
-}
-
-/* Scroll hint on first face */
+/* ===== Scroll hint ===== */
 .scroll-hint {
     position: fixed;
     bottom: 100px;
@@ -243,65 +238,42 @@
 }
 
 @keyframes bounce {
-
-    0%,
-    100% {
-        transform: translateX(-50%) translateY(0);
-    }
-
-    50% {
-        transform: translateX(-50%) translateY(-10px);
-    }
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-10px); }
 }
 
 @keyframes scrollDown {
-    0% {
-        opacity: 1;
-        top: 8px;
-    }
-
-    100% {
-        opacity: 0;
-        top: 25px;
-    }
+    0% { opacity: 1; top: 8px; }
+    100% { opacity: 0; top: 25px; }
 }
 
-/* Hide original body scroll when cube is active */
+/* ===== Body lock ===== */
 body.cube-mode {
     overflow: hidden;
 }
 
-/* Cube face content container for scrollable faces */
+/* ===== Scrollable face content ===== */
 .cube-face-content {
     width: 100%;
     height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
     background: var(--color-bg-primary);
-    /* CRITICAL FIX: Add buffer at bottom so user feels the scroll before rotating using min-height or padding */
     padding-bottom: 0;
     box-sizing: border-box;
-
-    /* Hide scrollbar completely */
     scrollbar-width: none;
-    /* Firefox */
     -ms-overflow-style: none;
-    /* IE/Edge */
 }
 
 .cube-face-content::-webkit-scrollbar {
     display: none;
-    /* Chrome/Safari */
 }
 
-/* Ensure content is always tall enough to require at least some scrolling */
-/* REMOVED aggressive 105vh per section to fix gaps. 
-   Rotation logic now relies on padding-bottom buffer. */
-.cube-face-content> :last-child {
+.cube-face-content > :last-child {
     margin-bottom: 0;
 }
 
-/* Ensure sections inside faces have proper backgrounds */
+/* Face section backgrounds */
 .cube__face .section {
     background: var(--color-bg-primary);
 }
@@ -312,4 +284,156 @@ body.cube-mode {
 .cube__face .section.products,
 .cube__face .section.innovation {
     background: var(--color-bg-secondary);
+}
+
+/* ==========================================================================
+   MINI CUBE NAVIGATOR
+   Interactive 3D cube thumbnail showing all 6 faces
+   ========================================================================== */
+
+.mini-cube-wrap {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.mini-cube-viewport {
+    width: 90px;
+    height: 90px;
+    perspective: 300px;
+    cursor: pointer;
+    user-select: none;
+    touch-action: none;
+}
+
+.mini-cube {
+    width: 90px;
+    height: 90px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: rotateX(-15deg) rotateY(25deg);
+}
+
+.mini-cube.dragging {
+    transition: none !important;
+}
+
+.mini-cube__face {
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    border: 1px solid rgba(74, 158, 255, 0.25);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+    background: rgba(11, 13, 16, 0.85);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    backface-visibility: hidden;
+    transition: all 0.4s ease;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.mini-cube__face:hover {
+    border-color: rgba(74, 158, 255, 0.6);
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(74, 158, 255, 0.1);
+}
+
+.mini-cube__face.active {
+    border-color: #4A9EFF;
+    color: #fff;
+    background: rgba(74, 158, 255, 0.15);
+    box-shadow: 0 0 12px rgba(74, 158, 255, 0.3), inset 0 0 8px rgba(74, 158, 255, 0.1);
+}
+
+/* Mini cube face positions */
+.mini-cube__face--1 { transform: rotateY(0deg) translateZ(45px); }
+.mini-cube__face--2 { transform: rotateY(90deg) translateZ(45px); }
+.mini-cube__face--3 { transform: rotateY(180deg) translateZ(45px); }
+.mini-cube__face--4 { transform: rotateY(-90deg) translateZ(45px); }
+.mini-cube__face--5 { transform: rotateX(90deg) translateZ(45px); }
+.mini-cube__face--6 { transform: rotateX(-90deg) translateZ(45px); }
+
+/* Mini cube face inner content (icon + label) */
+.mini-cube__face-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    pointer-events: none;
+}
+
+.mini-cube__face-icon {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.mini-cube__face-label {
+    font-size: 8px;
+    white-space: nowrap;
+}
+
+/* Mini cube caption */
+.mini-cube-caption {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.35);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Mobile: smaller mini cube */
+@media (max-width: 768px) {
+    .mini-cube-wrap {
+        bottom: 20px;
+        right: 20px;
+    }
+
+    .mini-cube-viewport {
+        width: 70px;
+        height: 70px;
+    }
+
+    .mini-cube {
+        width: 70px;
+        height: 70px;
+    }
+
+    .mini-cube__face {
+        width: 70px;
+        height: 70px;
+        font-size: 8px;
+    }
+
+    .mini-cube__face--1 { transform: rotateY(0deg) translateZ(35px); }
+    .mini-cube__face--2 { transform: rotateY(90deg) translateZ(35px); }
+    .mini-cube__face--3 { transform: rotateY(180deg) translateZ(35px); }
+    .mini-cube__face--4 { transform: rotateY(-90deg) translateZ(35px); }
+    .mini-cube__face--5 { transform: rotateX(90deg) translateZ(35px); }
+    .mini-cube__face--6 { transform: rotateX(-90deg) translateZ(35px); }
+
+    .mini-cube__face-icon {
+        font-size: 14px;
+    }
+
+    .mini-cube__face-label {
+        font-size: 7px;
+    }
+
+    .mini-cube-caption {
+        display: none;
+    }
 }
