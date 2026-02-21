@@ -447,12 +447,11 @@ class Cube3D {
         document.removeEventListener('mousemove', this._onMiniMouseMove);
         document.removeEventListener('mouseup', this._onMiniMouseUp);
 
-        // Keep dragging class removal delayed so capture-phase click fires first
-        setTimeout(() => {
-            if (!this.miniIsFreeRotated) {
-                this.miniCube.classList.remove('dragging');
-            }
-        }, 0);
+        // If dragged, navigate to whichever face ended up facing the viewer
+        if (this.miniDragDidMove) {
+            const frontFace = this.getFrontFace();
+            this.goToFace(frontFace);
+        }
     }
 
     onMiniTouchStart(e) {
@@ -497,8 +496,12 @@ class Cube3D {
         document.removeEventListener('touchmove', this._onMiniTouchMove);
         document.removeEventListener('touchend', this._onMiniTouchEnd);
 
-        // If it wasn't a drag, treat as a tap → navigate to tapped face
-        if (!this.miniDragDidMove) {
+        if (this.miniDragDidMove) {
+            // Dragged — navigate to whichever face ended up facing the viewer
+            const frontFace = this.getFrontFace();
+            this.goToFace(frontFace);
+        } else {
+            // Tap — navigate to the tapped face
             const touch = e.changedTouches[0];
             const el = document.elementFromPoint(touch.clientX, touch.clientY);
             if (el) {
@@ -509,6 +512,42 @@ class Cube3D {
                 }
             }
         }
+    }
+
+    // Determine which mini cube face is most facing the viewer based on current rotation
+    getFrontFace() {
+        // Face normals in cube local space
+        const normals = [
+            [1, 0, 0, 1],    // face 1: front (+Z)
+            [2, 1, 0, 0],    // face 2: right (+X)
+            [3, 0, 0, -1],   // face 3: back (-Z)
+            [4, -1, 0, 0],   // face 4: left (-X)
+            [5, 0, -1, 0],   // face 5: top (-Y in CSS 3D)
+            [6, 0, 1, 0]     // face 6: bottom (+Y in CSS 3D)
+        ];
+
+        const ax = this.miniRotX * Math.PI / 180;
+        const ay = this.miniRotY * Math.PI / 180;
+
+        let bestFace = 1;
+        let bestZ = -Infinity;
+
+        for (const [face, nx, ny, nz] of normals) {
+            // Apply rotateY(ay) first
+            const x1 = nx * Math.cos(ay) + nz * Math.sin(ay);
+            const y1 = ny;
+            const z1 = -nx * Math.sin(ay) + nz * Math.cos(ay);
+
+            // Then rotateX(ax)
+            const z2 = y1 * Math.sin(ax) + z1 * Math.cos(ax);
+
+            if (z2 > bestZ) {
+                bestZ = z2;
+                bestFace = face;
+            }
+        }
+
+        return bestFace;
     }
 
     triggerPeek(direction) {
