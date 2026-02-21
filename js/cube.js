@@ -90,7 +90,10 @@ class Cube3D {
 
         // Dot nav
         this.dots.forEach((dot, i) => {
-            dot.addEventListener('click', () => this.goToFace(i + 1));
+            dot.addEventListener('click', () => {
+                this.miniIsFreeRotated = false;
+                this.goToFace(i + 1);
+            });
         });
 
         if (this.prevBtn) this.prevBtn.addEventListener('click', () => this.navigate('left'));
@@ -99,6 +102,7 @@ class Cube3D {
         // Mini cube face clicks
         this.miniFaces.forEach(face => {
             face.addEventListener('click', () => {
+                this.miniIsFreeRotated = false;
                 const faceNum = parseInt(face.dataset.face);
                 if (faceNum) this.goToFace(faceNum);
             });
@@ -263,6 +267,8 @@ class Cube3D {
      * - From top/bottom, up/down returns to last side face
      */
     navigate(direction) {
+        // Non-drag navigation → mini cube should snap back to synced position
+        this.miniIsFreeRotated = false;
         const isSide = this.sideFaces.includes(this.currentFace);
         const isTop = this.currentFace === 5;
         const isBottom = this.currentFace === 6;
@@ -366,17 +372,17 @@ class Cube3D {
     updateMiniCube() {
         if (!this.miniCube) return;
 
-        const angles = this.faceAngles[this.currentFace];
-        // Rotate mini cube to show active face, with a slight tilt for 3D feel
-        const rx = angles[0] + 15;
-        const ry = angles[1] - 25;
-        this.miniCube.style.transform = `rotateX(${-rx}deg) rotateY(${-ry}deg)`;
+        // If user dragged the mini cube, keep it where they left it
+        if (!this.miniIsFreeRotated) {
+            const angles = this.faceAngles[this.currentFace];
+            const rx = angles[0] + 15;
+            const ry = angles[1] - 25;
+            this.miniCube.style.transform = `rotateX(${-rx}deg) rotateY(${-ry}deg)`;
 
-        // Sync drag state so next drag starts from the correct base
-        this.miniRotX = -rx;
-        this.miniRotY = -ry;
-        this.miniIsFreeRotated = false;
-        this.miniCube.classList.remove('dragging');
+            this.miniRotX = -rx;
+            this.miniRotY = -ry;
+            this.miniCube.classList.remove('dragging');
+        }
 
         // Highlight active face
         this.miniFaces.forEach(face => {
