@@ -11,7 +11,7 @@ export const site = {
   url: 'https://earthlingaidtech.com',
   tagline: 'Engineering Intelligence. Empowering Humans.',
   description:
-    'Earthling Aidtech builds intelligent systems across EdTech, agentic AI, robotics, and software — products and platforms engineered for real-world impact.',
+    'Earthling Aidtech builds EdTech platforms, agentic AI systems, robotics, and web & mobile apps. Prepzer0 runs at SVIT and East Horizon School; 600+ students trained. A product & engineering studio in Bengaluru.',
   email: 'services@earthlingaidtech.com',
   emailAlt: 'earthlingaidtech@gmail.com',
   location: 'Bengaluru, India',
@@ -31,12 +31,12 @@ export const nav: NavLink[] = [
   { label: 'Contact', href: '/contact' },
 ];
 
-/* ---- Hero stats / proof bar ---- */
+/* ---- Hero stats / proof bar (every number is real, from app.txt) ---- */
 export const stats: { value: string; label: string; accent?: string }[] = [
   { value: '600+', label: 'Students trained', accent: 'accent' },
-  { value: '6', label: 'Workshops delivered', accent: 'teal' },
-  { value: '6+', label: 'Clients & collaborations', accent: 'violet' },
-  { value: '3', label: 'Products shipped', accent: 'amber' },
+  { value: '6', label: 'Workshops led', accent: 'teal' },
+  { value: '2', label: 'Prepzer0 deployments', accent: 'violet' },
+  { value: '6', label: 'Client partners', accent: 'amber' },
 ];
 
 /* ---- Capabilities / services ---- */
@@ -58,7 +58,7 @@ export const services: Service[] = [
     title: 'Education Technology',
     tag: 'EdTech',
     summary:
-      'Modern education platforms that address real institutional needs — from secure assessments to custom learning systems.',
+      'Exam and assessment platforms built for real institutions — secure delivery, AI-assisted grading, and reporting. It is what powers Prepzer0.',
     points: [
       'Secure, scalable examination workflows',
       'AI-assisted monitoring & evaluation',
@@ -73,7 +73,7 @@ export const services: Service[] = [
     title: 'Agentic AI & Automation',
     tag: 'Applied AI',
     summary:
-      'Autonomous systems that reason, decide, and execute — reducing manual effort and scaling intelligent operations.',
+      'LLM-powered agents that take over repetitive work — multi-agent systems, RAG pipelines, and decision support, wired into your real data.',
     points: [
       'Autonomous & multi-agent systems',
       'LLM-powered automation pipelines',
@@ -88,7 +88,7 @@ export const services: Service[] = [
     title: 'Robotics & Embedded',
     tag: 'Hardware × AI',
     summary:
-      'Hardware–software integrated systems combining embedded engineering with real-time perception and control.',
+      'Embedded systems and AI working together in the physical world — sensors, real-time control, and machines like our tablet-faced info robot.',
     points: [
       'Robotics & intelligent machines',
       'Microcontroller & SBC systems',
@@ -103,7 +103,7 @@ export const services: Service[] = [
     title: 'Software & Applications',
     tag: 'Enterprise & Consumer',
     summary:
-      'High-quality digital products engineered for performance, security, and scale across web, mobile, and desktop.',
+      'ERP, CRM, web, and mobile apps engineered to ship — MERN on the web, Flutter on mobile, with the APIs and dashboards behind them.',
     points: [
       'Custom ERP & CRM systems',
       'High-performance web apps (MERN)',
@@ -136,11 +136,11 @@ export const products: Product[] = [
     kicker: 'AI Examination & Assessment Platform',
     icon: 'shield-check',
     accent: 'accent',
-    status: 'Flagship · Deployed',
+    status: 'Flagship · Live',
     summary:
-      'A scalable, secure, and intelligent assessment platform built for modern educational environments.',
+      'Live at SVIT and East Horizon School — secure exam delivery with AI-assisted grading and reporting.',
     description:
-      'Prepzer0 is our flagship EdTech product — an AI-powered examination and assessment platform for colleges, schools, and organizations. It brings secure exam delivery, AI-assisted evaluation, and rich reporting into one flexible system.',
+      'Prepzer0 is our flagship EdTech product — an AI-powered examination and assessment platform for colleges, schools, and organizations. It brings secure exam delivery, AI-assisted evaluation, and rich reporting into one flexible system, and it already runs in real classrooms.',
     features: [
       { title: 'Secure exam delivery', body: 'Hardened, scalable examination workflows built for high-stakes assessment.' },
       { title: 'AI-assisted evaluation', body: 'Intelligent monitoring and grading that cut manual effort while keeping educators in control.' },
@@ -158,7 +158,7 @@ export const products: Product[] = [
     accent: 'teal',
     status: 'Product',
     summary:
-      'AI-powered newsletter and article creation for institutions, departments, and events.',
+      'Polished event and institutional write-ups in minutes — we built it to cover our own workshops.',
     description:
       'An AI-powered newsletter and article creation tool designed for colleges, academic departments, and events — enabling fast, consistent, high-quality content with minimal manual effort.',
     features: [
@@ -177,7 +177,7 @@ export const products: Product[] = [
     accent: 'violet',
     status: 'R&D · Hardware',
     summary:
-      'A physical, LLM-powered robot for organizational interaction and information delivery.',
+      'A tablet-faced robot with Vector-style eyes that answers questions about your institution.',
     description:
       'A physical hardware robot designed for organizational interaction and information delivery — ideal for institutions, offices, exhibitions, and public-facing environments.',
     features: [
@@ -191,10 +191,10 @@ export const products: Product[] = [
 
 /* ---- "How we work" / approach ---- */
 export const approach: { step: string; title: string; body: string }[] = [
-  { step: '01', title: 'Understand', body: 'We start with the real institutional or business problem — not the technology — and define what success looks like.' },
-  { step: '02', title: 'Engineer', body: 'We design and build practical, future-ready systems across software, AI, and hardware, grounded in solid engineering.' },
-  { step: '03', title: 'Deploy', body: 'We ship to production with flexible deployment, then measure real-world impact for institutions and enterprises.' },
-  { step: '04', title: 'Evolve', body: 'Continuous R&D keeps every product research-driven and ready for what comes next.' },
+  { step: '01', title: 'Listen', body: 'We sit with your team and find the real bottleneck — not the feature list. The problem comes first; the technology comes second.' },
+  { step: '02', title: 'Build', body: 'We design and engineer in weeks, not quarters — MERN on the web, Flutter on mobile, embedded systems and LLM agents where they fit.' },
+  { step: '03', title: 'Ship', body: 'We deploy to production with cloud or on-prem options, then watch how it actually performs with real users.' },
+  { step: '04', title: 'Evolve', body: 'R&D never stops. What we ship today feeds the robotics and agentic-AI research we run for tomorrow.' },
 ];
 
 /* ---- R&D focus areas ---- */
@@ -218,27 +218,27 @@ export const workshops = {
     'Web Development',
     'Application Development',
     'Artificial Intelligence & Agentic AI',
-    'Automation & Scripting',
+    'Automation and scripting',
     'Robotics & Embedded Systems',
   ],
 } as const;
 
-/* ---- Clients & collaborations ---- */
+/* ---- Clients & collaborations (real names from app.txt; notes only where known) ---- */
 export const clients: { name: string; note?: string }[] = [
   { name: 'Woostaa' },
-  { name: 'OrynConsulting' },
-  { name: 'SalesSphere360' },
-  { name: 'Halde20', note: 'Switzerland' },
+  { name: 'OrynConsulting', note: 'Consulting' },
+  { name: 'SalesSphere360', note: 'Sales' },
+  { name: 'Halde20', note: 'Restaurant · Switzerland' },
   { name: 'Chillaxmandu' },
-  { name: 'ThePixelSphere' },
+  { name: 'ThePixelSphere', note: 'Studio' },
 ];
 
-/* ---- Why us ---- */
+/* ---- Why us (every claim grounded in real work) ---- */
 export const whyUs: { icon: string; title: string; body: string }[] = [
-  { icon: 'layers', title: 'Multidisciplinary', body: 'Expertise spanning AI, software, and hardware under one roof.' },
-  { icon: 'graduation-cap', title: 'Education-first', body: 'A strong focus on education and applied intelligence.' },
-  { icon: 'flask-conical', title: 'R&D-driven', body: 'A product-first mindset with deep research integration.' },
-  { icon: 'shield', title: 'Responsible', body: 'Scalable, ethical, and future-oriented systems by design.' },
-  { icon: 'rocket', title: 'Proven', body: 'Execution delivered across institutions and clients.' },
-  { icon: 'globe', title: 'Real impact', body: 'Solutions that work in the real world, not just on slides.' },
+  { icon: 'layers', title: 'One team, many disciplines', body: 'AI, robotics, and software under one roof — not three separate vendors stitched together.' },
+  { icon: 'graduation-cap', title: 'We know education', body: '6 workshops at BMSIT and SVIT, 600+ students trained, and Prepzer0 running in real classrooms.' },
+  { icon: 'flask-conical', title: 'R&D in the open', body: 'From Vector-style robot eyes to multi-agent systems, we research tomorrow’s problems and ship the results.' },
+  { icon: 'rocket', title: 'Built to ship', body: 'Prepzer0 is live. The info robot works. We measure ourselves in production, not slides.' },
+  { icon: 'globe', title: 'Local, delivering globally', body: 'Based in Bengaluru, delivering for clients from India to Halde20 in Switzerland.' },
+  { icon: 'shield', title: 'Responsible by default', body: 'Secure, scalable, ethical engineering — the unglamorous parts done right.' },
 ];
