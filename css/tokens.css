@@ -1,0 +1,244 @@
+/* ==========================================================================
+   Earthling Aid Tech — Design Tokens
+   "Refined dark AI-lab" — dark-only palette.
+   All design primitives live here as CSS custom properties.
+   Do NOT hardcode colors / spacing in pages; reference these tokens.
+   ========================================================================== */
+
+:root {
+  /* ----------------------------------------------------------------------
+     COLOR — Canvas & elevation
+     Near-black canvas with progressively elevated translucent glass layers.
+     ---------------------------------------------------------------------- */
+  --color-canvas: #0B0D10;          /* page background (near-black) */
+  --color-canvas-deep: #07080A;     /* deepest wells / footer base */
+  --color-surface-1: #101317;       /* solid raised surface */
+  --color-surface-2: #161A20;       /* higher solid surface */
+  --color-surface-3: #1C2128;       /* highest solid surface / inputs */
+
+  /* Translucent glass fills (used over the canvas + backdrop-blur) */
+  --glass-bg: rgba(20, 24, 30, 0.55);
+  --glass-bg-strong: rgba(22, 27, 34, 0.78);
+  --glass-bg-soft: rgba(255, 255, 255, 0.03);
+  --glass-bg-hover: rgba(255, 255, 255, 0.05);
+
+  /* ----------------------------------------------------------------------
+     COLOR — Hairline borders & dividers
+     ---------------------------------------------------------------------- */
+  --border-hairline: rgba(255, 255, 255, 0.08);
+  --border-hairline-strong: rgba(255, 255, 255, 0.14);
+  --border-faint: rgba(255, 255, 255, 0.05);
+  --border-accent: rgba(74, 158, 255, 0.40);
+  --border-accent-strong: rgba(74, 158, 255, 0.70);
+
+  /* ----------------------------------------------------------------------
+     COLOR — Text
+     ---------------------------------------------------------------------- */
+  --text-strong: #F4F7FB;           /* headlines (AA on canvas) */
+  --text-primary: #E4E9F0;          /* body high-emphasis */
+  --text-secondary: #AEB7C4;        /* body medium-emphasis (AA on canvas) */
+  --text-muted: #7E8896;            /* low-emphasis / captions (AA large) */
+  --text-faint: #5A636F;            /* hints, disabled */
+  --text-on-accent: #051018;        /* text sitting on the electric-blue fill */
+
+  /* ----------------------------------------------------------------------
+     COLOR — Brand accent (electric blue) + variants
+     ---------------------------------------------------------------------- */
+  --accent: #4A9EFF;                /* primary electric blue */
+  --accent-hover: #6BB0FF;          /* lighter on hover */
+  --accent-active: #2E86F0;         /* pressed / active */
+  --accent-strong: #8AC2FF;         /* bright text-on-dark accent (AA) */
+  --accent-dim: #2B6FC4;            /* desaturated for subtle uses */
+
+  /* Accent tint washes (fills / glows) */
+  --accent-tint-12: rgba(74, 158, 255, 0.12);
+  --accent-tint-18: rgba(74, 158, 255, 0.18);
+  --accent-tint-28: rgba(74, 158, 255, 0.28);
+  --accent-glow: rgba(74, 158, 255, 0.45);
+
+  /* Restrained secondary accents (use sparingly for variety) */
+  --accent-2: #2DD4BF;              /* teal */
+  --accent-2-strong: #5EEAD4;       /* teal bright text (AA) */
+  --accent-2-tint: rgba(45, 212, 191, 0.14);
+  --accent-3: #A78BFA;              /* violet */
+  --accent-3-strong: #C4B5FD;       /* violet bright text (AA) */
+  --accent-3-tint: rgba(167, 139, 250, 0.14);
+
+  /* ----------------------------------------------------------------------
+     COLOR — Semantic / status
+     ---------------------------------------------------------------------- */
+  --success: #34D399;
+  --success-tint: rgba(52, 211, 153, 0.14);
+  --warning: #FBBF24;
+  --warning-tint: rgba(251, 191, 36, 0.14);
+  --danger: #F87171;
+  --danger-tint: rgba(248, 113, 113, 0.14);
+
+  /* Focus ring (keyboard) */
+  --focus-ring: rgba(74, 158, 255, 0.65);
+
+  /* ----------------------------------------------------------------------
+     TYPOGRAPHY — Families
+     ---------------------------------------------------------------------- */
+  --font-display: "Space Grotesk", "Inter", system-ui, -apple-system, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono",
+    Menlo, Consolas, monospace;
+
+  /* ----------------------------------------------------------------------
+     TYPOGRAPHY — Fluid type scale (clamp: min / preferred / max)
+     Display sizes lean on Space Grotesk; text sizes on Inter.
+     ---------------------------------------------------------------------- */
+  --fs-display: clamp(2.75rem, 1.6rem + 5.6vw, 5.25rem);   /* hero H1 */
+  --fs-h1: clamp(2.25rem, 1.5rem + 3.6vw, 3.75rem);
+  --fs-h2: clamp(1.875rem, 1.35rem + 2.4vw, 2.75rem);
+  --fs-h3: clamp(1.375rem, 1.1rem + 1.2vw, 1.875rem);
+  --fs-h4: clamp(1.125rem, 1rem + 0.6vw, 1.375rem);
+  --fs-h5: 1.125rem;
+  --fs-lead: clamp(1.125rem, 1.02rem + 0.45vw, 1.375rem);  /* intro paragraphs */
+  --fs-body: 1rem;          /* 16px base */
+  --fs-body-sm: 0.9375rem;  /* 15px */
+  --fs-caption: 0.8125rem;  /* 13px */
+  --fs-eyebrow: 0.75rem;    /* 12px mono labels */
+  --fs-micro: 0.6875rem;    /* 11px */
+
+  /* Line heights */
+  --lh-tight: 1.05;
+  --lh-snug: 1.18;
+  --lh-heading: 1.25;
+  --lh-base: 1.65;
+  --lh-relaxed: 1.8;
+
+  /* Weights */
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+
+  /* Letter spacing */
+  --ls-tight: -0.03em;     /* big display */
+  --ls-snug: -0.015em;     /* headings */
+  --ls-normal: 0;
+  --ls-wide: 0.04em;
+  --ls-eyebrow: 0.18em;    /* mono eyebrows / labels */
+
+  /* ----------------------------------------------------------------------
+     SPACING — 8px grid (with 4px micro steps)
+     ---------------------------------------------------------------------- */
+  --space-0: 0;
+  --space-1: 0.25rem;   /* 4  */
+  --space-2: 0.5rem;    /* 8  */
+  --space-3: 0.75rem;   /* 12 */
+  --space-4: 1rem;      /* 16 */
+  --space-5: 1.5rem;    /* 24 */
+  --space-6: 2rem;      /* 32 */
+  --space-7: 2.5rem;    /* 40 */
+  --space-8: 3rem;      /* 48 */
+  --space-9: 4rem;      /* 64 */
+  --space-10: 5rem;     /* 80 */
+  --space-11: 6rem;     /* 96 */
+  --space-12: 8rem;     /* 128 */
+
+  /* Vertical rhythm for full-bleed sections (fluid) */
+  --section-py: clamp(4rem, 2.5rem + 7vw, 8rem);
+  --section-py-sm: clamp(2.5rem, 1.8rem + 4vw, 5rem);
+  --section-gap: clamp(2rem, 1.4rem + 3vw, 4rem);
+
+  /* ----------------------------------------------------------------------
+     LAYOUT — Container widths & gutters
+     ---------------------------------------------------------------------- */
+  --container-max: 1200px;
+  --container-wide: 1320px;
+  --container-narrow: 880px;   /* prose / article column */
+  --container-prose: 720px;    /* long-form reading measure */
+  --gutter: clamp(1.25rem, 0.8rem + 2vw, 2.5rem);
+
+  --header-h: 72px;            /* sticky header height (desktop) */
+  --header-h-mobile: 64px;
+
+  /* ----------------------------------------------------------------------
+     RADII
+     ---------------------------------------------------------------------- */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-2xl: 36px;
+  --radius-pill: 999px;
+  --radius-round: 50%;
+
+  /* ----------------------------------------------------------------------
+     BORDERS
+     ---------------------------------------------------------------------- */
+  --border-w: 1px;
+  --border-w-2: 2px;
+
+  /* ----------------------------------------------------------------------
+     SHADOWS & GLOWS
+     Layered, soft on dark. Glows use the accent.
+     ---------------------------------------------------------------------- */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 18px 50px rgba(0, 0, 0, 0.55);
+  --shadow-xl: 0 30px 80px rgba(0, 0, 0, 0.6);
+
+  /* Inner top highlight that sells the "glass" edge */
+  --inner-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --inner-glow: inset 0 0 40px rgba(74, 158, 255, 0.05);
+
+  /* Accent glows */
+  --glow-accent-sm: 0 0 0 1px var(--border-accent), 0 0 20px rgba(74, 158, 255, 0.25);
+  --glow-accent-md: 0 8px 30px rgba(74, 158, 255, 0.22);
+  --glow-accent-lg: 0 12px 48px rgba(74, 158, 255, 0.30);
+
+  /* Composite elevation presets for glass cards */
+  --elevation-card: var(--shadow-md), var(--inner-highlight);
+  --elevation-card-hover: var(--shadow-lg), var(--inner-highlight), var(--glow-accent-md);
+  --elevation-pop: var(--shadow-xl), var(--inner-highlight);
+
+  /* ----------------------------------------------------------------------
+     BLUR — backdrop-filter strengths
+     ---------------------------------------------------------------------- */
+  --blur-sm: 6px;
+  --blur-md: 12px;
+  --blur-lg: 20px;
+  --blur-xl: 32px;
+  --backdrop-glass: blur(14px) saturate(140%);
+  --backdrop-glass-strong: blur(22px) saturate(150%);
+
+  /* ----------------------------------------------------------------------
+     MOTION — durations & easing curves
+     ---------------------------------------------------------------------- */
+  --dur-instant: 80ms;
+  --dur-fast: 150ms;
+  --dur-base: 240ms;
+  --dur-slow: 400ms;
+  --dur-slower: 650ms;
+
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);          /* expressive ease-out */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);   /* gentle overshoot */
+
+  --transition-base: all var(--dur-base) var(--ease-standard);
+  --transition-color: color var(--dur-fast) var(--ease-standard),
+    background-color var(--dur-fast) var(--ease-standard),
+    border-color var(--dur-fast) var(--ease-standard);
+  --transition-transform: transform var(--dur-base) var(--ease-out);
+
+  /* ----------------------------------------------------------------------
+     Z-INDEX scale
+     ---------------------------------------------------------------------- */
+  --z-below: -1;
+  --z-base: 0;
+  --z-raised: 10;
+  --z-sticky: 100;
+  --z-header: 200;
+  --z-drawer: 300;
+  --z-overlay: 350;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-max: 999;
+}
