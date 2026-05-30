@@ -1,0 +1,27 @@
+---
+import Base from '@/layouts/Base.astro';
+import Button from '@/components/Button.astro';
+import CubeLogo from '@/components/CubeLogo.astro';
+---
+
+<Base title="Page not found" noindex>
+  <section class="relative isolate flex min-h-[70vh] items-center overflow-hidden">
+    <div class="pointer-events-none absolute inset-0 -z-10">
+      <div class="bg-grid absolute inset-0 opacity-40 [mask-image:radial-gradient(ellipse_60%_60%_at_50%_40%,black,transparent_70%)]"></div>
+      <div class="glow-accent absolute left-1/2 top-1/3 size-[520px] -translate-x-1/2 opacity-50"></div>
+    </div>
+
+    <div class="container-app flex flex-col items-center text-center">
+      <CubeLogo size={72} animated />
+      <p class="eyebrow mt-8"><span class="size-1.5 rounded-full bg-accent"></span>Error 404</p>
+      <h1 class="mt-4 font-display text-5xl font-semibold text-ink md:text-7xl">Lost in the system</h1>
+      <p class="mt-4 max-w-md text-lg text-muted">
+        The page you're looking for doesn't exist or has moved. Let's get you back on track.
+      </p>
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <Button href="/" size="lg" icon="arrow-left">Back home</Button>
+        <Button href="/products" size="lg" variant="secondary">View products</Button>
+      </div>
+    </div>
+  </section>
+</Base>

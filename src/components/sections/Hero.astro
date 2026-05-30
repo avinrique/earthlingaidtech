@@ -1,0 +1,69 @@
+---
+import CubeLogo from '../CubeLogo.astro';
+import Button from '../Button.astro';
+import { stats, site } from '@/data/site';
+---
+
+<section class="relative isolate overflow-hidden">
+  <!-- Decorative background -->
+  <div class="pointer-events-none absolute inset-0 -z-10">
+    <div class="bg-grid absolute inset-0 opacity-[0.5] [mask-image:radial-gradient(ellipse_80%_60%_at_50%_0%,black,transparent_75%)]"></div>
+    <div class="glow-accent absolute -top-40 left-1/2 size-[820px] -translate-x-1/2 opacity-60"></div>
+    <div class="absolute -top-24 right-[8%] size-[420px] rounded-full opacity-40 blur-3xl" style="background:radial-gradient(closest-side,rgba(45,212,191,0.18),transparent)"></div>
+    <div class="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-line-strong to-transparent"></div>
+  </div>
+
+  <div class="container-app grid items-center gap-12 pt-32 pb-20 md:pt-40 md:pb-28 lg:grid-cols-[1.05fr_0.95fr]">
+    <!-- Copy -->
+    <div class="flex flex-col items-start">
+      <span class="eyebrow reveal">
+        <span class="size-1.5 rounded-full bg-accent shadow-[0_0_12px_2px_rgba(74,158,255,0.6)]"></span>
+        Engineering intelligence
+      </span>
+
+      <h1 class="reveal mt-6 text-balance font-display text-[length:var(--text-hero)] font-semibold leading-[1.05] tracking-[-0.025em] text-ink" data-delay="1">
+        Intelligent systems,<br class="hidden sm:block" />
+        engineered for the <span class="text-gradient">real world.</span>
+      </h1>
+
+      <p class="reveal mt-6 max-w-xl text-lg leading-relaxed text-muted" data-delay="2">
+        {site.shortName} is a multidisciplinary technology company building products and platforms
+        across <span class="text-body">EdTech, agentic AI, robotics, and software</span> — designed
+        to deliver real impact for institutions, organizations, and enterprises.
+      </p>
+
+      <div class="reveal mt-9 flex flex-wrap items-center gap-3" data-delay="3">
+        <Button href="/products" size="lg" iconRight="arrow-right">Explore our work</Button>
+        <Button href="/contact" size="lg" variant="secondary">Start a project</Button>
+      </div>
+
+      <!-- Stat proof bar -->
+      <dl class="reveal mt-14 grid w-full max-w-lg grid-cols-2 gap-x-8 gap-y-6 border-t border-line pt-8 sm:grid-cols-4" data-delay="4">
+        {stats.map((s) => (
+          <div class="flex flex-col gap-1">
+            <dt class="order-2 text-xs text-faint">{s.label}</dt>
+            <dd class="order-1 font-display text-2xl font-semibold text-ink">{s.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+
+    <!-- Signature visual -->
+    <div class="reveal pointer-events-none relative mx-auto hidden aspect-square w-full max-w-md place-items-center lg:grid" data-delay="2" aria-hidden="true">
+      <!-- concentric rings -->
+      <div class="absolute inset-0 rounded-full border border-line [mask-image:radial-gradient(closest-side,transparent_55%,black_56%)]"></div>
+      <div class="absolute inset-[12%] rounded-full border border-line-faint"></div>
+      <div class="absolute inset-[26%] rounded-full border border-line-faint"></div>
+      <div class="glow-accent absolute inset-[10%] opacity-70"></div>
+
+      <!-- orbiting dots -->
+      <div class="absolute inset-0 animate-[spin_28s_linear_infinite]">
+        <span class="absolute left-1/2 top-0 size-2.5 -translate-x-1/2 rounded-full bg-accent shadow-[0_0_16px_3px_rgba(74,158,255,0.7)]"></span>
+        <span class="absolute bottom-[10%] right-[12%] size-2 rounded-full bg-teal shadow-[0_0_14px_3px_rgba(45,212,191,0.6)]"></span>
+        <span class="absolute bottom-[18%] left-[8%] size-1.5 rounded-full bg-violet shadow-[0_0_12px_3px_rgba(167,139,250,0.6)]"></span>
+      </div>
+
+      <CubeLogo size={260} animated class="relative drop-shadow-[0_30px_60px_rgba(0,0,0,0.6)]" />
+    </div>
+  </div>
+</section>

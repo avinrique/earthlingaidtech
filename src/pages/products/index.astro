@@ -1,0 +1,17 @@
+---
+import Base from '@/layouts/Base.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import ProductsShowcase from '@/components/sections/ProductsShowcase.astro';
+---
+
+<Base
+  title="Products"
+  description="Prepzer0, the Newsletter & Article Creator, and the Interactive AI Information Robot — products engineered by Earthling Aidtech."
+>
+  <PageHeader
+    eyebrow="Products"
+    title="Tools we've <span class='text-gradient'>shipped</span>"
+    subtitle="A product-first company building software and physical systems that institutions and teams rely on."
+  />
+  <ProductsShowcase heading={false} />
+</Base>

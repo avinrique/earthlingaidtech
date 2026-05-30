@@ -1,0 +1,30 @@
+---
+interface Props {
+  eyebrow: string;
+  title: string;
+  subtitle?: string;
+  align?: 'left' | 'center';
+}
+const { eyebrow, title, subtitle, align = 'left' } = Astro.props;
+const alignCls = align === 'center' ? 'items-center text-center mx-auto' : 'items-start';
+---
+
+<section class="relative isolate overflow-hidden border-b border-line">
+  <div class="pointer-events-none absolute inset-0 -z-10">
+    <div class="bg-grid absolute inset-0 opacity-40 [mask-image:radial-gradient(ellipse_70%_70%_at_50%_0%,black,transparent_70%)]"></div>
+    <div class="glow-accent absolute -top-40 left-1/2 size-[680px] -translate-x-1/2 opacity-50"></div>
+  </div>
+
+  <div class="container-app pt-32 pb-14 md:pt-40 md:pb-20">
+    <div class:list={['flex max-w-3xl flex-col gap-5', alignCls]}>
+      <span class="eyebrow reveal">
+        <span class="size-1.5 rounded-full bg-accent shadow-[0_0_12px_2px_rgba(74,158,255,0.6)]"></span>
+        {eyebrow}
+      </span>
+      <h1 class="reveal font-display text-4xl font-semibold leading-[1.08] tracking-[-0.025em] text-ink md:text-6xl" data-delay="1" set:html={title} />
+      {subtitle && (
+        <p class="reveal max-w-2xl text-lg leading-relaxed text-muted" data-delay="2">{subtitle}</p>
+      )}
+    </div>
+  </div>
+</section>

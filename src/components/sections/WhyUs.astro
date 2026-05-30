@@ -1,0 +1,43 @@
+---
+import { Icon } from 'astro-icon/components';
+import SectionHeading from '../SectionHeading.astro';
+import { whyUs, rnd } from '@/data/site';
+---
+
+<section id="why" class="py-20 md:py-28">
+  <div class="container-app grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+    <div class="lg:sticky lg:top-28 lg:self-start">
+      <SectionHeading
+        eyebrow="Why Earthling Aidtech"
+        title="Multidisciplinary by design, <span class='text-gradient'>responsible by default</span>"
+        subtitle="A product-first mindset with deep R&D integration — engineering systems that are scalable, ethical, and future-oriented."
+      />
+
+      <div class="reveal mt-8 rounded-2xl border border-line bg-surface/30 p-6" data-delay="2">
+        <p class="eyebrow"><span class="size-1.5 rounded-full bg-teal"></span>R&amp;D focus</p>
+        <ul class="mt-4 flex flex-wrap gap-2">
+          {rnd.map((r) => (
+            <li class="rounded-full border border-line bg-white/[0.02] px-3 py-1.5 text-sm text-muted">{r}</li>
+          ))}
+        </ul>
+      </div>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      {whyUs.map((w, i) => (
+        <div
+          class="reveal group flex gap-4 rounded-2xl border border-line bg-surface/30 p-5 transition-colors duration-300 hover:border-line-strong"
+          data-delay={String((i % 2) + 1)}
+        >
+          <div class="grid size-10 shrink-0 place-items-center rounded-lg bg-white/[0.03] ring-1 ring-inset ring-line-strong transition-colors group-hover:ring-accent/30">
+            <Icon name={`lucide:${w.icon}`} class="size-5 text-accent" />
+          </div>
+          <div>
+            <h3 class="text-base">{w.title}</h3>
+            <p class="mt-1 text-sm leading-relaxed text-muted">{w.body}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

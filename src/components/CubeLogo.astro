@@ -1,0 +1,67 @@
+---
+/**
+ * CubeLogo — the Earthling Aidtech brand mark: three nested isometric cubes.
+ * Inner cube carries the electric-blue brand accent.
+ */
+interface Props {
+  size?: number;
+  class?: string;
+  /** Subtle idle float + glow, used in the hero. */
+  animated?: boolean;
+  title?: string;
+}
+const { size = 40, class: className = '', animated = false, title = 'Earthling Aidtech' } = Astro.props;
+---
+
+<svg
+  width={size}
+  height={size}
+  viewBox="-160 -160 320 320"
+  role="img"
+  aria-label={title}
+  class:list={['cube-logo', { 'cube-logo--animated': animated }, className]}
+>
+  <title>{title}</title>
+  <g fill="none" stroke="#0D0D0D" stroke-width="6" stroke-linejoin="round">
+    <!-- Outer cube -->
+    <polygon points="0,-148 128,-74 0,0 -128,-74" fill="#2E2E2E" />
+    <polygon points="128,-74 128,74 0,148 0,0" fill="#1C1C1C" />
+    <polygon points="-128,-74 0,0 0,148 -128,74" fill="#111111" />
+    <!-- Middle cube (cool slate) -->
+    <polygon points="0,-92 80,-46 0,0 -80,-46" fill="#5E6B7A" />
+    <polygon points="80,-46 80,46 0,92 0,0" fill="#3C4654" />
+    <polygon points="-80,-46 0,0 0,92 -80,46" fill="#2A3340" />
+    <!-- Inner cube (brand blue) -->
+    <g class="cube-logo__core">
+      <polygon points="0,-40 35,-20 0,0 -35,-20" fill="#7FBEFF" />
+      <polygon points="35,-20 35,20 0,40 0,0" fill="#4A9EFF" />
+      <polygon points="-35,-20 0,0 0,40 -35,20" fill="#2E7BD6" />
+    </g>
+  </g>
+</svg>
+
+<style>
+  .cube-logo {
+    display: block;
+    overflow: visible;
+  }
+  .cube-logo__core {
+    transform-origin: center;
+  }
+  .cube-logo--animated {
+    animation: var(--animate-float);
+  }
+  .cube-logo--animated .cube-logo__core {
+    animation: core-pulse 4.5s ease-in-out infinite;
+  }
+  @keyframes core-pulse {
+    0%, 100% { opacity: 0.85; filter: drop-shadow(0 0 0 rgba(74, 158, 255, 0)); }
+    50% { opacity: 1; filter: drop-shadow(0 0 10px rgba(74, 158, 255, 0.55)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cube-logo--animated,
+    .cube-logo--animated .cube-logo__core {
+      animation: none;
+    }
+  }
+</style>

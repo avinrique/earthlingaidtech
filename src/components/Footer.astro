@@ -1,0 +1,86 @@
+---
+import { Icon } from 'astro-icon/components';
+import CubeLogo from './CubeLogo.astro';
+import { nav, services, products, site } from '@/data/site';
+
+const year = 2026; // build-time constant (CI builds annually / on push)
+---
+
+<footer class="relative mt-24 overflow-hidden border-t border-line bg-canvas-deep">
+  <div class="bg-grid pointer-events-none absolute inset-0 opacity-40 [mask-image:linear-gradient(to_bottom,transparent,black_40%)]"></div>
+
+  <div class="container-app relative">
+    <!-- CTA strip -->
+    <div class="flex flex-col items-start justify-between gap-6 border-b border-line py-14 md:flex-row md:items-center">
+      <div class="max-w-xl">
+        <h2 class="text-3xl md:text-4xl">Let's build intelligent systems that matter.</h2>
+        <p class="mt-3 text-muted">
+          Partner with {site.shortName} to create products, platforms, and experiences driven by
+          intelligence, precision, and impact.
+        </p>
+      </div>
+      <a
+        href="/contact"
+        class="group inline-flex shrink-0 items-center gap-2 rounded-full bg-accent px-6 py-3.5 font-semibold text-on-accent transition-all duration-300 hover:bg-accent-hover hover:-translate-y-0.5"
+      >
+        Get in touch
+        <Icon name="lucide:arrow-right" class="size-5 transition-transform group-hover:translate-x-0.5" />
+      </a>
+    </div>
+
+    <!-- Link columns -->
+    <div class="grid grid-cols-2 gap-8 py-14 sm:grid-cols-3 lg:grid-cols-5">
+      <div class="col-span-2 sm:col-span-3 lg:col-span-2">
+        <a href="/" class="flex items-center gap-2.5" aria-label={`${site.name} — home`}>
+          <CubeLogo size={32} />
+          <span class="font-display text-base font-semibold tracking-tight text-ink">
+            Earthling<span class="text-accent">AidTech</span>
+          </span>
+        </a>
+        <p class="mt-4 max-w-xs text-sm leading-relaxed text-faint">
+          Engineering intelligence across EdTech, agentic AI, robotics, and software — built for
+          real-world impact.
+        </p>
+        <p class="mt-4 font-mono text-xs text-dim">{site.legalName}</p>
+      </div>
+
+      <nav aria-label="Company">
+        <h3 class="font-mono text-xs uppercase tracking-[0.18em] text-faint">Company</h3>
+        <ul class="mt-4 flex flex-col gap-2.5 text-sm">
+          {nav.map((l) => (
+            <li><a href={l.href} class="text-muted transition-colors hover:text-ink">{l.label}</a></li>
+          ))}
+        </ul>
+      </nav>
+
+      <nav aria-label="Capabilities">
+        <h3 class="font-mono text-xs uppercase tracking-[0.18em] text-faint">Capabilities</h3>
+        <ul class="mt-4 flex flex-col gap-2.5 text-sm">
+          {services.map((s) => (
+            <li><a href={`/services#${s.id}`} class="text-muted transition-colors hover:text-ink">{s.title}</a></li>
+          ))}
+        </ul>
+      </nav>
+
+      <nav aria-label="Products">
+        <h3 class="font-mono text-xs uppercase tracking-[0.18em] text-faint">Products</h3>
+        <ul class="mt-4 flex flex-col gap-2.5 text-sm">
+          {products.map((p) => (
+            <li><a href={`/products/${p.slug}`} class="text-muted transition-colors hover:text-ink">{p.name}</a></li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Bottom bar -->
+    <div class="flex flex-col items-center justify-between gap-4 border-t border-line py-8 text-sm text-faint sm:flex-row">
+      <p>© {year} {site.legalName}. All rights reserved.</p>
+      <div class="flex items-center gap-5">
+        <a href={`mailto:${site.email}`} class="transition-colors hover:text-ink">{site.email}</a>
+        <a href={site.social.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" class="transition-colors hover:text-ink">
+          <Icon name="lucide:github" class="size-5" />
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>

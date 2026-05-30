@@ -1,0 +1,66 @@
+---
+import { Icon } from 'astro-icon/components';
+import SectionHeading from '../SectionHeading.astro';
+import { services } from '@/data/site';
+
+interface Props {
+  heading?: boolean;
+}
+const { heading = true } = Astro.props;
+
+const accentMap: Record<string, { text: string; ring: string; glow: string; dot: string }> = {
+  accent: { text: 'text-accent', ring: 'ring-accent/25', glow: 'group-hover:shadow-[0_0_40px_-8px_rgba(74,158,255,0.5)]', dot: 'bg-accent' },
+  teal: { text: 'text-teal', ring: 'ring-teal/25', glow: 'group-hover:shadow-[0_0_40px_-8px_rgba(45,212,191,0.5)]', dot: 'bg-teal' },
+  violet: { text: 'text-violet', ring: 'ring-violet/25', glow: 'group-hover:shadow-[0_0_40px_-8px_rgba(167,139,250,0.5)]', dot: 'bg-violet' },
+  amber: { text: 'text-amber', ring: 'ring-amber/25', glow: 'group-hover:shadow-[0_0_40px_-8px_rgba(251,191,36,0.5)]', dot: 'bg-amber' },
+};
+---
+
+<section id="services" class="py-20 md:py-28">
+  <div class="container-app">
+    {heading && (
+      <SectionHeading
+        eyebrow="What we do"
+        title="One team across <span class='text-gradient'>software, AI, and hardware</span>"
+        subtitle="We operate at the convergence of advanced engineering and applied intelligence — as both a product company and a technology partner."
+      />
+    )}
+
+    <div class="mt-14 grid gap-4 sm:grid-cols-2">
+      {services.map((s, i) => {
+        const a = accentMap[s.accent];
+        return (
+          <article
+            class:list={[
+              'reveal group relative flex flex-col overflow-hidden rounded-2xl border border-line bg-surface/40 p-7 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong hover:bg-surface-2/60',
+              a.glow,
+            ]}
+            data-delay={String((i % 2) + 1)}
+          >
+            <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-line-strong to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+
+            <div class:list={['grid size-12 place-items-center rounded-xl bg-white/[0.03] ring-1 ring-inset', a.ring]}>
+              <Icon name={`lucide:${s.icon}`} class:list={['size-6', a.text]} />
+            </div>
+
+            <div class="mt-5 flex items-center gap-3">
+              <h3 class="text-xl">{s.title}</h3>
+              <span class:list={['font-mono text-[0.65rem] uppercase tracking-[0.16em]', a.text]}>{s.tag}</span>
+            </div>
+
+            <p class="mt-2.5 text-[0.95rem] leading-relaxed text-muted">{s.summary}</p>
+
+            <ul class="mt-5 grid gap-2 border-t border-line pt-5">
+              {s.points.map((p) => (
+                <li class="flex items-start gap-2.5 text-sm text-faint">
+                  <span class:list={['mt-1.5 size-1.5 shrink-0 rounded-full', a.dot]}></span>
+                  <span>{p}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+        );
+      })}
+    </div>
+  </div>
+</section>

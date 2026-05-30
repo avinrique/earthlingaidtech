@@ -1,0 +1,18 @@
+<svg viewBox="-160 -160 320 320" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>Earthling Aid Tech</title>
+  <desc>Three nested isometric cubes creating depth</desc>
+  <g fill="none" stroke="#0D0D0D" stroke-width="7" stroke-linejoin="round">
+    <!-- Outer cube R=148 -->
+    <polygon points="0,-148 128,-74 0,0 -128,-74" fill="#2E2E2E"/>
+    <polygon points="128,-74 128,74 0,148 0,0" fill="#1C1C1C"/>
+    <polygon points="-128,-74 0,0 0,148 -128,74" fill="#111111"/>
+    <!-- Middle cube R=92 -->
+    <polygon points="0,-92 80,-46 0,0 -80,-46" fill="#606060"/>
+    <polygon points="80,-46 80,46 0,92 0,0" fill="#424242"/>
+    <polygon points="-80,-46 0,0 0,92 -80,46" fill="#2A2A2A"/>
+    <!-- Inner cube R=40 -->
+    <polygon points="0,-40 35,-20 0,0 -35,-20" fill="#C8C8C8"/>
+    <polygon points="35,-20 35,20 0,40 0,0" fill="#A0A0A0"/>
+    <polygon points="-35,-20 0,0 0,40 -35,20" fill="#747474"/>
+  </g>
+</svg>

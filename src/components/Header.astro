@@ -1,0 +1,128 @@
+---
+import { Icon } from 'astro-icon/components';
+import CubeLogo from './CubeLogo.astro';
+import Button from './Button.astro';
+import { nav, site } from '@/data/site';
+
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (href: string) => path === href || (href !== '/' && path.startsWith(href));
+---
+
+<header id="site-header" class="fixed inset-x-0 top-0 z-50 transition-all duration-300">
+  <div class="container-app">
+    <div
+      id="header-bar"
+      class="mt-3 flex h-14 items-center justify-between rounded-full border border-transparent px-3 pl-4 transition-all duration-300 sm:h-15"
+    >
+      <a href="/" class="flex items-center gap-2.5 rounded-full" aria-label={`${site.name} — home`}>
+        <CubeLogo size={30} />
+        <span class="font-display text-[0.98rem] font-semibold tracking-tight text-ink">
+          Earthling<span class="text-accent">AidTech</span>
+        </span>
+      </a>
+
+      <!-- Desktop nav -->
+      <nav class="hidden items-center gap-1 md:flex" aria-label="Primary">
+        {nav.map((link) => (
+          <a
+            href={link.href}
+            aria-current={isActive(link.href) ? 'page' : undefined}
+            class:list={[
+              'rounded-full px-3.5 py-2 text-sm font-medium transition-colors duration-200',
+              isActive(link.href) ? 'text-ink' : 'text-muted hover:text-ink',
+            ]}
+          >
+            {link.label}
+          </a>
+        ))}
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <div class="hidden md:block">
+          <Button href="/contact" size="md" iconRight="arrow-up-right">Start a project</Button>
+        </div>
+        <!-- Mobile toggle -->
+        <button
+          id="menu-toggle"
+          type="button"
+          class="grid size-11 place-items-center rounded-full text-ink transition-colors hover:bg-white/5 md:hidden"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="mobile-menu"
+        >
+          <Icon name="lucide:menu" class="menu-open size-6" />
+          <Icon name="lucide:x" class="menu-close hidden size-6" />
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div
+    id="mobile-menu"
+    class="invisible fixed inset-0 top-0 z-40 translate-y-[-8px] opacity-0 transition-all duration-300 md:hidden"
+  >
+    <div class="absolute inset-0 bg-canvas-deep/80 backdrop-blur-xl"></div>
+    <nav class="container-app relative flex h-full flex-col pt-24 pb-10" aria-label="Mobile">
+      <div class="flex flex-col gap-1">
+        {nav.map((link, i) => (
+          <a
+            href={link.href}
+            aria-current={isActive(link.href) ? 'page' : undefined}
+            class:list={[
+              'flex items-center justify-between border-b border-line py-4 font-display text-2xl font-medium transition-colors',
+              isActive(link.href) ? 'text-accent' : 'text-ink hover:text-accent',
+            ]}
+            style={`transition-delay:${i * 30}ms`}
+          >
+            {link.label}
+            <Icon name="lucide:arrow-up-right" class="size-5 text-faint" />
+          </a>
+        ))}
+      </div>
+      <div class="mt-auto flex flex-col gap-3">
+        <Button href="/contact" size="lg" iconRight="arrow-right" class="w-full">Start a project</Button>
+        <a href={`mailto:${site.email}`} class="text-center text-sm text-faint">{site.email}</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const header = document.getElementById('site-header');
+  const bar = document.getElementById('header-bar');
+  const toggle = document.getElementById('menu-toggle');
+  const menu = document.getElementById('mobile-menu');
+  const openIcon = document.querySelector('.menu-open');
+  const closeIcon = document.querySelector('.menu-close');
+
+  // Scroll-aware header chrome
+  const onScroll = () => {
+    if (!bar) return;
+    if (window.scrollY > 12) {
+      bar.classList.add('glass', 'border-line', 'shadow-[0_8px_30px_rgba(0,0,0,0.4)]');
+    } else {
+      bar.classList.remove('glass', 'border-line', 'shadow-[0_8px_30px_rgba(0,0,0,0.4)]');
+    }
+  };
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  // Mobile menu
+  let open = false;
+  const setMenu = (next: boolean) => {
+    open = next;
+    if (!menu || !toggle) return;
+    menu.classList.toggle('invisible', !open);
+    menu.classList.toggle('opacity-0', !open);
+    menu.classList.toggle('translate-y-[-8px]', !open);
+    openIcon?.classList.toggle('hidden', open);
+    closeIcon?.classList.toggle('hidden', !open);
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    document.body.style.overflow = open ? 'hidden' : '';
+  };
+  toggle?.addEventListener('click', () => setMenu(!open));
+  menu?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setMenu(false)));
+  window.addEventListener('keydown', (e) => e.key === 'Escape' && open && setMenu(false));
+</script>

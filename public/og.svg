@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B0D10"/>
+      <stop offset="1" stop-color="#07080A"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="78%" cy="30%" r="55%">
+      <stop offset="0" stop-color="#4A9EFF" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#4A9EFF" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M48 0H0V48" fill="none" stroke="#FFFFFF" stroke-opacity="0.045" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <rect x="0" y="0" width="1200" height="6" fill="#4A9EFF" opacity="0.9"/>
+
+  
+  <g stroke="#0D0D0D" stroke-width="8.26" stroke-linejoin="round">
+    <polygon points="940,125.36000000000001 1091.04,212.68 940,300 788.96,212.68" fill="#2E2E2E"/>
+    <polygon points="1091.04,212.68 1091.04,387.32 940,474.64 940,300" fill="#1C1C1C"/>
+    <polygon points="788.96,212.68 940,300 940,474.64 788.96,387.32" fill="#111111"/>
+    <polygon points="940,191.44 1034.4,245.72 940,300 845.6,245.72" fill="#5E6B7A"/>
+    <polygon points="1034.4,245.72 1034.4,354.28 940,408.56 940,300" fill="#3C4654"/>
+    <polygon points="845.6,245.72 940,300 940,408.56 845.6,354.28" fill="#2A3340"/>
+    <polygon points="940,252.8 981.3,276.4 940,300 898.7,276.4" fill="#7FBEFF"/>
+    <polygon points="981.3,276.4 981.3,323.6 940,347.2 940,300" fill="#4A9EFF"/>
+    <polygon points="898.7,276.4 940,300 940,347.2 898.7,323.6" fill="#2E7BD6"/>
+  </g>
+
+  <g font-family="'Space Grotesk','Inter',Arial,sans-serif">
+    <text x="90" y="150" font-size="26" letter-spacing="6" fill="#8AC2FF" font-weight="600">EARTHLINGAIDTECH</text>
+    <text x="86" y="300" font-size="92" fill="#F4F7FB" font-weight="700">Engineering</text>
+    <text x="86" y="400" font-size="92" fill="#F4F7FB" font-weight="700">intelligence.</text>
+    <text x="90" y="500" font-size="34" fill="#AEB7C4" font-weight="400">Empowering humans across AI, software &amp; hardware.</text>
+    <text x="90" y="560" font-size="26" fill="#5A636F" font-family="'JetBrains Mono',monospace">earthlingaidtech.com</text>
+  </g>
+</svg>

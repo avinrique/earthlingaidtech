@@ -1,0 +1,61 @@
+---
+import Base from '@/layouts/Base.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import Approach from '@/components/sections/Approach.astro';
+import WhyUs from '@/components/sections/WhyUs.astro';
+import { site } from '@/data/site';
+---
+
+<Base
+  title="About"
+  description="Earthling Aidtech operates at the convergence of advanced engineering and applied intelligence — a product company and a technology partner building for real-world impact."
+>
+  <PageHeader
+    eyebrow="About us"
+    title="At the convergence of <span class='text-gradient'>engineering &amp; intelligence</span>"
+    subtitle={`${site.shortName} builds intelligent systems across EdTech, agentic AI, robotics, embedded systems, and software engineering — for institutions, organizations, and enterprises.`}
+  />
+
+  <!-- Story -->
+  <section class="py-20 md:py-28">
+    <div class="container-app grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
+      <div class="lg:sticky lg:top-28 lg:self-start">
+        <h2 class="reveal text-3xl md:text-4xl">Who we are</h2>
+      </div>
+      <div class="flex max-w-2xl flex-col gap-6 text-lg leading-relaxed text-muted">
+        <p class="reveal">
+          {site.shortName} operates at the convergence of advanced engineering and applied
+          intelligence. Our work spans scalable EdTech platforms, autonomous AI systems, intelligent
+          hardware, and custom-built software solutions.
+        </p>
+        <p class="reveal" data-delay="1">
+          We function both as a <span class="text-body">product company</span> and a
+          <span class="text-body">technology partner</span> — delivering solutions that are
+          practical, future-ready, and execution-focused.
+        </p>
+        <p class="reveal" data-delay="2">
+          Alongside product development and client delivery, we actively engage in research and
+          development to explore emerging technologies and push the boundaries of intelligent
+          systems.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Vision -->
+  <section class="py-8 md:py-12">
+    <div class="container-narrow">
+      <div class="reveal relative overflow-hidden rounded-3xl border border-line bg-surface/40 p-8 text-center md:p-14">
+        <div class="glow-accent pointer-events-none absolute left-1/2 top-0 size-80 -translate-x-1/2 opacity-50"></div>
+        <p class="eyebrow justify-center"><span class="size-1.5 rounded-full bg-accent"></span>Our vision</p>
+        <p class="relative mt-6 font-display text-2xl font-medium leading-snug text-ink md:text-3xl">
+          To responsibly design intelligent systems that enhance human capability, modernize
+          education, and advance the integration of AI into both digital and physical environments.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <Approach />
+  <WhyUs />
+</Base>
