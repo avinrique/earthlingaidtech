@@ -172,7 +172,7 @@ export const products: Product[] = [
     id: 'ai-robot',
     slug: 'ai-robot',
     name: 'Interactive AI Information Robot',
-    kicker: 'Physical AI Companion System',
+    kicker: 'Physical AI-Powered Companion System',
     icon: 'bot',
     accent: 'violet',
     status: 'R&D · Hardware',
@@ -226,11 +226,11 @@ export const workshops = {
 /* ---- Clients & collaborations ---- */
 export const clients: { name: string; note?: string }[] = [
   { name: 'Woostaa' },
-  { name: 'Oryn Consulting' },
+  { name: 'OrynConsulting' },
   { name: 'SalesSphere360' },
   { name: 'Halde20', note: 'Switzerland' },
   { name: 'Chillaxmandu' },
-  { name: 'The Pixel Sphere' },
+  { name: 'ThePixelSphere' },
 ];
 
 /* ---- Why us ---- */
