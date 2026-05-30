@@ -1,5 +1,5 @@
 ---
-import CubeLogo from '../CubeLogo.astro';
+import Cube3D from '../Cube3D.astro';
 import Button from '../Button.astro';
 import { stats, site } from '@/data/site';
 ---
@@ -48,22 +48,9 @@ import { stats, site } from '@/data/site';
       </dl>
     </div>
 
-    <!-- Signature visual -->
-    <div class="reveal pointer-events-none relative mx-auto hidden aspect-square w-full max-w-md place-items-center lg:grid" data-delay="2" aria-hidden="true">
-      <!-- concentric rings -->
-      <div class="absolute inset-0 rounded-full border border-line [mask-image:radial-gradient(closest-side,transparent_55%,black_56%)]"></div>
-      <div class="absolute inset-[12%] rounded-full border border-line-faint"></div>
-      <div class="absolute inset-[26%] rounded-full border border-line-faint"></div>
-      <div class="glow-accent absolute inset-[10%] opacity-70"></div>
-
-      <!-- orbiting dots -->
-      <div class="absolute inset-0 animate-[spin_28s_linear_infinite]">
-        <span class="absolute left-1/2 top-0 size-2.5 -translate-x-1/2 rounded-full bg-accent shadow-[0_0_16px_3px_rgba(74,158,255,0.7)]"></span>
-        <span class="absolute bottom-[10%] right-[12%] size-2 rounded-full bg-teal shadow-[0_0_14px_3px_rgba(45,212,191,0.6)]"></span>
-        <span class="absolute bottom-[18%] left-[8%] size-1.5 rounded-full bg-violet shadow-[0_0_12px_3px_rgba(167,139,250,0.6)]"></span>
-      </div>
-
-      <CubeLogo size={260} animated class="relative drop-shadow-[0_30px_60px_rgba(0,0,0,0.6)]" />
+    <!-- Signature visual: real 3D animated brand cube -->
+    <div class="reveal pointer-events-none relative mx-auto hidden w-full max-w-md md:block" data-delay="2">
+      <Cube3D />
     </div>
   </div>
 </section>
