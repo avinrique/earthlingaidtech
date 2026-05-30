@@ -21,8 +21,8 @@ const accentMap: Record<string, { text: string; ring: string; glow: string; dot:
     {heading && (
       <SectionHeading
         eyebrow="What we do"
-        title="One team across <span class='text-gradient'>software, AI, and hardware</span>"
-        subtitle="We operate at the convergence of advanced engineering and applied intelligence — as both a product company and a technology partner."
+        title="One team across software, AI &amp; hardware"
+        subtitle="Most studios pick a lane. We work across all of them — and that overlap is exactly where the interesting products live."
       />
     )}
 
@@ -39,7 +39,7 @@ const accentMap: Record<string, { text: string; ring: string; glow: string; dot:
           >
             <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-line-strong to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
 
-            <div class:list={['grid size-12 place-items-center rounded-xl bg-white/[0.03] ring-1 ring-inset', a.ring]}>
+            <div class:list={['grid size-12 place-items-center rounded-xl bg-white/[0.03] ring-1 ring-inset transition-all duration-300 group-hover:scale-105 group-hover:bg-white/[0.06]', a.ring]}>
               <Icon name={`lucide:${s.icon}`} class:list={['size-6', a.text]} />
             </div>
 
