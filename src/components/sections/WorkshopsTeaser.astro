@@ -1,0 +1,44 @@
+---
+import { Icon } from 'astro-icon/components';
+import { workshops } from '@/data/site';
+---
+
+<section class="py-20 md:py-28">
+  <div class="container-app">
+    <div class="reveal relative overflow-hidden rounded-3xl border border-line bg-surface/40 p-8 md:p-12">
+      <div class="bg-grid pointer-events-none absolute inset-0 opacity-40 [mask-image:radial-gradient(ellipse_70%_80%_at_100%_0%,black,transparent)]"></div>
+      <div class="glow-accent pointer-events-none absolute -left-20 bottom-0 size-80 opacity-40"></div>
+
+      <div class="relative grid gap-10 lg:grid-cols-[1fr_auto] lg:items-center">
+        <div class="max-w-xl">
+          <span class="eyebrow"><span class="size-1.5 rounded-full bg-teal"></span>Workshops &amp; training</span>
+          <h2 class="mt-5 text-3xl md:text-4xl">Hands-on training that builds real, industry-aligned skills</h2>
+          <p class="mt-4 text-muted">
+            We run practical workshops for students and institutions across web, AI, automation, and
+            robotics — emphasizing real-world use cases over theory.
+          </p>
+
+          <div class="mt-7 flex flex-wrap gap-2">
+            {workshops.domains.map((d) => (
+              <span class="rounded-full border border-line bg-white/[0.02] px-3 py-1.5 text-sm text-muted">{d}</span>
+            ))}
+          </div>
+
+          <a href="/workshops" class="group mt-8 inline-flex items-center gap-2 font-medium text-accent">
+            See workshop programs
+            <Icon name="lucide:arrow-right" class="size-4 transition-transform group-hover:translate-x-1" />
+          </a>
+        </div>
+
+        <dl class="grid grid-cols-3 gap-6 lg:grid-cols-1 lg:border-l lg:border-line lg:pl-10">
+          {workshops.stats.map((s) => (
+            <div class="flex flex-col gap-1">
+              <dt class="order-2 text-xs text-faint">{s.label}</dt>
+              <dd class="order-1 font-display text-3xl font-semibold text-ink lg:text-4xl">{s.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,63 @@
+---
+import { Icon } from 'astro-icon/components';
+
+interface Props {
+  href?: string;
+  variant?: 'primary' | 'secondary' | 'ghost';
+  size?: 'md' | 'lg';
+  icon?: string;
+  iconRight?: string;
+  class?: string;
+  type?: 'button' | 'submit';
+  [key: string]: any;
+}
+
+const {
+  href,
+  variant = 'primary',
+  size = 'md',
+  icon,
+  iconRight,
+  class: className = '',
+  type = 'button',
+  ...rest
+} = Astro.props;
+
+const base =
+  'group relative inline-flex items-center justify-center gap-2 rounded-full font-medium leading-none whitespace-nowrap transition-all duration-300 ease-[var(--ease-out-expo)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent active:translate-y-px disabled:opacity-50 disabled:pointer-events-none';
+
+const sizes = {
+  md: 'h-11 px-5 text-[0.95rem]',
+  lg: 'h-13 px-7 text-base',
+};
+
+const variants = {
+  primary:
+    'bg-accent text-on-accent font-semibold shadow-[0_8px_24px_-6px_rgba(74,158,255,0.5)] hover:bg-accent-hover hover:shadow-[0_14px_36px_-8px_rgba(74,158,255,0.6)] hover:-translate-y-0.5',
+  secondary:
+    'glass text-ink hover:border-line-strong hover:bg-surface-2 hover:-translate-y-0.5',
+  ghost:
+    'text-muted hover:text-ink hover:bg-white/5',
+};
+
+const cls = [base, sizes[size], variants[variant], className].join(' ');
+const isExternal = href?.startsWith('http');
+const Tag = href ? 'a' : 'button';
+---
+
+<Tag
+  class={cls}
+  href={href}
+  type={href ? undefined : type}
+  {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+  {...rest}
+>
+  {icon && <Icon name={`lucide:${icon}`} class="size-[1.05em] -ml-0.5 shrink-0" />}
+  <span><slot /></span>
+  {iconRight && (
+    <Icon
+      name={`lucide:${iconRight}`}
+      class="size-[1.05em] -mr-0.5 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5"
+    />
+  )}
+</Tag>

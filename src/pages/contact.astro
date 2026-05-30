@@ -1,0 +1,88 @@
+---
+import Base from '@/layouts/Base.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import { Icon } from 'astro-icon/components';
+import { services, site } from '@/data/site';
+
+const subject = encodeURIComponent('Project enquiry — Earthling Aidtech');
+const body = encodeURIComponent(
+  'Hi Earthling Aidtech team,\n\nWe’d like to talk about a project.\n\n• Organization:\n• What we need:\n• Timeline:\n\nThanks,',
+);
+const mailto = `mailto:${site.email}?subject=${subject}&body=${body}`;
+---
+
+<Base
+  title="Contact"
+  description="Let's build intelligent systems that matter. Partner with Earthling Aidtech on products, platforms, and experiences driven by intelligence and impact."
+>
+  <PageHeader
+    eyebrow="Contact"
+    title="Let's build <span class='text-gradient'>intelligent systems</span> that matter"
+    subtitle="Tell us about your institution, organization, or product. We'll get back to you with a practical, execution-focused plan."
+  />
+
+  <section class="py-16 md:py-24">
+    <div class="container-app grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
+      <!-- Left: primary actions -->
+      <div class="flex flex-col gap-4">
+        <a
+          href={mailto}
+          class="reveal group relative flex flex-col overflow-hidden rounded-3xl border border-accent/30 bg-accent/[0.06] p-8 transition-all duration-300 hover:-translate-y-1 hover:border-accent/50"
+        >
+          <div class="glow-accent pointer-events-none absolute -right-16 -top-16 size-60 opacity-60"></div>
+          <div class="relative">
+            <div class="grid size-12 place-items-center rounded-xl bg-accent/15 ring-1 ring-inset ring-accent/30">
+              <Icon name="lucide:mail" class="size-6 text-accent" />
+            </div>
+            <h2 class="mt-5 text-2xl">Start a project</h2>
+            <p class="mt-2 max-w-md text-muted">
+              Email our team and we'll respond with next steps. Best for new builds, partnerships,
+              and product enquiries.
+            </p>
+            <span class="mt-6 inline-flex items-center gap-2 font-semibold text-accent">
+              {site.email}
+              <Icon name="lucide:arrow-up-right" class="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </span>
+          </div>
+        </a>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <a
+            href={`mailto:${site.emailAlt}`}
+            class="reveal group flex flex-col rounded-2xl border border-line bg-surface/30 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
+            data-delay="1"
+          >
+            <Icon name="lucide:inbox" class="size-6 text-teal" />
+            <h3 class="mt-4 text-base">General enquiries</h3>
+            <span class="mt-1 break-all text-sm text-faint transition-colors group-hover:text-body">{site.emailAlt}</span>
+          </a>
+
+          <div class="reveal flex flex-col rounded-2xl border border-line bg-surface/30 p-6" data-delay="2">
+            <Icon name="lucide:map-pin" class="size-6 text-violet" />
+            <h3 class="mt-4 text-base">Based in</h3>
+            <span class="mt-1 text-sm text-faint">{site.location}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: what we can help with -->
+      <aside class="reveal flex flex-col rounded-3xl border border-line bg-surface/30 p-8" data-delay="1">
+        <p class="font-mono text-xs uppercase tracking-[0.18em] text-faint">How we can help</p>
+        <ul class="mt-5 flex flex-col divide-y divide-line">
+          {services.map((s) => (
+            <li class="flex items-center gap-3 py-3.5">
+              <Icon name={`lucide:${s.icon}`} class="size-5 shrink-0 text-accent" />
+              <span class="text-body">{s.title}</span>
+            </li>
+          ))}
+        </ul>
+        <div class="mt-auto pt-6">
+          <p class="text-sm text-faint">
+            Prefer email? Reach us any time at
+            <a href={`mailto:${site.email}`} class="text-accent hover:underline">{site.email}</a>.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,63 @@
+---
+import Base from '@/layouts/Base.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import Approach from '@/components/sections/Approach.astro';
+import { Icon } from 'astro-icon/components';
+import { services } from '@/data/site';
+
+const accent: Record<string, { text: string; ring: string; dot: string; glow: string }> = {
+  accent: { text: 'text-accent', ring: 'ring-accent/30', dot: 'bg-accent', glow: 'rgba(74,158,255,0.18)' },
+  teal: { text: 'text-teal', ring: 'ring-teal/30', dot: 'bg-teal', glow: 'rgba(45,212,191,0.18)' },
+  violet: { text: 'text-violet', ring: 'ring-violet/30', dot: 'bg-violet', glow: 'rgba(167,139,250,0.18)' },
+  amber: { text: 'text-amber', ring: 'ring-amber/30', dot: 'bg-amber', glow: 'rgba(251,191,36,0.18)' },
+};
+---
+
+<Base
+  title="Services"
+  description="EdTech, agentic AI & automation, robotics & embedded systems, and enterprise software — engineered for performance, security, and scale."
+>
+  <PageHeader
+    eyebrow="Capabilities"
+    title="What we <span class='text-gradient'>build</span>"
+    subtitle="High-quality digital and physical systems engineered for performance, security, and scale — delivered as products and as a technology partner."
+  />
+
+  <div class="container-app divide-y divide-line">
+    {services.map((s, i) => {
+      const a = accent[s.accent];
+      return (
+        <section id={s.id} class="scroll-mt-28 py-16 md:py-24">
+          <div class="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+            <div class={i % 2 === 1 ? 'lg:order-2' : ''}>
+              <div class="reveal flex items-center gap-4">
+                <div class:list={['grid size-14 place-items-center rounded-2xl bg-white/[0.03] ring-1 ring-inset', a.ring]}>
+                  <Icon name={`lucide:${s.icon}`} class:list={['size-7', a.text]} />
+                </div>
+                <span class:list={['font-mono text-xs uppercase tracking-[0.18em]', a.text]}>{s.tag}</span>
+              </div>
+              <h2 class="reveal mt-6 text-3xl md:text-4xl" data-delay="1">{s.title}</h2>
+              <p class="reveal mt-4 max-w-md text-lg leading-relaxed text-muted" data-delay="2">{s.summary}</p>
+            </div>
+
+            <div class={i % 2 === 1 ? 'lg:order-1' : ''}>
+              <ul class="reveal grid gap-3 sm:grid-cols-2" data-delay="1">
+                {s.points.map((p) => (
+                  <li
+                    class="flex items-start gap-3 rounded-2xl border border-line bg-surface/30 p-5 transition-colors duration-300 hover:border-line-strong"
+                    style={`--g:${a.glow}`}
+                  >
+                    <span class:list={['mt-1.5 size-2 shrink-0 rounded-full', a.dot]}></span>
+                    <span class="text-[0.95rem] leading-relaxed text-body">{p}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+      );
+    })}
+  </div>
+
+  <Approach />
+</Base>

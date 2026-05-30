@@ -1,0 +1,14 @@
+<svg viewBox="-160 -160 320 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Earthling Aidtech">
+  <rect x="-160" y="-160" width="320" height="320" rx="72" fill="#0B0D10"/>
+  <g transform="scale(0.78)" fill="none" stroke="#0D0D0D" stroke-width="7" stroke-linejoin="round">
+    <polygon points="0,-148 128,-74 0,0 -128,-74" fill="#2E2E2E"/>
+    <polygon points="128,-74 128,74 0,148 0,0" fill="#1C1C1C"/>
+    <polygon points="-128,-74 0,0 0,148 -128,74" fill="#111111"/>
+    <polygon points="0,-92 80,-46 0,0 -80,-46" fill="#5E6B7A"/>
+    <polygon points="80,-46 80,46 0,92 0,0" fill="#3C4654"/>
+    <polygon points="-80,-46 0,0 0,92 -80,46" fill="#2A3340"/>
+    <polygon points="0,-40 35,-20 0,0 -35,-20" fill="#7FBEFF"/>
+    <polygon points="35,-20 35,20 0,40 0,0" fill="#4A9EFF"/>
+    <polygon points="-35,-20 0,0 0,40 -35,20" fill="#2E7BD6"/>
+  </g>
+</svg>

@@ -1,0 +1,116 @@
+---
+import Base from '@/layouts/Base.astro';
+import Button from '@/components/Button.astro';
+import { Icon } from 'astro-icon/components';
+import { products, site } from '@/data/site';
+
+export function getStaticPaths() {
+  return products.map((p) => ({ params: { slug: p.slug }, props: { product: p } }));
+}
+
+const { product } = Astro.props;
+const others = products.filter((p) => p.slug !== product.slug);
+
+const accent: Record<string, { text: string; ring: string; bg: string; border: string; glow: string }> = {
+  accent: { text: 'text-accent', ring: 'ring-accent/30', bg: 'bg-accent/10', border: 'border-accent/30', glow: 'rgba(74,158,255,0.22)' },
+  teal: { text: 'text-teal', ring: 'ring-teal/30', bg: 'bg-teal/10', border: 'border-teal/30', glow: 'rgba(45,212,191,0.22)' },
+  violet: { text: 'text-violet', ring: 'ring-violet/30', bg: 'bg-violet/10', border: 'border-violet/30', glow: 'rgba(167,139,250,0.22)' },
+  amber: { text: 'text-amber', ring: 'ring-amber/30', bg: 'bg-amber/10', border: 'border-amber/30', glow: 'rgba(251,191,36,0.22)' },
+};
+const a = accent[product.accent];
+---
+
+<Base title={product.name} description={product.summary}>
+  <!-- Hero -->
+  <section class="relative isolate overflow-hidden border-b border-line">
+    <div class="pointer-events-none absolute inset-0 -z-10">
+      <div class="bg-grid absolute inset-0 opacity-40 [mask-image:radial-gradient(ellipse_70%_70%_at_50%_0%,black,transparent_70%)]"></div>
+      <div class="absolute -top-40 left-1/2 size-[680px] -translate-x-1/2 rounded-full opacity-60 blur-[100px]" style={`background:radial-gradient(closest-side,${a.glow},transparent)`}></div>
+    </div>
+
+    <div class="container-app pt-32 pb-16 md:pt-40 md:pb-24">
+      <a href="/products" class="reveal group inline-flex items-center gap-2 text-sm text-faint transition-colors hover:text-ink">
+        <Icon name="lucide:arrow-left" class="size-4 transition-transform group-hover:-translate-x-0.5" />
+        All products
+      </a>
+
+      <div class="mt-8 flex flex-col items-start gap-6">
+        <div class="reveal flex items-center gap-4">
+          <div class:list={['grid size-16 place-items-center rounded-2xl ring-1 ring-inset', a.bg, a.ring]}>
+            <Icon name={`lucide:${product.icon}`} class:list={['size-8', a.text]} />
+          </div>
+          <span class:list={['rounded-full border px-3 py-1 font-mono text-[0.65rem] uppercase tracking-[0.14em]', a.border, a.bg, a.text]}>
+            {product.status}
+          </span>
+        </div>
+
+        <h1 class="reveal font-display text-4xl font-semibold leading-[1.05] tracking-[-0.025em] text-ink md:text-6xl" data-delay="1">
+          {product.name}
+        </h1>
+        <p class:list={['reveal text-lg font-medium', a.text]} data-delay="1">{product.kicker}</p>
+        <p class="reveal max-w-2xl text-lg leading-relaxed text-muted" data-delay="2">{product.description}</p>
+
+        <div class="reveal mt-2 flex flex-wrap gap-3" data-delay="3">
+          <Button href="/contact" size="lg" iconRight="arrow-right">Request a demo</Button>
+          <Button href={`mailto:${site.email}`} variant="secondary" size="lg">Talk to us</Button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="py-20 md:py-28">
+    <div class="container-app">
+      <h2 class="reveal text-3xl md:text-4xl">Key capabilities</h2>
+      <div class="mt-10 grid gap-4 sm:grid-cols-2">
+        {product.features.map((f, i) => (
+          <div
+            class="reveal group rounded-2xl border border-line bg-surface/30 p-7 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
+            data-delay={String((i % 2) + 1)}
+          >
+            <div class:list={['mb-4 size-9 rounded-lg ring-1 ring-inset grid place-items-center', a.bg, a.ring]}>
+              <Icon name="lucide:check" class:list={['size-5', a.text]} />
+            </div>
+            <h3 class="text-lg">{f.title}</h3>
+            <p class="mt-2 text-[0.95rem] leading-relaxed text-muted">{f.body}</p>
+          </div>
+        ))}
+      </div>
+
+      {product.highlights && (
+        <div class="reveal mt-10 rounded-2xl border border-line bg-surface/30 p-7">
+          <p class="font-mono text-xs uppercase tracking-[0.16em] text-faint">Deployed at</p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            {product.highlights.map((h) => (
+              <span class="rounded-lg border border-line bg-white/[0.02] px-3.5 py-2 text-sm text-body">{h}</span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <!-- Other products -->
+  <section class="pb-24">
+    <div class="container-app">
+      <h2 class="reveal text-2xl">More from {site.name}</h2>
+      <div class="mt-8 grid gap-4 sm:grid-cols-2">
+        {others.map((p) => (
+          <a
+            href={`/products/${p.slug}`}
+            class="reveal group flex items-center gap-4 rounded-2xl border border-line bg-surface/30 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
+          >
+            <div class="grid size-12 shrink-0 place-items-center rounded-xl bg-white/[0.03] ring-1 ring-inset ring-line-strong">
+              <Icon name={`lucide:${p.icon}`} class:list={['size-6', accent[p.accent].text]} />
+            </div>
+            <div class="min-w-0">
+              <h3 class="truncate text-base">{p.name}</h3>
+              <p class="truncate text-sm text-faint">{p.kicker}</p>
+            </div>
+            <Icon name="lucide:arrow-right" class="ml-auto size-5 shrink-0 text-faint transition-transform group-hover:translate-x-1" />
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>
