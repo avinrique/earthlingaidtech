@@ -84,6 +84,7 @@ import CubeLogo from './CubeLogo.astro';
 <script>
   import * as THREE from 'three';
   import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+  import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
   const root = document.querySelector<HTMLElement>('[data-cube3d]');
   const canvas = root?.querySelector<HTMLCanvasElement>('[data-cube-canvas]');
@@ -112,15 +113,20 @@ import CubeLogo from './CubeLogo.astro';
       const pivot = new THREE.Group();
       scene.add(pivot);
 
-      // lighting — frames are metallic, so they need light to read
-      scene.add(new THREE.AmbientLight(0xffffff, 0.6));
-      const key = new THREE.DirectionalLight(0xffffff, 1.2);
+      // Environment map — essential for the glass (transmission) cubes to read;
+      // without it they render near-black. RoomEnvironment gives soft studio IBL.
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+      // brand-tinted lights on top of the IBL for punch
+      scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+      const key = new THREE.DirectionalLight(0xffffff, 1.4);
       key.position.set(4, 6, 5);
       scene.add(key);
-      const rimBlue = new THREE.PointLight(0x4a9eff, 1.0, 50);
+      const rimBlue = new THREE.PointLight(0x4a9eff, 1.4, 50);
       rimBlue.position.set(-6, 1, 4);
       scene.add(rimBlue);
-      const rimTeal = new THREE.PointLight(0x2dd4bf, 0.7, 50);
+      const rimTeal = new THREE.PointLight(0x2dd4bf, 0.9, 50);
       rimTeal.position.set(5, -4, -2);
       scene.add(rimTeal);
 
@@ -152,10 +158,16 @@ import CubeLogo from './CubeLogo.astro';
           const scale = 4.6 / size;
           model.scale.setScalar(scale);
 
-          // grab the emissive core material so we can pulse it
+          // grab the emissive core material so we can pulse it; make sure the
+          // glass materials get the environment map for reflections/refraction
           model.traverse((o) => {
-            const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
-            if (m && m.name === 'core') coreMat = m;
+            const m = (o as THREE.Mesh).material as THREE.MeshPhysicalMaterial | undefined;
+            if (!m) return;
+            if (m.name === 'core') coreMat = m as unknown as THREE.MeshStandardMaterial;
+            if (m.transmission && m.transmission > 0) {
+              m.envMapIntensity = 1.4;
+              m.thickness = Math.max(m.thickness ?? 0, 0.5);
+            }
           });
 
           pivot.add(model);
