@@ -1,0 +1,218 @@
+---
+/**
+ * CubeModel — loads the real 3D brand mark (public/models/eat-cube.glb, built
+ * in Blender from the nested-cube logo) with Three.js + GLTFLoader. The model
+ * auto-rotates and follows the pointer; it renders on a transparent canvas over
+ * a CSS glow. Falls back to the static SVG logo when WebGL is unavailable or the
+ * user prefers reduced motion.
+ */
+import CubeLogo from './CubeLogo.astro';
+---
+
+<div class="cube3d" data-cube3d>
+  <div class="cube3d__bg" aria-hidden="true">
+    <span class="cube3d__ring cube3d__ring--1"></span>
+    <span class="cube3d__ring cube3d__ring--2"></span>
+    <span class="cube3d__glow"></span>
+  </div>
+
+  <canvas class="cube3d__canvas" data-cube-canvas aria-hidden="true"></canvas>
+
+  <div class="cube3d__fallback" data-cube-fallback>
+    <CubeLogo size={220} animated title="Earthling Aidtech" />
+  </div>
+</div>
+
+<style>
+  .cube3d {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+  }
+  .cube3d__bg {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+  }
+  .cube3d__ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .cube3d__ring--1 { width: 86%; height: 86%; }
+  .cube3d__ring--2 { width: 60%; height: 60%; border-color: rgba(74, 158, 255, 0.12); }
+  .cube3d__glow {
+    position: absolute;
+    width: 64%;
+    height: 64%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(74, 158, 255, 0.32), transparent 70%);
+    filter: blur(12px);
+    animation: cube3d-pulse 5s ease-in-out infinite;
+  }
+  .cube3d__canvas {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: block;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .cube3d__canvas[data-ready] { opacity: 1; }
+  .cube3d__fallback {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    transition: opacity 0.5s ease;
+  }
+  .cube3d__fallback[data-hidden] { opacity: 0; pointer-events: none; }
+
+  @keyframes cube3d-pulse {
+    0%, 100% { opacity: 0.5; transform: scale(0.96); }
+    50% { opacity: 0.95; transform: scale(1.06); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cube3d__glow { animation: none; }
+  }
+</style>
+
+<script>
+  import * as THREE from 'three';
+  import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+
+  const root = document.querySelector<HTMLElement>('[data-cube3d]');
+  const canvas = root?.querySelector<HTMLCanvasElement>('[data-cube-canvas]');
+  const fallback = root?.querySelector<HTMLElement>('[data-cube-fallback]');
+
+  if (root && canvas) {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let renderer: THREE.WebGLRenderer | null = null;
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    } catch {
+      renderer = null; // keep the SVG fallback
+    }
+
+    if (renderer) {
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.15;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+      camera.position.set(0, 0, 7);
+
+      const pivot = new THREE.Group();
+      scene.add(pivot);
+
+      // lighting — frames are metallic, so they need light to read
+      scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+      const key = new THREE.DirectionalLight(0xffffff, 1.2);
+      key.position.set(4, 6, 5);
+      scene.add(key);
+      const rimBlue = new THREE.PointLight(0x4a9eff, 1.0, 50);
+      rimBlue.position.set(-6, 1, 4);
+      scene.add(rimBlue);
+      const rimTeal = new THREE.PointLight(0x2dd4bf, 0.7, 50);
+      rimTeal.position.set(5, -4, -2);
+      scene.add(rimTeal);
+
+      let model: THREE.Object3D | null = null;
+      let coreMat: THREE.MeshStandardMaterial | null = null;
+
+      const resize = () => {
+        const s = root.clientWidth;
+        if (!s) return;
+        renderer!.setSize(s, s, false);
+        camera.aspect = 1;
+        camera.updateProjectionMatrix();
+      };
+      resize();
+      new ResizeObserver(resize).observe(root);
+
+      // ---- load the Blender model ----
+      const url = `${import.meta.env.BASE_URL}models/eat-cube.glb`;
+      new GLTFLoader().load(
+        url,
+        (gltf) => {
+          model = gltf.scene;
+
+          // center + frame the model to a consistent size
+          const box = new THREE.Box3().setFromObject(model);
+          const center = box.getCenter(new THREE.Vector3());
+          const size = box.getSize(new THREE.Vector3()).length();
+          model.position.sub(center);
+          const scale = 4.6 / size;
+          model.scale.setScalar(scale);
+
+          // grab the emissive core material so we can pulse it
+          model.traverse((o) => {
+            const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
+            if (m && m.name === 'core') coreMat = m;
+          });
+
+          pivot.add(model);
+          canvas.setAttribute('data-ready', '');
+          fallback?.setAttribute('data-hidden', '');
+          renderer!.render(scene, camera);
+          if (reduce) return;
+          if (visible) start();
+        },
+        undefined,
+        () => { /* load error → keep SVG fallback visible */ },
+      );
+
+      // ---- pointer parallax ----
+      const target = { x: 0, y: 0 };
+      const coarse = window.matchMedia('(pointer: coarse)').matches;
+      if (!reduce && !coarse) {
+        window.addEventListener('pointermove', (e) => {
+          target.x = (e.clientY / window.innerHeight - 0.5) * 0.5;
+          target.y = (e.clientX / window.innerWidth - 0.5) * 0.9;
+        }, { passive: true });
+      }
+
+      // ---- render loop (paused when offscreen) ----
+      let raf = 0;
+      let running = false;
+      let visible = true;
+      const clock = new THREE.Clock();
+
+      const tick = () => {
+        const dt = clock.getDelta();
+        pivot.rotation.y += dt * 0.4;
+        pivot.rotation.x += (target.x - pivot.rotation.x) * 0.05;
+        pivot.rotation.z = target.y * 0.05;
+        if (coreMat) coreMat.emissiveIntensity = 1.9 + Math.sin(clock.elapsedTime * 1.6) * 0.6;
+        renderer!.render(scene, camera);
+        raf = requestAnimationFrame(tick);
+      };
+
+      const start = () => {
+        if (running || reduce || !model) return;
+        running = true;
+        clock.start();
+        raf = requestAnimationFrame(tick);
+      };
+      const stop = () => { running = false; cancelAnimationFrame(raf); };
+
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver((entries) => {
+          visible = entries[0].isIntersecting;
+          visible ? start() : stop();
+        }, { threshold: 0.05 }).observe(root);
+      } else {
+        start();
+      }
+
+      window.addEventListener('pagehide', stop);
+    }
+  }
+</script>

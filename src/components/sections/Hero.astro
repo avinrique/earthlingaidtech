@@ -1,5 +1,5 @@
 ---
-import Cube3D from '../Cube3D.astro';
+import CubeModel from '../CubeModel.astro';
 import Button from '../Button.astro';
 import { stats, site } from '@/data/site';
 ---
@@ -48,9 +48,9 @@ import { stats, site } from '@/data/site';
       </dl>
     </div>
 
-    <!-- Signature visual: real 3D animated brand cube -->
-    <div class="reveal pointer-events-none relative mx-auto hidden w-full max-w-md md:block" data-delay="2">
-      <Cube3D />
+    <!-- Signature visual: real WebGL 3D model of the brand mark -->
+    <div class="reveal relative mx-auto hidden w-full max-w-md md:block" data-delay="2">
+      <CubeModel />
     </div>
   </div>
 </section>
