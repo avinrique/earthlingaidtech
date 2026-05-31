@@ -84,7 +84,6 @@ import CubeLogo from './CubeLogo.astro';
 <script>
   import * as THREE from 'three';
   import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-  import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
   const root = document.querySelector<HTMLElement>('[data-cube3d]');
   const canvas = root?.querySelector<HTMLCanvasElement>('[data-cube-canvas]');
@@ -103,8 +102,6 @@ import CubeLogo from './CubeLogo.astro';
     if (renderer) {
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.outputColorSpace = THREE.SRGBColorSpace;
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.15;
 
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
@@ -113,22 +110,16 @@ import CubeLogo from './CubeLogo.astro';
       const pivot = new THREE.Group();
       scene.add(pivot);
 
-      // Environment map — essential for the glass (transmission) cubes to read;
-      // without it they render near-black. RoomEnvironment gives soft studio IBL.
-      const pmrem = new THREE.PMREMGenerator(renderer);
-      scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-
-      // brand-tinted lights on top of the IBL for punch
-      scene.add(new THREE.AmbientLight(0xffffff, 0.35));
-      const key = new THREE.DirectionalLight(0xffffff, 1.4);
-      key.position.set(4, 6, 5);
+      // Flat SVG-style model: the materials carry their own color (lightly
+      // emissive), so we just need soft, even light to keep the tri-tone faces
+      // reading true — no environment map / heavy reflections.
+      scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+      const key = new THREE.DirectionalLight(0xffffff, 0.9);
+      key.position.set(3, 5, 6);
       scene.add(key);
-      const rimBlue = new THREE.PointLight(0x4a9eff, 1.4, 50);
-      rimBlue.position.set(-6, 1, 4);
-      scene.add(rimBlue);
-      const rimTeal = new THREE.PointLight(0x2dd4bf, 0.9, 50);
-      rimTeal.position.set(5, -4, -2);
-      scene.add(rimTeal);
+      const fill = new THREE.DirectionalLight(0xbcd4ff, 0.4);
+      fill.position.set(-5, -2, 3);
+      scene.add(fill);
 
       let model: THREE.Object3D | null = null;
       let coreMat: THREE.MeshStandardMaterial | null = null;
@@ -158,16 +149,11 @@ import CubeLogo from './CubeLogo.astro';
           const scale = 4.6 / size;
           model.scale.setScalar(scale);
 
-          // grab the emissive core material so we can pulse it; make sure the
-          // glass materials get the environment map for reflections/refraction
+          // grab a core material (brand-blue inner cube) so we can gently pulse it
           model.traverse((o) => {
-            const m = (o as THREE.Mesh).material as THREE.MeshPhysicalMaterial | undefined;
+            const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
             if (!m) return;
-            if (m.name === 'core') coreMat = m as unknown as THREE.MeshStandardMaterial;
-            if (m.transmission && m.transmission > 0) {
-              m.envMapIntensity = 1.4;
-              m.thickness = Math.max(m.thickness ?? 0, 0.5);
-            }
+            if (m.name && m.name.toLowerCase().includes('core')) coreMat = m;
           });
 
           pivot.add(model);
@@ -202,7 +188,7 @@ import CubeLogo from './CubeLogo.astro';
         pivot.rotation.y += dt * 0.4;
         pivot.rotation.x += (target.x - pivot.rotation.x) * 0.05;
         pivot.rotation.z = target.y * 0.05;
-        if (coreMat) coreMat.emissiveIntensity = 1.9 + Math.sin(clock.elapsedTime * 1.6) * 0.6;
+        if (coreMat) coreMat.emissiveIntensity = 0.55 + Math.sin(clock.elapsedTime * 1.6) * 0.3;
         renderer!.render(scene, camera);
         raf = requestAnimationFrame(tick);
       };
