@@ -109,6 +109,9 @@ import CubeLogo from './CubeLogo.astro';
 
       const pivot = new THREE.Group();
       scene.add(pivot);
+      // Fixed pose set after load (looks down the nesting corner = the logo's
+      // isometric view). No auto-rotation, no pointer-tilt — the only motion is
+      // assemble-on-load and explode-on-hover.
 
       // Flat SVG-style model: the materials carry their own color (lightly
       // emissive), so we just need soft, even light to keep the tri-tone faces
@@ -201,6 +204,12 @@ import CubeLogo from './CubeLogo.astro';
             sepAxis.copy(coreRest).sub(outerRest);
             restDist = sepAxis.length();
             if (restDist > 1e-6) sepAxis.multiplyScalar(1 / restDist);
+
+            // Orient the cube so the nesting corner faces the camera (the logo's
+            // isometric look): map the separation axis onto a direction toward
+            // the viewer, with a slight upward tilt so the top face reads.
+            const viewDir = new THREE.Vector3(0, 0.16, 1).normalize();
+            pivot.quaternion.setFromUnitVectors(sepAxis, viewDir);
           }
 
           pivot.add(model);
@@ -212,7 +221,7 @@ import CubeLogo from './CubeLogo.astro';
             sep = 0;
             sepTarget = 0;
             applySeparation();
-            if (coreMat) coreMat.emissiveIntensity = 0.55;
+            if (coreMat) coreMat.emissiveIntensity = 0.5;
             renderer!.render(scene, camera);
             return;
           }
@@ -222,68 +231,55 @@ import CubeLogo from './CubeLogo.astro';
           sepTarget = 0;
           applySeparation();         // paint the exploded start state first (no flash)
           renderer!.render(scene, camera);
-          if (visible) start();
+          if (visible) kick();
         },
         undefined,
         () => { /* load error → keep SVG fallback visible */ },
       );
 
-      // ---- pointer parallax ----
-      const target = { x: 0, y: 0 };
+      // ---- hover to explode (desktop pointers only); no rotation, no tilt ----
       const coarse = window.matchMedia('(pointer: coarse)').matches;
       if (!reduce && !coarse) {
-        window.addEventListener('pointermove', (e) => {
-          target.x = (e.clientY / window.innerHeight - 0.5) * 0.5;
-          target.y = (e.clientX / window.innerWidth - 0.5) * 0.9;
-        }, { passive: true });
+        root.addEventListener('pointerenter', () => { sepTarget = 1; kick(); });
+        root.addEventListener('pointerleave', () => { sepTarget = 0; kick(); });
       }
 
-      // ---- hover to explode (desktop pointers only) ----
-      if (!reduce && !coarse) {
-        root.addEventListener('pointerenter', () => { sepTarget = 1; });
-        root.addEventListener('pointerleave', () => { sepTarget = 0; });
-      }
-
-      // ---- render loop (paused when offscreen) ----
+      // ---- render-on-demand: only renders while the cubes are moving ----
+      // (assemble on load, explode/reassemble on hover). Idle = no rendering.
       let raf = 0;
       let running = false;
       let visible = true;
-      const clock = new THREE.Clock();
+      const SEP_EPS = 1e-3;
 
-      const tick = () => {
-        const dt = clock.getDelta();
-        pivot.rotation.y += dt * 0.4;
-        pivot.rotation.x += (target.x - pivot.rotation.x) * 0.05;
-        pivot.rotation.z = target.y * 0.05;
-
-        // ease separation toward its target, then position the cubes
+      const draw = () => {
+        if (!running) return;
         sep += (sepTarget - sep) * SEP_LERP;
-        if (sep < 1e-4 && sepTarget === 0) sep = 0; // settle exactly at solid
+        const moving = Math.abs(sep - sepTarget) > SEP_EPS;
+        if (!moving) sep = sepTarget;             // settle exactly
         applySeparation();
-
-        if (coreMat) {
-          coreMat.emissiveIntensity =
-            0.55 + Math.sin(clock.elapsedTime * 1.6) * 0.3 + EMISSIVE_BOOST * sep;
-        }
+        if (coreMat) coreMat.emissiveIntensity = 0.5 + EMISSIVE_BOOST * sep;
         renderer!.render(scene, camera);
-        raf = requestAnimationFrame(tick);
+        if (moving && visible) {
+          raf = requestAnimationFrame(draw);
+        } else {
+          running = false;                         // at rest — stop (battery)
+        }
       };
 
-      const start = () => {
-        if (running || reduce || !model) return;
+      function kick() {
+        if (reduce || !model || !visible || running) return;
         running = true;
-        clock.start();
-        raf = requestAnimationFrame(tick);
-      };
+        raf = requestAnimationFrame(draw);
+      }
       const stop = () => { running = false; cancelAnimationFrame(raf); };
 
       if ('IntersectionObserver' in window) {
         new IntersectionObserver((entries) => {
           visible = entries[0].isIntersecting;
-          visible ? start() : stop();
+          if (visible) kick(); else stop();
         }, { threshold: 0.05 }).observe(root);
       } else {
-        start();
+        kick();
       }
 
       window.addEventListener('pagehide', stop);
