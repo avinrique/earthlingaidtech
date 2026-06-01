@@ -14,6 +14,7 @@ import CubeLogo from './CubeLogo.astro';
     <span class="cube3d__ring cube3d__ring--1"></span>
     <span class="cube3d__ring cube3d__ring--2"></span>
     <span class="cube3d__glow"></span>
+    <span class="cube3d__scan" aria-hidden="true"></span>
   </div>
 
   <canvas class="cube3d__canvas" data-cube-canvas aria-hidden="true"></canvas>
@@ -54,6 +55,33 @@ import CubeLogo from './CubeLogo.astro';
     filter: blur(12px);
     animation: cube3d-pulse 5s ease-in-out infinite;
   }
+  .cube3d__scan {
+    position: absolute;
+    inset: 8%;
+    border-radius: 14px;
+    pointer-events: none;
+    opacity: 0.5;
+    mix-blend-mode: screen;
+    background-image:
+      linear-gradient(rgba(74,158,255,0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(74,158,255,0.07) 1px, transparent 1px);
+    background-size: 22px 22px, 22px 22px;
+    -webkit-mask-image: radial-gradient(closest-side, #000 60%, transparent 100%);
+            mask-image: radial-gradient(closest-side, #000 60%, transparent 100%);
+  }
+  .cube3d__scan::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 42%, rgba(120,190,255,0.35) 50%, transparent 58%);
+    animation: cube3d-scan 3.4s linear infinite;
+  }
+  @keyframes cube3d-scan {
+    0% { transform: translateY(-60%); opacity: 0; }
+    12% { opacity: 1; }
+    88% { opacity: 1; }
+    100% { transform: translateY(60%); opacity: 0; }
+  }
   .cube3d__canvas {
     position: relative;
     width: 100%;
@@ -78,12 +106,17 @@ import CubeLogo from './CubeLogo.astro';
   }
   @media (prefers-reduced-motion: reduce) {
     .cube3d__glow { animation: none; }
+    .cube3d__scan::after { animation: none; opacity: 0; }
   }
 </style>
 
 <script>
   import * as THREE from 'three';
   import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+  import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+  import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+  import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+  import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 
   const root = document.querySelector<HTMLElement>('[data-cube3d]');
   const canvas = root?.querySelector<HTMLCanvasElement>('[data-cube-canvas]');
@@ -102,6 +135,9 @@ import CubeLogo from './CubeLogo.astro';
     if (renderer) {
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.0;
+      renderer.setClearColor(0x000000, 0); // transparent through the composer
 
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
@@ -109,6 +145,9 @@ import CubeLogo from './CubeLogo.astro';
 
       const pivot = new THREE.Group();
       scene.add(pivot);
+      // Fixed pose set after load (looks down the nesting corner = the logo's
+      // isometric view). No auto-rotation, no pointer-tilt — the only motion is
+      // assemble-on-load and explode-on-hover.
 
       // Flat SVG-style model: the materials carry their own color (lightly
       // emissive), so we just need soft, even light to keep the tri-tone faces
@@ -121,13 +160,60 @@ import CubeLogo from './CubeLogo.astro';
       fill.position.set(-5, -2, 3);
       scene.add(fill);
 
+      // ---- post-processing: neon bloom ----
+      const composer = new EffectComposer(renderer);
+      const renderPass = new RenderPass(scene, camera);
+      renderPass.clearAlpha = 0;
+      composer.addPass(renderPass);
+      const BLOOM_STRENGTH = 0.6;
+      const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), BLOOM_STRENGTH, 0.6, 0.85);
+      composer.addPass(bloomPass);
+      composer.addPass(new OutputPass());
+
       let model: THREE.Object3D | null = null;
       let coreMat: THREE.MeshStandardMaterial | null = null;
+      const EDGE_BASE = new THREE.Color(0x4aa8ff).multiplyScalar(2.2);
+      const edgeMats: THREE.LineBasicMaterial[] = [];
+      let pulse = 0;
+      let sepPrev = 1;
+
+      // ---- assemble / explode separation state ----
+      let outerNode: THREE.Object3D | null = null;
+      let middleNode: THREE.Object3D | null = null;
+      let coreNode: THREE.Object3D | null = null;
+      const outerRest = new THREE.Vector3();
+      const middleRest = new THREE.Vector3();
+      const coreRest = new THREE.Vector3();
+      const sepAxis = new THREE.Vector3();   // unit direction outer -> core
+      let restDist = 0;                       // |coreRest - outerRest| (EatCube local space)
+      const _tmp = new THREE.Vector3();       // scratch, no per-frame allocation
+
+      let sep = 1;          // 1 = fully separated, 0 = assembled solid cube
+      let sepTarget = 0;    // first visible frames ease 1 -> 0 (assemble on load)
+      const SEP_LERP = 0.1; // damping toward sepTarget
+      const Fm = 0.5;       // middle travel factor
+      const Fc = 0.95;      // core travel factor (grows outward => telescoping)
+      const EMISSIVE_BOOST = 0.9;
+
+      // Position the three cubes for the current `sep` (0 = assembled, 1 = apart).
+      const applySeparation = () => {
+        if (!outerNode || !middleNode || !coreNode) return;
+        outerNode.position.copy(outerRest);
+        middleNode.position.copy(middleRest)
+          .add(_tmp.copy(sepAxis).multiplyScalar(restDist * Fm * sep));
+        coreNode.position.copy(coreRest)
+          .add(_tmp.copy(sepAxis).multiplyScalar(restDist * Fc * sep));
+      };
 
       const resize = () => {
         const s = root.clientWidth;
         if (!s) return;
+        const dpr = Math.min(window.devicePixelRatio, 2);
+        renderer!.setPixelRatio(dpr);
         renderer!.setSize(s, s, false);
+        composer.setPixelRatio(dpr);
+        composer.setSize(s, s);
+        bloomPass.setSize(s, s);
         camera.aspect = 1;
         camera.updateProjectionMatrix();
       };
@@ -141,73 +227,153 @@ import CubeLogo from './CubeLogo.astro';
         (gltf) => {
           model = gltf.scene;
 
-          // center + frame the model to a consistent size
+          // center the model at the origin (camera framing computed after load)
           const box = new THREE.Box3().setFromObject(model);
           const center = box.getCenter(new THREE.Vector3());
-          const size = box.getSize(new THREE.Vector3()).length();
           model.position.sub(center);
-          const scale = 4.6 / size;
-          model.scale.setScalar(scale);
 
-          // grab a core material (brand-blue inner cube) so we can gently pulse it
+          // grab the three cube nodes + a core material to pulse/boost
           model.traverse((o) => {
+            const name = o.name || '';
+            if (name.includes('CubeOuter')) outerNode = o;
+            else if (name.includes('CubeMiddle')) middleNode = o;
+            else if (name.includes('CubeCore')) coreNode = o;
+
             const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
-            if (!m) return;
-            if (m.name && m.name.toLowerCase().includes('core')) coreMat = m;
+            if (m && m.name && m.name.toLowerCase().includes('core')) {
+              coreMat = m;
+              m.emissive = new THREE.Color(0x2d7bff);
+            }
+
+            // electric-blue glowing edges, parented to the mesh so they follow separation
+            if ((o as THREE.Mesh).isMesh) {
+              const mesh = o as THREE.Mesh;
+              const edges = new THREE.LineSegments(
+                new THREE.EdgesGeometry(mesh.geometry, 30),
+                new THREE.LineBasicMaterial({ color: EDGE_BASE.clone(), toneMapped: false, transparent: true, depthWrite: false }),
+              );
+              edges.renderOrder = 2;
+              mesh.add(edges);
+              edgeMats.push(edges.material as THREE.LineBasicMaterial);
+            }
           });
 
+          // record rest (assembled) positions, then derive the separation axis +
+          // magnitude from the geometry itself (orientation-proof)
+          if (outerNode && middleNode && coreNode) {
+            outerRest.copy(outerNode.position);
+            middleRest.copy(middleNode.position);
+            coreRest.copy(coreNode.position);
+            sepAxis.copy(coreRest).sub(outerRest);
+            restDist = sepAxis.length();
+            if (restDist > 1e-6) sepAxis.multiplyScalar(1 / restDist);
+
+            // Orient the cube so the nesting corner faces the camera (the logo's
+            // isometric look): map the separation axis onto a direction toward
+            // the viewer, with a slight upward tilt so the top face reads.
+            const viewDir = new THREE.Vector3(0, 0.16, 1).normalize();
+            pivot.quaternion.setFromUnitVectors(sepAxis, viewDir);
+          }
+
           pivot.add(model);
+
+          // Frame the camera to fit the EXPLODED extent (worst case) with margin
+          // so the cube never clips — at rest or on hover. Bounding-sphere radius
+          // is rotation-invariant, so this is correct for any pose.
+          {
+            const fov = (camera.fov * Math.PI) / 180;
+            sep = 1; applySeparation(); pivot.updateMatrixWorld(true);
+            const rMax = new THREE.Box3().setFromObject(pivot)
+              .getBoundingSphere(new THREE.Sphere()).radius || 2;
+            const dist = (rMax / Math.sin(fov / 2)) * 1.18; // 18% breathing room
+            camera.position.set(0, 0, dist);
+            camera.near = Math.max(0.01, dist - rMax * 2);
+            camera.far = dist + rMax * 4;
+            camera.updateProjectionMatrix();
+          }
+
           canvas.setAttribute('data-ready', '');
           fallback?.setAttribute('data-hidden', '');
-          renderer!.render(scene, camera);
-          if (reduce) return;
-          if (visible) start();
+
+          if (reduce) {
+            // no animation: render the assembled solid cube once and stop
+            sep = 0;
+            sepTarget = 0;
+            applySeparation();
+            if (coreMat) coreMat.emissiveIntensity = 0.5;
+            for (const em of edgeMats) em.color.copy(EDGE_BASE);
+            canvas.style.opacity = '1';
+            composer.render();
+            return;
+          }
+
+          // animated path: start separated (faint) and let the loop ease it together
+          sep = 1;
+          sepPrev = 1;
+          sepTarget = 0;
+          applySeparation();
+          composer.render();
+          if (visible) kick();
         },
         undefined,
         () => { /* load error → keep SVG fallback visible */ },
       );
 
-      // ---- pointer parallax ----
-      const target = { x: 0, y: 0 };
+      // ---- hover to explode (desktop pointers only); no rotation, no tilt ----
       const coarse = window.matchMedia('(pointer: coarse)').matches;
       if (!reduce && !coarse) {
-        window.addEventListener('pointermove', (e) => {
-          target.x = (e.clientY / window.innerHeight - 0.5) * 0.5;
-          target.y = (e.clientX / window.innerWidth - 0.5) * 0.9;
-        }, { passive: true });
+        root.addEventListener('pointerenter', () => { sepTarget = 1; kick(); });
+        root.addEventListener('pointerleave', () => { sepTarget = 0; kick(); });
       }
 
-      // ---- render loop (paused when offscreen) ----
+      // ---- render-on-demand: only renders while the cubes are moving ----
+      // (assemble on load, explode/reassemble on hover). Idle = no rendering.
       let raf = 0;
       let running = false;
       let visible = true;
-      const clock = new THREE.Clock();
+      const SEP_EPS = 1e-3;
 
-      const tick = () => {
-        const dt = clock.getDelta();
-        pivot.rotation.y += dt * 0.4;
-        pivot.rotation.x += (target.x - pivot.rotation.x) * 0.05;
-        pivot.rotation.z = target.y * 0.05;
-        if (coreMat) coreMat.emissiveIntensity = 0.55 + Math.sin(clock.elapsedTime * 1.6) * 0.3;
-        renderer!.render(scene, camera);
-        raf = requestAnimationFrame(tick);
+      const draw = () => {
+        if (!running) return;
+        sep += (sepTarget - sep) * SEP_LERP;
+        const moving = Math.abs(sep - sepTarget) > SEP_EPS;
+        if (!moving) sep = sepTarget;
+
+        // electric flash when the cubes finish assembling (or reassembling)
+        if (sepPrev >= 0.02 && sep < 0.02 && sepTarget === 0) pulse = 1;
+        sepPrev = sep;
+        if (pulse > 0) { pulse -= 0.1; if (pulse < 0.001) pulse = 0; }
+
+        applySeparation();
+        if (coreMat) coreMat.emissiveIntensity = 0.5 + EMISSIVE_BOOST * sep + 1.6 * pulse;
+        bloomPass.strength = BLOOM_STRENGTH + 0.9 * pulse;
+        const eScale = 1 + 1.4 * pulse;
+        for (const em of edgeMats) em.color.copy(EDGE_BASE).multiplyScalar(eScale);
+        // fade tied to assemble/explode: faint when apart, full when assembled
+        canvas.style.opacity = String(1 - 0.5 * sep);
+
+        composer.render();
+        if ((moving || pulse > 0) && visible) {
+          raf = requestAnimationFrame(draw);
+        } else {
+          running = false;
+        }
       };
 
-      const start = () => {
-        if (running || reduce || !model) return;
+      function kick() {
+        if (reduce || !model || !visible || running) return;
         running = true;
-        clock.start();
-        raf = requestAnimationFrame(tick);
-      };
+        raf = requestAnimationFrame(draw);
+      }
       const stop = () => { running = false; cancelAnimationFrame(raf); };
 
       if ('IntersectionObserver' in window) {
         new IntersectionObserver((entries) => {
           visible = entries[0].isIntersecting;
-          visible ? start() : stop();
+          if (visible) kick(); else stop();
         }, { threshold: 0.05 }).observe(root);
       } else {
-        start();
+        kick();
       }
 
       window.addEventListener('pagehide', stop);
