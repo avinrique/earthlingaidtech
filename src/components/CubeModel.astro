@@ -172,11 +172,10 @@ import CubeLogo from './CubeLogo.astro';
 
       let model: THREE.Object3D | null = null;
       let mixer: THREE.AnimationMixer | null = null;
-      let coreMat: THREE.MeshStandardMaterial | null = null;
-      const EDGE_BASE = new THREE.Color(0x4aa8ff).multiplyScalar(2.2);
+      let coreMat: THREE.MeshBasicMaterial | null = null;
+      const EDGE_BASE = new THREE.Color(0x4aa8ff).multiplyScalar(2.0);
       const edgeMats: THREE.LineBasicMaterial[] = [];
-      let pulse = 0;        // outshine flash, fired when middle (then core) snaps home
-      const EMISSIVE_BOOST = 0.9;
+      let pulse = 0;        // surge, fired when middle (then core) snaps home
 
       // ---- cube nodes + their assembled "home" positions (local to EatCube).
       // The combine motion is baked in Blender and played by the mixer; here we
@@ -206,46 +205,112 @@ import CubeLogo from './CubeLogo.astro';
         node.position.z += a * Math.sin(elapsed * 1.7 + ph * 2.4);
       };
 
-      // ---- surface "current": a flowing electron pattern injected into each
-      // cube's OWN material (via onBeforeCompile) so it paints across the real
-      // faces — dim + slow at rest, brightening into a surge on each connect. ----
-      const currentUniforms = {
-        uTime: { value: 0 },
-        uIntensity: { value: 0.9 },
-        uColor: { value: new THREE.Color(0x7fc8ff) },
+      // ---- logo colors: each piece gets the flat-logo tri-tone (top / right /
+      // left shades) baked as per-face vertex colors and rendered UNLIT
+      // (MeshBasic) so it reads exactly like the 2D mark. ----
+      const SHADES: Record<string, [number, number, number]> = {
+        outer:  [0x3a3a3a, 0x232323, 0x141414],   // charcoal
+        middle: [0x5e6b7a, 0x3c4654, 0x2a3340],   // cool slate
+        core:   [0x9fd0ff, 0x4a9eff, 0x2e7bd6],   // brand blue
       };
-      const patched = new Set<THREE.Material>();
-      const patchFlow = (mat: THREE.Material | THREE.Material[] | undefined) => {
-        const list = Array.isArray(mat) ? mat : mat ? [mat] : [];
-        for (const m of list) {
-          if (!(m as any).isMeshStandardMaterial || patched.has(m)) continue;
-          patched.add(m);
-          // dark faces so the neon current + edges carry the glow (not blown out)
-          (m as THREE.MeshStandardMaterial).color.set(0x0c1c38);
-          (m as THREE.MeshStandardMaterial).metalness = 0.0;
-          (m as THREE.MeshStandardMaterial).roughness = 0.65;
-          m.onBeforeCompile = (shader: any) => {
-            shader.uniforms.uTime = currentUniforms.uTime;
-            shader.uniforms.uIntensity = currentUniforms.uIntensity;
-            shader.uniforms.uFlow = currentUniforms.uColor;
-            shader.vertexShader = shader.vertexShader
-              .replace('#include <common>', '#include <common>\n  varying vec3 vFlowPos;')
-              .replace('#include <begin_vertex>', '#include <begin_vertex>\n  vFlowPos = position;');
-            shader.fragmentShader = shader.fragmentShader
-              .replace('#include <common>', '#include <common>\n  uniform float uTime; uniform float uIntensity; uniform vec3 uFlow; varying vec3 vFlowPos;')
-              .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-                {
-                  // a few distinct comet-like streaks of current sweeping across
-                  float fp = (vFlowPos.x + vFlowPos.y + vFlowPos.z) * 0.6;
-                  float head = fract(fp - uTime * 0.5);
-                  float streak = pow(smoothstep(0.55, 1.0, head), 5.0);   // bright head, fading tail
-                  // faint rim energy + a very dim always-on base
-                  float ffres = pow(1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition))), 2.0);
-                  float fe = (0.02 + streak * 1.2 + ffres * 0.15) * uIntensity;
-                  totalEmissiveRadiance += uFlow * fe;
-                }`);
-          };
-          m.needsUpdate = true;
+      const colorize = (mesh: THREE.Mesh, shades: [number, number, number]) => {
+        let g = mesh.geometry as THREE.BufferGeometry;
+        if (g.index) { g = g.toNonIndexed(); mesh.geometry = g; }
+        const pos = g.attributes.position;
+        const colors = new Float32Array(pos.count * 3);
+        const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
+        const ab = new THREE.Vector3(), ac = new THREE.Vector3(), nrm = new THREE.Vector3();
+        const top = new THREE.Color(shades[0]).convertSRGBToLinear();
+        const right = new THREE.Color(shades[1]).convertSRGBToLinear();
+        const left = new THREE.Color(shades[2]).convertSRGBToLinear();
+        for (let i = 0; i < pos.count; i += 3) {
+          a.fromBufferAttribute(pos, i); b.fromBufferAttribute(pos, i + 1); c.fromBufferAttribute(pos, i + 2);
+          ab.subVectors(b, a); ac.subVectors(c, a); nrm.crossVectors(ab, ac).normalize();
+          const ax = Math.abs(nrm.x), ay = Math.abs(nrm.y), az = Math.abs(nrm.z);
+          let col = left;
+          if (ay >= ax && ay >= az) col = nrm.y > 0 ? top : left;     // up-facing = top shade
+          else if (ax >= az) col = nrm.x > 0 ? right : left;
+          else col = nrm.z > 0 ? right : left;
+          for (let k = 0; k < 3; k++) { const j = (i + k) * 3; colors[j] = col.r; colors[j + 1] = col.g; colors[j + 2] = col.b; }
+        }
+        g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        const mat = new THREE.MeshBasicMaterial({ vertexColors: true });
+        mesh.material = mat;
+        return mat;
+      };
+
+      // ---- electrons: glowing dots that RANDOM-WALK the cube edges (a traveling
+      // cubical path, not a surface wash), parented to each piece. ----
+      const dotTex = (() => {
+        const cv = document.createElement('canvas'); cv.width = cv.height = 64;
+        const g = cv.getContext('2d')!;
+        const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+        gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.3, 'rgba(190,225,255,0.95)'); gr.addColorStop(1, 'rgba(120,180,255,0)');
+        g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+        const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; return t;
+      })();
+      type Graph = { verts: THREE.Vector3[]; nbr: number[][] };
+      type Walker = { a: number; b: number; u: number; speed: number };
+      type EJet = { graph: Graph; walkers: Walker[]; positions: Float32Array; geo: THREE.BufferGeometry; mat: THREE.PointsMaterial; pts: THREE.Points };
+      const ejets: EJet[] = [];
+      const buildGraph = (geometry: THREE.BufferGeometry): Graph => {
+        const eg = new THREE.EdgesGeometry(geometry, 30);
+        const p = eg.attributes.position;
+        const verts: THREE.Vector3[] = []; const key2i = new Map<string, number>(); const nbr: number[][] = [];
+        const idx = (x: number, y: number, z: number) => {
+          const k = `${x.toFixed(3)},${y.toFixed(3)},${z.toFixed(3)}`;
+          let i = key2i.get(k);
+          if (i === undefined) { i = verts.length; verts.push(new THREE.Vector3(x, y, z)); key2i.set(k, i); nbr[i] = []; }
+          return i;
+        };
+        for (let i = 0; i < p.count; i += 2) {
+          const i0 = idx(p.getX(i), p.getY(i), p.getZ(i));
+          const i1 = idx(p.getX(i + 1), p.getY(i + 1), p.getZ(i + 1));
+          if (i0 !== i1) { nbr[i0].push(i1); nbr[i1].push(i0); }
+        }
+        eg.dispose();
+        return { verts, nbr };
+      };
+      const makeJet = (node: THREE.Object3D, count: number): EJet | null => {
+        const mesh = node as THREE.Mesh;
+        if (!mesh.geometry) return null;
+        const graph = buildGraph(mesh.geometry);
+        if (graph.verts.length < 2) return null;
+        const walkers: Walker[] = [];
+        for (let i = 0; i < count; i++) {
+          const a = Math.floor(Math.random() * graph.verts.length);
+          const ns = graph.nbr[a]; if (!ns || !ns.length) continue;
+          walkers.push({ a, b: ns[Math.floor(Math.random() * ns.length)], u: Math.random(), speed: 0.7 + Math.random() * 0.8 });
+        }
+        if (!walkers.length) return null;
+        const positions = new Float32Array(walkers.length * 3);
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const mat = new THREE.PointsMaterial({ size: 0.13, map: dotTex, color: 0xdcefff, transparent: true, opacity: 0.9, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, sizeAttenuation: true, toneMapped: false });
+        const pts = new THREE.Points(geo, mat); pts.renderOrder = 4; node.add(pts);
+        return { graph, walkers, positions, geo, mat, pts };
+      };
+      const updateJets = (dt: number, flow: number, glow: number) => {
+        for (const e of ejets) {
+          e.mat.opacity = glow;
+          const p = e.positions, V = e.graph.verts;
+          for (let i = 0; i < e.walkers.length; i++) {
+            const w = e.walkers[i];
+            w.u += w.speed * dt * flow;
+            while (w.u >= 1) {
+              w.u -= 1;
+              const ns = e.graph.nbr[w.b];
+              let next = w.a;
+              if (ns && ns.length) {
+                next = ns[Math.floor(Math.random() * ns.length)];
+                if (ns.length > 1 && next === w.a) next = ns[(ns.indexOf(w.a) + 1) % ns.length]; // avoid backtracking
+              }
+              w.a = w.b; w.b = next;
+            }
+            const A = V[w.a], B = V[w.b];
+            p[i * 3] = A.x + (B.x - A.x) * w.u; p[i * 3 + 1] = A.y + (B.y - A.y) * w.u; p[i * 3 + 2] = A.z + (B.z - A.z) * w.u;
+          }
+          e.geo.attributes.position.needsUpdate = true;
         }
       };
 
@@ -279,22 +344,22 @@ import CubeLogo from './CubeLogo.astro';
             else if (name.includes('CubeMiddle')) middleNode = o;
             else if (name.includes('CubeCore')) coreNode = o;
 
-            const m = (o as THREE.Mesh).material as THREE.MeshStandardMaterial | undefined;
-            if (m && m.name && m.name.toLowerCase().includes('core')) {
-              coreMat = m;
-              m.emissive = new THREE.Color(0x2d7bff);
-            }
-
             if ((o as THREE.Mesh).isMesh) {
               const mesh = o as THREE.Mesh;
+              const fam = name.includes('CubeCore') ? 'core' : name.includes('CubeMiddle') ? 'middle' : 'outer';
+              const mat = colorize(mesh, SHADES[fam]);   // flat logo tri-tone faces
+              if (fam === 'core') coreMat = mat;
+              // faint edge outline (subtle, like the flat logo's seams)
               const edges = new THREE.LineSegments(
                 new THREE.EdgesGeometry(mesh.geometry, 30),
-                new THREE.LineBasicMaterial({ color: EDGE_BASE.clone(), toneMapped: false, transparent: true, depthWrite: false }),
+                new THREE.LineBasicMaterial({ color: EDGE_BASE.clone(), toneMapped: false, transparent: true, opacity: 0.4, depthWrite: false }),
               );
               edges.renderOrder = 2;
               mesh.add(edges);
               edgeMats.push(edges.material as THREE.LineBasicMaterial);
-              patchFlow(mesh.material);   // inject the flowing current into the faces
+              // a few electrons that random-walk this piece's edges
+              const jet = makeJet(mesh, fam === 'outer' ? 3 : fam === 'middle' ? 3 : 2);
+              if (jet) ejets.push(jet);
             }
           });
 
@@ -349,11 +414,10 @@ import CubeLogo from './CubeLogo.astro';
           fallback?.setAttribute('data-hidden', '');
 
           if (reduce) {
-            // no animation: hold the assembled logo with a faint static current
+            // no animation: hold the assembled logo, electrons hidden
             mixer.setTime(ASSEMBLED_T);
-            if (coreMat) coreMat.emissiveIntensity = 0.5;
             for (const edge of edgeMats) edge.color.copy(EDGE_BASE);
-            currentUniforms.uIntensity.value = 0.25;
+            for (const e of ejets) e.pts.visible = false;
             canvas.style.opacity = '1';
             composer.render();
             return;
@@ -420,16 +484,16 @@ import CubeLogo from './CubeLogo.astro';
         // ease the hover boost
         hoverBoost += (hoverTarget - hoverBoost) * Math.min(1, dt * 6);
 
-        // core glows brighter the more assembled it is, plus surges + hover
-        const assembled = 1 - Math.min(1, dC / 1.0);
-        if (coreMat) coreMat.emissiveIntensity = 0.25 + 0.45 * assembled + 1.1 * pulse + 0.3 * hoverBoost;
+        // core flashes (brighten its flat color) on each surge + hover
+        if (coreMat) coreMat.color.setScalar(1 + 1.3 * pulse + 0.4 * hoverBoost);
         bloomPass.strength = BLOOM_STRENGTH + 0.6 * pulse + 0.3 * hoverBoost;
-        const eScale = 1 + 1.2 * pulse + 0.5 * hoverBoost;
+        const eScale = 1 + 1.6 * pulse + 0.7 * hoverBoost;
         for (const edge of edgeMats) edge.color.copy(EDGE_BASE).multiplyScalar(eScale);
 
-        // surface current: dim + slow at rest, bright surge on each connect + hover
-        currentUniforms.uTime.value += dt * (1 + 2.4 * pulse + 1.8 * hoverBoost);
-        currentUniforms.uIntensity.value = 0.4 + 1.5 * pulse + 0.5 * hoverBoost;
+        // electrons random-walk the edges; faster + brighter on each connect + hover
+        const flow = 1 + 2.6 * pulse + 2.0 * hoverBoost;
+        const glow = Math.min(1, 0.85 + 0.4 * pulse + 0.3 * hoverBoost);
+        updateJets(dt, flow, glow);
 
         canvas.style.opacity = '1';
 
