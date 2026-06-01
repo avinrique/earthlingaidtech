@@ -152,11 +152,11 @@ import CubeLogo from './CubeLogo.astro';
       // Flat SVG-style model: the materials carry their own color (lightly
       // emissive), so we just need soft, even light to keep the tri-tone faces
       // reading true — no environment map / heavy reflections.
-      scene.add(new THREE.AmbientLight(0xffffff, 0.85));
-      const key = new THREE.DirectionalLight(0xffffff, 0.9);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.28));
+      const key = new THREE.DirectionalLight(0xffffff, 0.5);
       key.position.set(3, 5, 6);
       scene.add(key);
-      const fill = new THREE.DirectionalLight(0xbcd4ff, 0.4);
+      const fill = new THREE.DirectionalLight(0xbcd4ff, 0.22);
       fill.position.set(-5, -2, 3);
       scene.add(fill);
 
@@ -165,44 +165,88 @@ import CubeLogo from './CubeLogo.astro';
       const renderPass = new RenderPass(scene, camera);
       renderPass.clearAlpha = 0;
       composer.addPass(renderPass);
-      const BLOOM_STRENGTH = 0.6;
-      const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), BLOOM_STRENGTH, 0.6, 0.85);
+      const BLOOM_STRENGTH = 0.38;
+      const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), BLOOM_STRENGTH, 0.55, 0.9);
       composer.addPass(bloomPass);
       composer.addPass(new OutputPass());
 
       let model: THREE.Object3D | null = null;
+      let mixer: THREE.AnimationMixer | null = null;
       let coreMat: THREE.MeshStandardMaterial | null = null;
       const EDGE_BASE = new THREE.Color(0x4aa8ff).multiplyScalar(2.2);
       const edgeMats: THREE.LineBasicMaterial[] = [];
-      let pulse = 0;
-      let sepPrev = 1;
+      let pulse = 0;        // outshine flash, fired when middle (then core) snaps home
+      const EMISSIVE_BOOST = 0.9;
 
-      // ---- assemble / explode separation state ----
+      // ---- cube nodes + their assembled "home" positions (local to EatCube).
+      // The combine motion is baked in Blender and played by the mixer; here we
+      // only read each cube's distance-from-home to time the outshine flash, the
+      // gentle idle shake, and the core glow. ----
       let outerNode: THREE.Object3D | null = null;
       let middleNode: THREE.Object3D | null = null;
       let coreNode: THREE.Object3D | null = null;
-      const outerRest = new THREE.Vector3();
-      const middleRest = new THREE.Vector3();
-      const coreRest = new THREE.Vector3();
-      const sepAxis = new THREE.Vector3();   // unit direction outer -> core
-      let restDist = 0;                       // |coreRest - outerRest| (EatCube local space)
-      const _tmp = new THREE.Vector3();       // scratch, no per-frame allocation
+      // assembled "home" positions, captured from the model after load
+      const homeOuter = new THREE.Vector3();
+      const homeMiddle = new THREE.Vector3();
+      const homeCore = new THREE.Vector3();
+      let prevDistM = 1;
+      let prevDistC = 1;
+      let elapsed = 0;      // seconds, drives the gentle shake wobble
 
-      let sep = 1;          // 1 = fully separated, 0 = assembled solid cube
-      let sepTarget = 0;    // first visible frames ease 1 -> 0 (assemble on load)
-      const SEP_LERP = 0.1; // damping toward sepTarget
-      const Fm = 0.5;       // middle travel factor
-      const Fc = 0.95;      // core travel factor (grows outward => telescoping)
-      const EMISSIVE_BOOST = 0.9;
+      // prev positions, used to gate shake to (roughly) stationary cubes
+      const prevPos = new Map<THREE.Object3D, THREE.Vector3>();
+      // Gentle, slow wobble — only while a cube is apart AND nearly stationary
+      // (waiting to combine), so it never fights the baked combine motion.
+      const applyShake = (node: THREE.Object3D, home: THREE.Vector3, speed: number) => {
+        if (node.position.distanceTo(home) < 0.3 || speed > 0.25) return;
+        const a = 0.025;
+        const ph = node.id;
+        node.position.x += a * Math.sin(elapsed * 2.0 + ph * 1.7);
+        node.position.y += a * Math.sin(elapsed * 2.5 + ph * 0.6);
+        node.position.z += a * Math.sin(elapsed * 1.7 + ph * 2.4);
+      };
 
-      // Position the three cubes for the current `sep` (0 = assembled, 1 = apart).
-      const applySeparation = () => {
-        if (!outerNode || !middleNode || !coreNode) return;
-        outerNode.position.copy(outerRest);
-        middleNode.position.copy(middleRest)
-          .add(_tmp.copy(sepAxis).multiplyScalar(restDist * Fm * sep));
-        coreNode.position.copy(coreRest)
-          .add(_tmp.copy(sepAxis).multiplyScalar(restDist * Fc * sep));
+      // ---- surface "current": a flowing electron pattern injected into each
+      // cube's OWN material (via onBeforeCompile) so it paints across the real
+      // faces — dim + slow at rest, brightening into a surge on each connect. ----
+      const currentUniforms = {
+        uTime: { value: 0 },
+        uIntensity: { value: 0.9 },
+        uColor: { value: new THREE.Color(0x7fc8ff) },
+      };
+      const patched = new Set<THREE.Material>();
+      const patchFlow = (mat: THREE.Material | THREE.Material[] | undefined) => {
+        const list = Array.isArray(mat) ? mat : mat ? [mat] : [];
+        for (const m of list) {
+          if (!(m as any).isMeshStandardMaterial || patched.has(m)) continue;
+          patched.add(m);
+          // dark faces so the neon current + edges carry the glow (not blown out)
+          (m as THREE.MeshStandardMaterial).color.set(0x0c1c38);
+          (m as THREE.MeshStandardMaterial).metalness = 0.0;
+          (m as THREE.MeshStandardMaterial).roughness = 0.65;
+          m.onBeforeCompile = (shader: any) => {
+            shader.uniforms.uTime = currentUniforms.uTime;
+            shader.uniforms.uIntensity = currentUniforms.uIntensity;
+            shader.uniforms.uFlow = currentUniforms.uColor;
+            shader.vertexShader = shader.vertexShader
+              .replace('#include <common>', '#include <common>\n  varying vec3 vFlowPos;')
+              .replace('#include <begin_vertex>', '#include <begin_vertex>\n  vFlowPos = position;');
+            shader.fragmentShader = shader.fragmentShader
+              .replace('#include <common>', '#include <common>\n  uniform float uTime; uniform float uIntensity; uniform vec3 uFlow; varying vec3 vFlowPos;')
+              .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+                {
+                  // a few distinct comet-like streaks of current sweeping across
+                  float fp = (vFlowPos.x + vFlowPos.y + vFlowPos.z) * 0.6;
+                  float head = fract(fp - uTime * 0.5);
+                  float streak = pow(smoothstep(0.55, 1.0, head), 5.0);   // bright head, fading tail
+                  // faint rim energy + a very dim always-on base
+                  float ffres = pow(1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition))), 2.0);
+                  float fe = (0.02 + streak * 1.2 + ffres * 0.15) * uIntensity;
+                  totalEmissiveRadiance += uFlow * fe;
+                }`);
+          };
+          m.needsUpdate = true;
+        }
       };
 
       const resize = () => {
@@ -220,19 +264,15 @@ import CubeLogo from './CubeLogo.astro';
       resize();
       new ResizeObserver(resize).observe(root);
 
-      // ---- load the Blender model ----
+      // ---- load the Blender model (with the baked combine animation) ----
       const url = `${import.meta.env.BASE_URL}models/eat-cube.glb`;
       new GLTFLoader().load(
         url,
         (gltf) => {
           model = gltf.scene;
 
-          // center the model at the origin (camera framing computed after load)
-          const box = new THREE.Box3().setFromObject(model);
-          const center = box.getCenter(new THREE.Vector3());
-          model.position.sub(center);
-
-          // grab the three cube nodes + a core material to pulse/boost
+          // grab the three cube nodes, a core material to glow, and build the
+          // glowing wireframe edges (parented to each mesh so they follow the anim)
           model.traverse((o) => {
             const name = o.name || '';
             if (name.includes('CubeOuter')) outerNode = o;
@@ -245,7 +285,6 @@ import CubeLogo from './CubeLogo.astro';
               m.emissive = new THREE.Color(0x2d7bff);
             }
 
-            // electric-blue glowing edges, parented to the mesh so they follow separation
             if ((o as THREE.Mesh).isMesh) {
               const mesh = o as THREE.Mesh;
               const edges = new THREE.LineSegments(
@@ -255,37 +294,51 @@ import CubeLogo from './CubeLogo.astro';
               edges.renderOrder = 2;
               mesh.add(edges);
               edgeMats.push(edges.material as THREE.LineBasicMaterial);
+              patchFlow(mesh.material);   // inject the flowing current into the faces
             }
           });
 
-          // record rest (assembled) positions, then derive the separation axis +
-          // magnitude from the geometry itself (orientation-proof)
+          // prev-position trackers (for gating the gentle shake)
           if (outerNode && middleNode && coreNode) {
-            outerRest.copy(outerNode.position);
-            middleRest.copy(middleNode.position);
-            coreRest.copy(coreNode.position);
-            sepAxis.copy(coreRest).sub(outerRest);
-            restDist = sepAxis.length();
-            if (restDist > 1e-6) sepAxis.multiplyScalar(1 / restDist);
-
-            // Orient the cube so the nesting corner faces the camera (the logo's
-            // isometric look): map the separation axis onto a direction toward
-            // the viewer, with a slight upward tilt so the top face reads.
-            const viewDir = new THREE.Vector3(0, 0.16, 1).normalize();
-            pivot.quaternion.setFromUnitVectors(sepAxis, viewDir);
+            for (const n of [outerNode, middleNode, coreNode]) prevPos.set(n, n.position.clone());
           }
+
+          // play every baked clip (one per cube) on one looping mixer
+          mixer = new THREE.AnimationMixer(model);
+          for (const clip of gltf.animations) mixer.clipAction(clip).play();
+          const clipDur = gltf.animations.reduce((d, c) => Math.max(d, c.duration), 0) || 10;
+          const ASSEMBLED_T = clipDur * 0.72; // a moment when the cube is fully assembled
+
+          // clean isometric viewed straight down the cube's corner (hexagonal,
+          // like the flat logo): point the +corner at the camera, then roll so an
+          // edge sits vertical
+          pivot.quaternion.setFromUnitVectors(new THREE.Vector3(1, 1, -1).normalize(), new THREE.Vector3(0, 0, 1));
+          pivot.rotateZ(THREE.MathUtils.degToRad(-15));
+
+          // center the model on its ASSEMBLED pose, so the logo rests centered,
+          // and capture each piece's home position there for the distance checks
+          mixer.setTime(ASSEMBLED_T);
+          model.updateMatrixWorld(true);
+          if (outerNode) homeOuter.copy(outerNode.position);
+          if (middleNode) homeMiddle.copy(middleNode.position);
+          if (coreNode) homeCore.copy(coreNode.position);
+          const center = new THREE.Box3().setFromObject(model).getCenter(new THREE.Vector3());
+          model.position.sub(center);
 
           pivot.add(model);
 
-          // Frame the camera to fit the EXPLODED extent (worst case) with margin
-          // so the cube never clips — at rest or on hover. Bounding-sphere radius
-          // is rotation-invariant, so this is correct for any pose.
+          // Frame to fit the most-spread moment of the whole loop so nothing clips.
           {
             const fov = (camera.fov * Math.PI) / 180;
-            sep = 1; applySeparation(); pivot.updateMatrixWorld(true);
-            const rMax = new THREE.Box3().setFromObject(pivot)
-              .getBoundingSphere(new THREE.Sphere()).radius || 2;
-            const dist = (rMax / Math.sin(fov / 2)) * 1.18; // 18% breathing room
+            let rMax = 0;
+            for (const frac of [0, 0.15, 0.3, 0.45, 0.6, 0.78, 0.95]) {
+              mixer.setTime(clipDur * frac);
+              pivot.updateMatrixWorld(true);
+              const s = new THREE.Box3().setFromObject(pivot).getBoundingSphere(new THREE.Sphere());
+              rMax = Math.max(rMax, s.center.length() + s.radius);
+            }
+            if (!rMax) rMax = 2.5;
+            const dist = (rMax / Math.sin(fov / 2)) * 1.08;
             camera.position.set(0, 0, dist);
             camera.near = Math.max(0.01, dist - rMax * 2);
             camera.far = dist + rMax * 4;
@@ -296,22 +349,21 @@ import CubeLogo from './CubeLogo.astro';
           fallback?.setAttribute('data-hidden', '');
 
           if (reduce) {
-            // no animation: render the assembled solid cube once and stop
-            sep = 0;
-            sepTarget = 0;
-            applySeparation();
+            // no animation: hold the assembled logo with a faint static current
+            mixer.setTime(ASSEMBLED_T);
             if (coreMat) coreMat.emissiveIntensity = 0.5;
-            for (const em of edgeMats) em.color.copy(EDGE_BASE);
+            for (const edge of edgeMats) edge.color.copy(EDGE_BASE);
+            currentUniforms.uIntensity.value = 0.25;
             canvas.style.opacity = '1';
             composer.render();
             return;
           }
 
-          // animated path: start separated (faint) and let the loop ease it together
-          sep = 1;
-          sepPrev = 1;
-          sepTarget = 0;
-          applySeparation();
+          // animated path: start at the top of the loop (cubes scattered) and play
+          mixer.setTime(0);
+          model.updateMatrixWorld(true);
+          if (middleNode) prevDistM = middleNode.position.distanceTo(homeMiddle);
+          if (coreNode) prevDistC = coreNode.position.distanceTo(homeCore);
           composer.render();
           if (visible) kick();
         },
@@ -319,50 +371,77 @@ import CubeLogo from './CubeLogo.astro';
         () => { /* load error → keep SVG fallback visible */ },
       );
 
-      // ---- hover to explode (desktop pointers only); no rotation, no tilt ----
+      // ---- hover intensifies (desktop pointers only): faster, brighter electron
+      // flow + a spark, without touching the baked combine timeline ----
+      let hoverTarget = 0;
+      let hoverBoost = 0;
       const coarse = window.matchMedia('(pointer: coarse)').matches;
       if (!reduce && !coarse) {
-        root.addEventListener('pointerenter', () => { sepTarget = 1; kick(); });
-        root.addEventListener('pointerleave', () => { sepTarget = 0; kick(); });
+        root.addEventListener('pointerenter', () => { hoverTarget = 1; pulse = Math.max(pulse, 0.5); kick(); });
+        root.addEventListener('pointerleave', () => { hoverTarget = 0; });
       }
 
-      // ---- render-on-demand: only renders while the cubes are moving ----
-      // (assemble on load, explode/reassemble on hover). Idle = no rendering.
+      let lastTime = 0;
       let raf = 0;
       let running = false;
       let visible = true;
-      const SEP_EPS = 1e-3;
 
-      const draw = () => {
-        if (!running) return;
-        sep += (sepTarget - sep) * SEP_LERP;
-        const moving = Math.abs(sep - sepTarget) > SEP_EPS;
-        if (!moving) sep = sepTarget;
+      const draw = (now: number) => {
+        if (!running || !mixer) return;
+        const dt = lastTime ? Math.min(0.05, (now - lastTime) / 1000) : 0.016;
+        lastTime = now;
+        elapsed += dt;
 
-        // electric flash when the cubes finish assembling (or reassembling)
-        if (sepPrev >= 0.02 && sep < 0.02 && sepTarget === 0) pulse = 1;
-        sepPrev = sep;
-        if (pulse > 0) { pulse -= 0.1; if (pulse < 0.001) pulse = 0; }
+        // advance the Blender-baked combine animation
+        mixer.update(dt);
 
-        applySeparation();
-        if (coreMat) coreMat.emissiveIntensity = 0.5 + EMISSIVE_BOOST * sep + 1.6 * pulse;
-        bloomPass.strength = BLOOM_STRENGTH + 0.9 * pulse;
-        const eScale = 1 + 1.4 * pulse;
-        for (const em of edgeMats) em.color.copy(EDGE_BASE).multiplyScalar(eScale);
-        // fade tied to assemble/explode: faint when apart, full when assembled
-        canvas.style.opacity = String(1 - 0.5 * sep);
+        // outshine flash the instant the middle, then the core, snaps home
+        const dM = middleNode ? middleNode.position.distanceTo(homeMiddle) : 1;
+        const dC = coreNode ? coreNode.position.distanceTo(homeCore) : 1;
+        if (prevDistM > 0.06 && dM <= 0.06) pulse = Math.max(pulse, 1.0);   // combine #1
+        if (prevDistC > 0.06 && dC <= 0.06) pulse = Math.max(pulse, 1.4);   // combine #2 (all together)
+        prevDistM = dM;
+        prevDistC = dC;
+        if (pulse > 0) { pulse -= dt * 2.2; if (pulse < 0.001) pulse = 0; }
+
+        // gentle shake — only while a cube is apart AND nearly stationary
+        // (waiting to combine); speed is derived from the baked motion itself
+        const cubes: Array<[THREE.Object3D | null, THREE.Vector3]> = [
+          [outerNode, homeOuter], [middleNode, homeMiddle], [coreNode, homeCore],
+        ];
+        for (const [node, home] of cubes) {
+          if (!node) continue;
+          const prev = prevPos.get(node);
+          const speed = prev ? node.position.distanceTo(prev) / Math.max(dt, 1e-3) : 0;
+          if (prev) prev.copy(node.position);
+          applyShake(node, home, speed);
+        }
+
+        // ease the hover boost
+        hoverBoost += (hoverTarget - hoverBoost) * Math.min(1, dt * 6);
+
+        // core glows brighter the more assembled it is, plus surges + hover
+        const assembled = 1 - Math.min(1, dC / 1.0);
+        if (coreMat) coreMat.emissiveIntensity = 0.25 + 0.45 * assembled + 1.1 * pulse + 0.3 * hoverBoost;
+        bloomPass.strength = BLOOM_STRENGTH + 0.6 * pulse + 0.3 * hoverBoost;
+        const eScale = 1 + 1.2 * pulse + 0.5 * hoverBoost;
+        for (const edge of edgeMats) edge.color.copy(EDGE_BASE).multiplyScalar(eScale);
+
+        // surface current: dim + slow at rest, bright surge on each connect + hover
+        currentUniforms.uTime.value += dt * (1 + 2.4 * pulse + 1.8 * hoverBoost);
+        currentUniforms.uIntensity.value = 0.4 + 1.5 * pulse + 0.5 * hoverBoost;
+
+        canvas.style.opacity = '1';
 
         composer.render();
-        if ((moving || pulse > 0) && visible) {
-          raf = requestAnimationFrame(draw);
-        } else {
-          running = false;
-        }
+        if (visible) raf = requestAnimationFrame(draw);
+        else running = false;
       };
 
       function kick() {
         if (reduce || !model || !visible || running) return;
         running = true;
+        lastTime = 0;
         raf = requestAnimationFrame(draw);
       }
       const stop = () => { running = false; cancelAnimationFrame(raf); };
@@ -376,6 +455,10 @@ import CubeLogo from './CubeLogo.astro';
         kick();
       }
 
+      // pause when the tab is backgrounded (battery), resume on return
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stop(); else kick();
+      });
       window.addEventListener('pagehide', stop);
     }
   }
