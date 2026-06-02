@@ -199,11 +199,11 @@ import CubeLogo from './CubeLogo.astro';
       // (waiting to combine), so it never fights the baked combine motion.
       const applyShake = (node: THREE.Object3D, home: THREE.Vector3, speed: number) => {
         if (node.position.distanceTo(home) < 0.3 || speed > 0.25) return;
-        const a = 0.025;
+        const a = 0.012; // gentle, slow float (not a jittery shake)
         const ph = node.id;
-        node.position.x += a * Math.sin(elapsed * 2.0 + ph * 1.7);
-        node.position.y += a * Math.sin(elapsed * 2.5 + ph * 0.6);
-        node.position.z += a * Math.sin(elapsed * 1.7 + ph * 2.4);
+        node.position.x += a * Math.sin(elapsed * 1.0 + ph * 1.7);
+        node.position.y += a * Math.sin(elapsed * 1.2 + ph * 0.6);
+        node.position.z += a * Math.sin(elapsed * 0.85 + ph * 2.4);
       };
 
       // ---- logo colors: each piece gets the flat-logo tri-tone (top / right /
