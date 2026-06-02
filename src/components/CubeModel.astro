@@ -135,8 +135,9 @@ import CubeLogo from './CubeLogo.astro';
     if (renderer) {
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.outputColorSpace = THREE.SRGBColorSpace;
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.0;
+      // No tone-mapping: render the flat logo colors exactly (ACES was crushing
+      // the charcoal/slate shades to black). Bloom still lifts the bright core.
+      renderer.toneMapping = THREE.NoToneMapping;
       renderer.setClearColor(0x000000, 0); // transparent through the composer
 
       const scene = new THREE.Scene();
@@ -209,9 +210,9 @@ import CubeLogo from './CubeLogo.astro';
       // left shades) baked as per-face vertex colors and rendered UNLIT
       // (MeshBasic) so it reads exactly like the 2D mark. ----
       const SHADES: Record<string, [number, number, number]> = {
-        outer:  [0x3a3a3a, 0x232323, 0x141414],   // charcoal
-        middle: [0x5e6b7a, 0x3c4654, 0x2a3340],   // cool slate
-        core:   [0x9fd0ff, 0x4a9eff, 0x2e7bd6],   // brand blue
+        outer:  [0x2e2e2e, 0x1c1c1c, 0x111111],   // charcoal (exact logo)
+        middle: [0x5e6b7a, 0x3c4654, 0x2a3340],   // cool slate (exact logo)
+        core:   [0x7fbeff, 0x4a9eff, 0x2e7bd6],   // brand blue (exact logo)
       };
       const colorize = (mesh: THREE.Mesh, shades: [number, number, number]) => {
         let g = mesh.geometry as THREE.BufferGeometry;
@@ -352,7 +353,7 @@ import CubeLogo from './CubeLogo.astro';
               // faint edge outline (subtle, like the flat logo's seams)
               const edges = new THREE.LineSegments(
                 new THREE.EdgesGeometry(mesh.geometry, 30),
-                new THREE.LineBasicMaterial({ color: EDGE_BASE.clone(), toneMapped: false, transparent: true, opacity: 0.4, depthWrite: false }),
+                new THREE.LineBasicMaterial({ color: EDGE_BASE.clone(), toneMapped: false, transparent: true, opacity: 0.16, depthWrite: false }),
               );
               edges.renderOrder = 2;
               mesh.add(edges);
