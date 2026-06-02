@@ -380,8 +380,10 @@ import CubeLogo from './CubeLogo.astro';
           // clean isometric viewed straight down the cube's corner (hexagonal,
           // like the flat logo): point the +corner at the camera, then roll so an
           // edge sits vertical
-          pivot.quaternion.setFromUnitVectors(new THREE.Vector3(1, 1, -1).normalize(), new THREE.Vector3(0, 0, 1));
-          pivot.rotateZ(THREE.MathUtils.degToRad(-15));
+          // tilt a touch off the pure corner so the telescoped "opened" line is
+          // visible (looking straight down the axis hid it), then roll level
+          pivot.quaternion.setFromUnitVectors(new THREE.Vector3(1, 1, -1).normalize(), new THREE.Vector3(0.32, 0.2, 1).normalize());
+          pivot.rotateZ(THREE.MathUtils.degToRad(-12));
 
           // center the model on its ASSEMBLED pose, so the logo rests centered,
           // and capture each piece's home position there for the distance checks
