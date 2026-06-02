@@ -209,10 +209,12 @@ import CubeLogo from './CubeLogo.astro';
       // ---- logo colors: each piece gets the flat-logo tri-tone (top / right /
       // left shades) baked as per-face vertex colors and rendered UNLIT
       // (MeshBasic) so it reads exactly like the 2D mark. ----
+      // Logo hues, lifted for the dark page background so the three cubes read
+      // as clearly distinct (the literal SVG greys vanish against near-black).
       const SHADES: Record<string, [number, number, number]> = {
-        outer:  [0x2e2e2e, 0x1c1c1c, 0x111111],   // charcoal (exact logo)
-        middle: [0x5e6b7a, 0x3c4654, 0x2a3340],   // cool slate (exact logo)
-        core:   [0x7fbeff, 0x4a9eff, 0x2e7bd6],   // brand blue (exact logo)
+        outer:  [0x5a5f66, 0x444a52, 0x33383f],   // charcoal → visible cool grey
+        middle: [0x8fa3b8, 0x617388, 0x495872],   // cool slate (clearly lighter)
+        core:   [0x9fd0ff, 0x4a9eff, 0x2e7bd6],   // brand blue (brightest)
       };
       const colorize = (mesh: THREE.Mesh, shades: [number, number, number]) => {
         let g = mesh.geometry as THREE.BufferGeometry;
