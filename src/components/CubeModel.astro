@@ -375,7 +375,7 @@ import CubeLogo from './CubeLogo.astro';
           mixer = new THREE.AnimationMixer(model);
           for (const clip of gltf.animations) mixer.clipAction(clip).play();
           const clipDur = gltf.animations.reduce((d, c) => Math.max(d, c.duration), 0) || 10;
-          const ASSEMBLED_T = clipDur * 0.72; // a moment when the cube is fully assembled
+          const ASSEMBLED_T = clipDur * 0.53; // a moment when the cube is fully assembled
 
           // clean isometric viewed straight down the cube's corner (hexagonal,
           // like the flat logo): point the +corner at the camera, then roll so an
