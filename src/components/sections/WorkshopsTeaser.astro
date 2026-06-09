@@ -14,13 +14,14 @@ import { workshops } from '@/data/site';
           <span class="eyebrow"><span class="size-1.5 rounded-full bg-teal"></span>Workshops &amp; training</span>
           <h2 class="mt-5 text-3xl md:text-4xl">Hands-on training that builds real, industry-aligned skills</h2>
           <p class="mt-4 text-muted">
-            We run practical workshops for students and institutions across web, AI, automation, and
-            robotics — emphasizing real-world use cases over theory.
+            We run practical, lab-first workshops for students and institutions — seven tracks
+            spanning web, agentic AI, cloud, DevOps, security, Linux, and blockchain — emphasizing
+            real-world systems over theory.
           </p>
 
           <div class="mt-7 flex flex-wrap gap-2">
-            {workshops.domains.map((d) => (
-              <span class="rounded-full border border-line bg-white/[0.02] px-3 py-1.5 text-sm text-muted">{d}</span>
+            {workshops.tracks.map((t) => (
+              <span class="rounded-full border border-line bg-white/[0.02] px-3 py-1.5 text-sm text-muted">{t.title}</span>
             ))}
           </div>
 
@@ -30,7 +31,7 @@ import { workshops } from '@/data/site';
           </a>
         </div>
 
-        <dl class="grid grid-cols-3 gap-6 lg:grid-cols-1 lg:border-l lg:border-line lg:pl-10">
+        <dl class="grid grid-cols-2 gap-6 sm:grid-cols-4 lg:grid-cols-1 lg:border-l lg:border-line lg:pl-10">
           {workshops.stats.map((s) => (
             <div class="flex flex-col gap-1">
               <dt class="order-2 text-xs text-faint">{s.label}</dt>

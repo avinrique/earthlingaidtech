@@ -9,7 +9,7 @@ export function getStaticPaths() {
 }
 
 const { product } = Astro.props;
-const others = products.filter((p) => p.slug !== product.slug);
+const others = products.filter((p) => p.slug !== product.slug && !p.lowKey);
 
 const accent: Record<string, { text: string; ring: string; bg: string; border: string; glow: string }> = {
   accent: { text: 'text-accent', ring: 'ring-accent/30', bg: 'bg-accent/10', border: 'border-accent/30', glow: 'rgba(74,158,255,0.22)' },
@@ -51,9 +51,30 @@ const a = accent[product.accent];
         <p class="reveal max-w-2xl text-lg leading-relaxed text-muted" data-delay="2">{product.description}</p>
 
         <div class="reveal mt-2 flex flex-wrap gap-3" data-delay="3">
-          <Button href="/contact" size="lg" iconRight="arrow-right">Request a demo</Button>
+          {product.lowKey && product.url ? (
+            <Button href={product.url} size="lg" iconRight="external-link">Visit live</Button>
+          ) : (
+            <>
+              <Button href="/contact" size="lg" iconRight="arrow-right">Request a demo</Button>
+              {product.url && (
+                <Button href={product.url} variant="secondary" size="lg" iconRight="external-link">Visit live</Button>
+              )}
+            </>
+          )}
           <Button href={`mailto:${site.email}`} variant="secondary" size="lg">Talk to us</Button>
         </div>
+
+        {product.image && (
+          <figure class="reveal mt-10 w-full max-w-4xl overflow-hidden rounded-2xl border border-line shadow-pop" data-delay="4">
+            <img
+              src={product.image.src}
+              alt={product.image.alt}
+              width={product.image.width}
+              height={product.image.height}
+              class="h-auto w-full object-cover"
+            />
+          </figure>
+        )}
       </div>
     </div>
   </section>
@@ -89,6 +110,52 @@ const a = accent[product.accent];
       )}
     </div>
   </section>
+
+  <!-- In the field: photos & video -->
+  {(product.gallery || product.video) && (
+    <section class="border-t border-line py-20 md:py-28">
+      <div class="container-app">
+        <h2 class="reveal text-3xl md:text-4xl">{product.name} in the field</h2>
+        <p class="reveal mt-3 max-w-xl text-muted" data-delay="1">
+          Real rooms, real users — not mockups.
+        </p>
+
+        <div class="mt-10 grid gap-4 lg:grid-cols-3">
+          {product.video && (
+            <div class="reveal overflow-hidden rounded-2xl border border-line bg-black lg:col-span-2">
+              <video
+                class="size-full object-cover"
+                src={product.video.src}
+                poster={product.video.poster}
+                controls
+                muted
+                playsinline
+                preload="metadata"
+              ></video>
+            </div>
+          )}
+          {product.gallery?.map((g, i) => (
+            <figure
+              class:list={[
+                'reveal group overflow-hidden rounded-2xl border border-line bg-surface/40',
+                !product.video && i === 0 && 'lg:col-span-2',
+              ]}
+              data-delay={String((i % 3) + 1)}
+            >
+              <img
+                src={g.src}
+                alt={g.alt}
+                width={g.width}
+                height={g.height}
+                loading="lazy"
+                class="size-full object-cover transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:scale-105"
+              />
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
 
   <!-- Other products -->
   <section class="pb-24">

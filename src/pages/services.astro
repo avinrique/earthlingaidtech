@@ -15,7 +15,7 @@ const accent: Record<string, { text: string; ring: string; dot: string; glow: st
 
 <Base
   title="Services"
-  description="EdTech, agentic AI & automation, robotics & embedded systems, and enterprise software — engineered for performance, security, and scale."
+  description="Custom web, mobile & desktop software, agentic AI & automation, EdTech platforms, and robotics & hardware products — engineered for performance, security, and scale."
 >
   <PageHeader
     eyebrow="Capabilities"
@@ -45,7 +45,6 @@ const accent: Record<string, { text: string; ring: string; dot: string; glow: st
                 {s.points.map((p) => (
                   <li
                     class="flex items-start gap-3 rounded-2xl border border-line bg-surface/30 p-5 transition-colors duration-300 hover:border-line-strong"
-                    style={`--g:${a.glow}`}
                   >
                     <span class:list={['mt-1.5 size-2 shrink-0 rounded-full', a.dot]}></span>
                     <span class="text-[0.95rem] leading-relaxed text-body">{p}</span>

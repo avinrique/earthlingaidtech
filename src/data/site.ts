@@ -11,7 +11,7 @@ export const site = {
   url: 'https://earthlingaidtech.com',
   tagline: 'Engineering Intelligence. Empowering Humans.',
   description:
-    'Earthling Aidtech builds EdTech platforms, agentic AI systems, robotics, and web & mobile apps. Prepzer0 runs at SVIT and East Horizon School; 600+ students trained. A product & engineering studio in Bengaluru.',
+    'Earthling Aidtech builds custom software — web apps, automation, desktop tools, and AI agents — plus EdTech platforms, robotics, and hardware products. Prepzer0 runs at SVIT and East Horizon School; 600+ students trained. A product & engineering studio in Bengaluru.',
   email: 'services@earthlingaidtech.com',
   emailAlt: 'earthlingaidtech@gmail.com',
   location: 'Bengaluru, India',
@@ -34,7 +34,7 @@ export const nav: NavLink[] = [
 /* ---- Hero stats / proof bar (every number is real, from app.txt) ---- */
 export const stats: { value: string; label: string; accent?: string }[] = [
   { value: '600+', label: 'Students trained', accent: 'accent' },
-  { value: '6', label: 'Workshops led', accent: 'teal' },
+  { value: '6', label: 'Products built', accent: 'teal' },
   { value: '2', label: 'Prepzer0 deployments', accent: 'violet' },
   { value: '6', label: 'Client partners', accent: 'amber' },
 ];
@@ -52,18 +52,18 @@ export type Service = {
 
 export const services: Service[] = [
   {
-    id: 'edtech',
-    icon: 'graduation-cap',
+    id: 'software',
+    icon: 'code-xml',
     accent: 'accent',
-    title: 'Education Technology',
-    tag: 'EdTech',
+    title: 'Software & Applications',
+    tag: 'Web · Mobile · Desktop',
     summary:
-      'Exam and assessment platforms built for real institutions — secure delivery, AI-assisted grading, and reporting. It is what powers Prepzer0.',
+      'Custom software for businesses of every size — web apps, mobile apps, desktop tools, and the ERP/CRM systems behind them. MERN on the web, Flutter on mobile, engineered to ship.',
     points: [
-      'Secure, scalable examination workflows',
-      'AI-assisted monitoring & evaluation',
-      'Custom LMS for institutions',
-      'Flexible deployment & reporting',
+      'High-performance web apps (MERN)',
+      'Desktop applications & internal tools',
+      'Mobile apps (Flutter — iOS & Android)',
+      'Custom ERP, CRM, APIs & dashboards',
     ],
   },
   {
@@ -73,47 +73,49 @@ export const services: Service[] = [
     title: 'Agentic AI & Automation',
     tag: 'Applied AI',
     summary:
-      'LLM-powered agents that take over repetitive work — multi-agent systems, RAG pipelines, and decision support, wired into your real data.',
+      'AI agents and automation that take over repetitive work — from business-process scripting to multi-agent systems and RAG pipelines, wired into your real data.',
     points: [
       'Autonomous & multi-agent systems',
-      'LLM-powered automation pipelines',
+      'Business automation & scripting',
       'Retrieval-Augmented Generation (RAG)',
       'Intelligent decision-support tools',
     ],
   },
   {
-    id: 'robotics',
-    icon: 'cpu',
+    id: 'edtech',
+    icon: 'graduation-cap',
     accent: 'violet',
-    title: 'Robotics & Embedded',
-    tag: 'Hardware × AI',
+    title: 'Education Technology',
+    tag: 'EdTech',
     summary:
-      'Embedded systems and AI working together in the physical world — sensors, real-time control, and machines like our tablet-faced info robot.',
+      'Exam, assessment, and learning platforms built for real institutions — secure delivery, AI-assisted grading, and reporting. It is what powers Prepzer0 and Curio.',
     points: [
-      'Robotics & intelligent machines',
-      'Microcontroller & SBC systems',
-      'Sensor-based smart systems',
-      'Real-time perception & actuation',
+      'Secure, scalable examination workflows',
+      'AI-assisted monitoring & evaluation',
+      'Interactive courseware & custom LMS',
+      'Flexible deployment & reporting',
     ],
   },
   {
-    id: 'software',
-    icon: 'code-xml',
+    id: 'robotics',
+    icon: 'cpu',
     accent: 'amber',
-    title: 'Software & Applications',
-    tag: 'Enterprise & Consumer',
+    title: 'Robotics & Hardware Products',
+    tag: 'Hardware × AI',
     summary:
-      'ERP, CRM, web, and mobile apps engineered to ship — MERN on the web, Flutter on mobile, with the APIs and dashboards behind them.',
+      'Embedded systems and AI working together in the physical world — from our tablet-faced info robot to PrintFlow, a self-service print kiosk driven entirely from WhatsApp.',
     points: [
-      'Custom ERP & CRM systems',
-      'High-performance web apps (MERN)',
-      'Mobile apps (Flutter — iOS & Android)',
-      'Desktop software, APIs & dashboards',
+      'Robotics & intelligent machines',
+      'Product-grade kiosks & vending systems',
+      'Microcontroller & SBC systems',
+      'Real-time perception & actuation',
     ],
   },
 ];
 
 /* ---- Products ---- */
+export type ProductImage = { src: string; alt: string; width: number; height: number };
+
 export type Product = {
   id: string;
   slug: string;
@@ -126,6 +128,16 @@ export type Product = {
   description: string;
   features: { title: string; body: string }[];
   highlights?: string[];
+  /** Live product URL, when one exists. */
+  url?: string;
+  /** Primary screenshot / hero shot. */
+  image?: ProductImage;
+  /** Photos of the product in the field. */
+  gallery?: ProductImage[];
+  /** Short demo / field clip. */
+  video?: { src: string; poster?: string };
+  /** Listed on /products but kept out of the homepage showcase & footer. */
+  lowKey?: boolean;
 };
 
 export const products: Product[] = [
@@ -133,21 +145,71 @@ export const products: Product[] = [
     id: 'prepzer0',
     slug: 'prepzer0',
     name: 'Prepzer0',
-    kicker: 'AI Examination & Assessment Platform',
+    kicker: 'AI Examination & Placement Testing Platform',
     icon: 'shield-check',
     accent: 'accent',
     status: 'Flagship · Live',
     summary:
-      'Live at SVIT and East Horizon School — secure exam delivery with AI-assisted grading and reporting.',
+      'Live at SVIT and East Horizon School — secure exam and placement testing with intelligent proctoring and AI-assisted grading.',
     description:
-      'Prepzer0 is our flagship EdTech product — an AI-powered examination and assessment platform for colleges, schools, and organizations. It brings secure exam delivery, AI-assisted evaluation, and rich reporting into one flexible system, and it already runs in real classrooms.',
+      'Prepzer0 is our flagship EdTech product — an AI-powered examination, assessment, and placement-testing platform for colleges, schools, and organizations. It combines secure exam delivery, intelligent proctoring, AI-assisted evaluation, and rich reporting in one flexible system. It already runs in real classrooms, and has powered a campus placement drive at BGS College of Engineering & Technology.',
     features: [
-      { title: 'Secure exam delivery', body: 'Hardened, scalable examination workflows built for high-stakes assessment.' },
-      { title: 'AI-assisted evaluation', body: 'Intelligent monitoring and grading that cut manual effort while keeping educators in control.' },
+      { title: 'Secure delivery & intelligent proctoring', body: 'Hardened examination workflows with AI-powered activity monitoring, built for high-stakes assessment and recruitment testing.' },
+      { title: 'AI-assisted evaluation', body: 'Intelligent grading that cuts manual effort while keeping educators in control — live scores and submission status at a glance.' },
       { title: 'Flexible deployment', body: 'Cloud or on-prem deployment models tailored to each institution.' },
       { title: 'Custom assessment logic', body: 'Configurable scoring, question banks, and detailed analytics & reporting.' },
     ],
     highlights: ['Sai Vidya Institute of Technology (SVIT)', 'East Horizon School'],
+    image: {
+      src: '/images/products/prepzer0/dashboard.jpg',
+      alt: 'Prepzer0 examiner dashboard — live exam candidates with scores, activity status, and submission times',
+      width: 1036,
+      height: 720,
+    },
+    gallery: [
+      { src: '/images/products/prepzer0/bgs-lab-1.jpg', alt: 'Students taking a Prepzer0 placement test in a computer lab at BGS College of Engineering & Technology', width: 1600, height: 1200 },
+      { src: '/images/products/prepzer0/bgs-lab-2.jpg', alt: 'Prepzer0 exam interface running across lab workstations during a campus placement drive', width: 1600, height: 1200 },
+      { src: '/images/products/prepzer0/bgs-lab-3.jpg', alt: 'A full lab of candidates working through a Prepzer0 assessment', width: 1600, height: 1200 },
+    ],
+    video: { src: '/video/prepzer0-campus.mp4', poster: '/video/prepzer0-campus-poster.jpg' },
+  },
+  {
+    id: 'curio',
+    slug: 'curio',
+    name: 'Curio',
+    kicker: 'Interactive Visual Learning Platform',
+    icon: 'orbit',
+    accent: 'teal',
+    status: 'Product · Pre-launch',
+    summary:
+      'Big ideas, made visible — 13 cinematic, interactive courses with 193+ animated scenes across physics, chemistry, code, and more. 11 live today.',
+    description:
+      'Curio turns hard subjects into cinematic, hands-on courses. Every concept is animated and built up step by step — then handed to the learner to poke at until it clicks. Thirteen courses span physics, chemistry, programming, biology, electronics, networking, cloud, and algebra, each with its own visual identity and a friendly guide character. Eleven are live and previewable today.',
+    features: [
+      { title: '13 courses, 193+ animated scenes', body: 'From orbital mechanics to TCP/IP to the Calvin cycle — five-act courses where nothing is a wall of text.' },
+      { title: 'Watch it, then break it', body: 'Concepts come alive as animation first, then become interactive: drag sliders, flip switches, break circuits until it clicks.' },
+      { title: 'A guide for every course', body: 'Nova, Sparky, Py, Gene and friends — a named character per course reacts as each idea lands, giving every subject its own personality.' },
+      { title: 'One simple price', body: 'Buy a course once and keep it, or take the All-Access pass — lifetime access with every future release included.' },
+    ],
+  },
+  {
+    id: 'printflow',
+    slug: 'printflow',
+    name: 'PrintFlow',
+    kicker: 'Self-Service Print Kiosk · WhatsApp Ordering',
+    icon: 'printer',
+    accent: 'violet',
+    status: 'Pilot · Hardware',
+    summary:
+      'A vending machine for printing — send a document on WhatsApp, pick options in chat, and release the job at the kiosk with a 4-digit code.',
+    description:
+      'PrintFlow turns a print shop or campus corner into a self-service print vending machine, with WhatsApp as the entire interface. Customers send a document to the PrintFlow number, a conversational bot walks them through copies, colour, paper size, sides, and page ranges, and the job waits in a secure cloud queue. At the kiosk, a 4-digit on-screen code releases their prints — documents ordered from anywhere only print when the right person is standing at the machine.',
+    features: [
+      { title: 'Order from WhatsApp', body: 'No app, no signup — a guided chat flow that accepts 9 file formats including PDF, Office documents, and images.' },
+      { title: 'Full print control in chat', body: 'Copies, B&W or colour, A4/A3/Letter, single or double-sided, and page ranges like "1-3,7,10-12" — with the exact price quoted before you confirm.' },
+      { title: 'Code-verified pickup', body: 'Jobs are held in a secure queue until the customer relays the kiosk’s 4-digit code — then everything they queued prints in one go.' },
+      { title: 'Cloud-backed kiosk', body: 'A cloud print service dispatches to the physical kiosk printer, with live pricing and job tracking by ID straight from the chat.' },
+    ],
   },
   {
     id: 'newsletter',
@@ -187,6 +249,27 @@ export const products: Product[] = [
       { title: 'Information delivery', body: 'Explains services, departments, events, and general information on demand.' },
     ],
   },
+  {
+    id: 'aniview',
+    slug: 'aniview',
+    name: 'AniView',
+    kicker: 'Streaming & Community Platform',
+    icon: 'clapperboard',
+    accent: 'amber',
+    status: 'Live · Lab project',
+    summary:
+      'Our production-scale lab project — a live streaming platform with multi-source failover, a virtual-currency economy, 3D collectibles, and CI/CD with automatic rollback.',
+    description:
+      'AniView is where we pressure-test production engineering in the open: a live streaming and community platform serving real users. Under the hood, it aggregates nine data providers with health-tracked automatic failover so a dead source never blanks the screen. On top sits a full gamified layer — virtual currency, collectible characters rendered as interactive 3D models, achievements, daily quizzes, user reels, and per-episode chat — all shipped through a CI/CD pipeline with smoke tests and automatic rollback.',
+    features: [
+      { title: 'Multi-source failover engine', body: 'Nine upstream providers with health tracking, cooldowns, and cross-provider matching — the player walks the chain automatically when a source fails.' },
+      { title: 'Gamified economy & 3D collectibles', body: 'A virtual-currency loop with daily rewards and streaks, plus 26 collectible characters rendered as interactive 3D models in the browser.' },
+      { title: 'Community layer', body: 'User reels with moderation, per-episode discussions, ratings, achievements, and a daily quiz that pays out coins.' },
+      { title: 'Production-grade operations', body: 'CI/CD with smoke tests and automatic rollback, real-time analytics, and an admin dashboard — running live on AWS.' },
+    ],
+    url: 'https://aniview.online',
+    lowKey: true,
+  },
 ];
 
 /* ---- "How we work" / approach ---- */
@@ -206,21 +289,66 @@ export const rnd: string[] = [
   'Automation frameworks',
 ];
 
-/* ---- Workshops ---- */
+/* ---- Workshops ----
+   NOTE: gallery & video are filled from real WhatsApp media dropped into
+   /public/images/workshops and /public/video. The page renders whatever is
+   present, so add/remove entries here as the media library grows. */
+export type WorkshopTrack = {
+  title: string;
+  icon: string; // lucide icon name
+  accent: 'accent' | 'teal' | 'violet' | 'amber';
+  blurb: string;
+};
+
+export type Speaker = {
+  name: string;
+  role: string;
+  bio: string;
+  focus: string[];
+};
+
+export type GalleryItem = { src: string; alt: string; span?: 'wide' | 'tall' };
+
 export const workshops = {
+  /* Headline proof — leads on reach & breadth, not venue count. */
   stats: [
-    { value: '6', label: 'Workshops conducted' },
     { value: '600+', label: 'Students trained' },
-    { value: '2', label: 'Partner institutions' },
+    { value: '7', label: 'Technical tracks' },
+    { value: '15+', label: 'Sessions delivered' },
+    { value: '100%', label: 'Hands-on, lab-first' },
   ],
-  institutions: ['BMS Institute of Technology (BMSIT)', 'Sai Vidya Institute of Technology (SVIT)'],
-  domains: [
-    'Web Development',
-    'Application Development',
-    'Artificial Intelligence & Agentic AI',
-    'Automation and scripting',
-    'Robotics & Embedded Systems',
+  institutions: [
+    'BMS Institute of Technology (BMSIT)',
+    'Sai Vidya Institute of Technology (SVIT)',
   ],
+  /* The 7 tracks the user named. These ARE the headline of the page. */
+  tracks: [
+    { title: 'Web Development', icon: 'globe', accent: 'accent', blurb: 'Modern full-stack — from responsive frontends to production APIs and deployment.' },
+    { title: 'Agentic AI', icon: 'bot', accent: 'teal', blurb: 'Building autonomous agents, LLM tooling, and multi-agent systems on real data.' },
+    { title: 'Cloud', icon: 'cloud', accent: 'accent', blurb: 'Cloud-native fundamentals — compute, storage, networking, and scaling apps that ship.' },
+    { title: 'DevOps', icon: 'infinity', accent: 'violet', blurb: 'CI/CD pipelines, containers, and infrastructure-as-code the way industry runs it.' },
+    { title: 'Ethical Hacking', icon: 'shield-alert', accent: 'amber', blurb: 'Offensive security foundations — recon, exploitation, and defending what you break.' },
+    { title: 'Linux', icon: 'terminal', accent: 'teal', blurb: 'Command-line mastery, shell scripting, and the system skills every engineer needs.' },
+    { title: 'Blockchain', icon: 'box', accent: 'violet', blurb: 'Smart contracts, decentralized apps, and the fundamentals behind Web3 systems.' },
+  ] as WorkshopTrack[],
+  speakers: [
+    {
+      name: 'Abhinav Gupta',
+      role: 'Founder & Lead Instructor',
+      bio: 'Engineer and founder of Earthling Aidtech — builds agentic-AI systems, EdTech platforms, and production software, and brings that same hands-on practice into the classroom.',
+      focus: ['Agentic AI', 'Web Development', 'Cloud & DevOps'],
+    },
+    {
+      name: 'Sai Kartik Ketha',
+      role: 'Instructor & Technical Lead',
+      bio: 'Leads technical sessions across security and systems — translating real engineering workflows into labs students can actually run and reuse.',
+      focus: ['Ethical Hacking', 'Linux', 'Blockchain'],
+    },
+  ] as Speaker[],
+  /* Photos go here as files land in /public/images/workshops. */
+  gallery: [] as GalleryItem[],
+  /* Trimmed highlight reel; set src once the cut clip is in /public/video. */
+  video: null as null | { src: string; poster?: string },
 } as const;
 
 /* ---- Clients & collaborations (real names from app.txt; notes only where known) ---- */

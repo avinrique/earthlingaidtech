@@ -1,34 +1,37 @@
 ---
 import Base from '@/layouts/Base.astro';
 import PageHeader from '@/components/PageHeader.astro';
+import Button from '@/components/Button.astro';
 import { Icon } from 'astro-icon/components';
 import { workshops } from '@/data/site';
 
-const domainIcons: Record<string, string> = {
-  'Web Development': 'globe',
-  'Application Development': 'smartphone',
-  'Artificial Intelligence & Agentic AI': 'bot',
-  'Automation & Scripting': 'workflow',
-  'Robotics & Embedded Systems': 'cpu',
+const { stats, tracks, speakers, institutions, gallery, video } = workshops;
+
+// Static maps so Tailwind generates these utilities (no dynamic class names).
+const accentMap: Record<string, { text: string; ring: string }> = {
+  accent: { text: 'text-accent', ring: 'group-hover:ring-accent/40' },
+  teal: { text: 'text-teal', ring: 'group-hover:ring-teal/40' },
+  violet: { text: 'text-violet', ring: 'group-hover:ring-violet/40' },
+  amber: { text: 'text-amber', ring: 'group-hover:ring-amber/40' },
 };
 ---
 
 <Base
   title="Workshops & Training"
-  description="Hands-on workshops and technical training for students and institutions — web, AI, automation, and robotics. 600+ students trained across BMSIT and SVIT."
+  description="Hands-on, lab-first workshops for students and institutions — Web Development, Agentic AI, Cloud, DevOps, Ethical Hacking, Linux, and Blockchain. 600+ students trained across leading engineering campuses."
 >
   <PageHeader
     eyebrow="Workshops & training"
-    title="Hands-on training that builds <span class='text-gradient'>real skills</span>"
-    subtitle="Practical programs for students and institutions across a broad range of technical domains — emphasizing real-world use cases and industry-aligned skills."
+    title="We bring the lab <span class='text-gradient'>to your campus</span>"
+    subtitle="Industry-grade, hands-on workshops led by working engineers — not slideware. From Agentic AI to Ethical Hacking, students leave having actually built and broken real systems."
   />
 
   <!-- Stats -->
-  <section class="py-16">
+  <section class="border-b border-line py-14 md:py-16">
     <div class="container-app">
-      <dl class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {workshops.stats.map((s, i) => (
-          <div class="reveal rounded-2xl border border-line bg-surface/30 p-7 text-center" data-delay={String(i + 1)}>
+      <dl class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {stats.map((s, i) => (
+          <div class="reveal rounded-2xl border border-line bg-surface/30 p-6 text-center md:p-7" data-delay={String((i % 4) + 1)}>
             <dd class="font-display text-4xl font-semibold text-ink md:text-5xl">{s.value}</dd>
             <dt class="mt-2 text-sm text-faint">{s.label}</dt>
           </div>
@@ -37,43 +40,188 @@ const domainIcons: Record<string, string> = {
     </div>
   </section>
 
-  <!-- Domains -->
-  <section class="py-12 md:py-16">
+  <!-- Gallery — the main event -->
+  <section class="py-16 md:py-24">
     <div class="container-app">
-      <h2 class="reveal text-3xl md:text-4xl">Workshop domains</h2>
-      <p class="reveal mt-3 max-w-xl text-muted" data-delay="1">
-        Every program emphasizes practical implementation, real-world use cases, and industry-aligned
-        skills.
-      </p>
+      <div class="flex flex-wrap items-end justify-between gap-6">
+        <div class="max-w-2xl">
+          <span class="eyebrow reveal"><span class="size-1.5 rounded-full bg-teal"></span>On the ground</span>
+          <h2 class="reveal mt-5 text-3xl md:text-4xl" data-delay="1">Moments from our sessions</h2>
+          <p class="reveal mt-4 text-muted" data-delay="2">
+            Packed labs, full rooms, and students shipping real things by the end of the day. A
+            glimpse of the energy we bring to every campus we walk into.
+          </p>
+        </div>
+      </div>
 
-      <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {workshops.domains.map((d, i) => (
-          <div
-            class="reveal group flex items-center gap-4 rounded-2xl border border-line bg-surface/30 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
-            data-delay={String((i % 3) + 1)}
-          >
-            <div class="grid size-11 shrink-0 place-items-center rounded-xl bg-white/[0.03] ring-1 ring-inset ring-line-strong transition-colors group-hover:ring-accent/30">
-              <Icon name={`lucide:${domainIcons[d] ?? 'sparkles'}`} class="size-5 text-accent" />
+      {gallery.length > 0 ? (
+        <div class="mt-12 grid auto-rows-[200px] grid-cols-2 gap-4 sm:auto-rows-[240px] lg:grid-cols-4">
+          {gallery.map((g, i) => (
+            <figure
+              class:list={[
+                'reveal group relative overflow-hidden rounded-2xl border border-line bg-surface/40',
+                g.span === 'wide' && 'col-span-2',
+                g.span === 'tall' && 'row-span-2',
+              ]}
+              data-delay={String((i % 4) + 1)}
+            >
+              <img
+                src={g.src}
+                alt={g.alt}
+                loading={i < 4 ? 'eager' : 'lazy'}
+                class="size-full object-cover transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:scale-105"
+              />
+              <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-canvas-deep/70 via-transparent to-transparent opacity-70"></div>
+            </figure>
+          ))}
+        </div>
+      ) : (
+        <div class="reveal mt-12 grid place-items-center rounded-3xl border border-dashed border-line-strong bg-surface/20 px-6 py-20 text-center">
+          <Icon name="lucide:image" class="size-8 text-faint" />
+          <p class="mt-4 max-w-sm text-sm text-faint">Workshop photos are being added here.</p>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <!-- Highlight video -->
+  {video && (
+    <section class="pb-16 md:pb-24">
+      <div class="container-app">
+        <div class="reveal relative overflow-hidden rounded-3xl border border-line bg-surface/40">
+          <div class="bg-grid pointer-events-none absolute inset-0 opacity-30 [mask-image:radial-gradient(ellipse_60%_60%_at_50%_0%,black,transparent)]"></div>
+          <div class="relative grid gap-0 lg:grid-cols-[1.4fr_1fr]">
+            <div class="aspect-video bg-black lg:aspect-auto">
+              <video
+                class="size-full object-cover"
+                src={video.src}
+                poster={video.poster}
+                controls
+                playsinline
+                preload="metadata"
+              ></video>
             </div>
-            <span class="font-medium text-body">{d}</span>
+            <div class="flex flex-col justify-center gap-4 p-8 md:p-12">
+              <span class="eyebrow"><span class="size-1.5 rounded-full bg-accent"></span>Highlight reel</span>
+              <h2 class="text-2xl md:text-3xl">See a session in motion</h2>
+              <p class="text-muted">
+                A short cut from one of our campus workshops — the rooms, the builds, and the people
+                behind them.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Tracks -->
+  <section class="border-t border-line py-16 md:py-24">
+    <div class="container-app">
+      <div class="max-w-2xl">
+        <span class="eyebrow reveal"><span class="size-1.5 rounded-full bg-violet"></span>What we teach</span>
+        <h2 class="reveal mt-5 text-3xl md:text-4xl" data-delay="1">Seven tracks, one standard: build it yourself</h2>
+        <p class="reveal mt-4 text-muted" data-delay="2">
+          Every track is a guided lab. Students don't just watch — they configure, code, deploy, and
+          troubleshoot real systems with us in the room.
+        </p>
+      </div>
+
+      <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {tracks.map((t, i) => {
+          const a = accentMap[t.accent];
+          return (
+            <div
+              class="reveal group relative overflow-hidden rounded-2xl border border-line bg-surface/30 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
+              data-delay={String((i % 3) + 1)}
+            >
+              <div class:list={[
+                'grid size-11 place-items-center rounded-xl bg-white/[0.03] ring-1 ring-inset ring-line-strong transition-colors',
+                a.ring,
+              ]}>
+                <Icon name={`lucide:${t.icon}`} class:list={['size-5', a.text]} />
+              </div>
+              <h3 class="mt-5 font-display text-lg font-medium text-ink">{t.title}</h3>
+              <p class="mt-2 text-sm leading-relaxed text-muted">{t.blurb}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+
+  <!-- Speakers & team -->
+  <section class="border-t border-line py-16 md:py-24">
+    <div class="container-app">
+      <div class="max-w-2xl">
+        <span class="eyebrow reveal"><span class="size-1.5 rounded-full bg-accent"></span>Who runs the room</span>
+        <h2 class="reveal mt-5 text-3xl md:text-4xl" data-delay="1">Led by engineers who ship</h2>
+        <p class="reveal mt-4 text-muted" data-delay="2">
+          Sessions are headlined by our lead instructors and backed by a full multidisciplinary team
+          — so labs stay hands-on and no student gets left behind.
+        </p>
+      </div>
+
+      <div class="mt-12 grid gap-5 lg:grid-cols-2">
+        {speakers.map((sp, i) => (
+          <div class="reveal flex flex-col gap-5 rounded-3xl border border-line bg-surface/30 p-7 sm:flex-row md:p-8" data-delay={String((i % 2) + 1)}>
+            <div class="grid size-16 shrink-0 place-items-center rounded-2xl bg-white/[0.03] font-display text-2xl font-semibold text-accent ring-1 ring-inset ring-line-strong">
+              {sp.name.split(' ').map((n) => n[0]).slice(0, 2).join('')}
+            </div>
+            <div>
+              <h3 class="font-display text-xl font-medium text-ink">{sp.name}</h3>
+              <p class="mt-0.5 text-sm font-medium text-accent-bright">{sp.role}</p>
+              <p class="mt-3 text-sm leading-relaxed text-muted">{sp.bio}</p>
+              <div class="mt-4 flex flex-wrap gap-2">
+                {sp.focus.map((f) => (
+                  <span class="rounded-full border border-line bg-white/[0.02] px-3 py-1 text-xs text-faint">{f}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div class="reveal mt-5 flex items-center gap-4 rounded-2xl border border-line bg-white/[0.02] p-6">
+        <Icon name="lucide:users" class="size-6 shrink-0 text-teal" />
+        <p class="text-sm text-muted">
+          Plus a hands-on support team of engineers and mentors who move table to table — keeping
+          large cohorts on the same page, start to finish.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Institutions (kept understated) -->
+  <section class="border-t border-line py-14 md:py-16">
+    <div class="container-app">
+      <p class="reveal font-mono text-xs uppercase tracking-[0.18em] text-faint">Delivered on campus at</p>
+      <div class="reveal mt-6 grid gap-4 sm:grid-cols-2" data-delay="1">
+        {institutions.map((inst) => (
+          <div class="flex items-center gap-3 rounded-2xl border border-line bg-surface/30 p-5">
+            <Icon name="lucide:building-2" class="size-6 shrink-0 text-accent" />
+            <span class="font-display text-lg font-medium text-ink">{inst}</span>
           </div>
         ))}
       </div>
     </div>
   </section>
 
-  <!-- Institutions -->
-  <section class="py-12 md:py-20">
+  <!-- CTA -->
+  <section class="py-16 md:py-24">
     <div class="container-app">
-      <div class="reveal rounded-3xl border border-line bg-surface/40 p-8 md:p-12">
-        <p class="font-mono text-xs uppercase tracking-[0.18em] text-faint">Institutions we've worked with</p>
-        <div class="mt-6 grid gap-4 sm:grid-cols-2">
-          {workshops.institutions.map((inst) => (
-            <div class="flex items-center gap-3 rounded-2xl border border-line bg-white/[0.02] p-5">
-              <Icon name="lucide:building-2" class="size-6 shrink-0 text-accent" />
-              <span class="font-display text-lg font-medium text-ink">{inst}</span>
-            </div>
-          ))}
+      <div class="reveal relative overflow-hidden rounded-3xl border border-line bg-surface/40 p-8 text-center md:p-14">
+        <div class="glow-accent pointer-events-none absolute -top-24 left-1/2 size-96 -translate-x-1/2 opacity-40"></div>
+        <div class="relative mx-auto max-w-2xl">
+          <h2 class="text-3xl md:text-4xl">Bring a workshop to your campus</h2>
+          <p class="mt-4 text-muted">
+            Hosting a department, a club, or a full cohort? Tell us the track and the headcount —
+            we'll bring the labs, the team, and the energy.
+          </p>
+          <div class="mt-8 flex flex-wrap justify-center gap-3">
+            <Button href="/contact" variant="primary" size="lg" iconRight="arrow-right">Request a workshop</Button>
+            <Button href="/services" variant="secondary" size="lg">See what we build</Button>
+          </div>
         </div>
       </div>
     </div>

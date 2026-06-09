@@ -3,6 +3,7 @@ import { Icon } from 'astro-icon/components';
 import CubeLogo from './CubeLogo.astro';
 import { nav, services, products, site } from '@/data/site';
 
+const footerProducts = products.filter((p) => !p.lowKey);
 const year = 2026; // build-time constant (CI builds annually / on push)
 ---
 
@@ -15,8 +16,8 @@ const year = 2026; // build-time constant (CI builds annually / on push)
       <div class="max-w-xl">
         <h2 class="text-3xl md:text-4xl">Have something to ship? Let's build it.</h2>
         <p class="mt-3 text-muted">
-          An EdTech platform, an AI agent, a robot, or a full product — bring it to a team that has
-          shipped all four. Tell us what you're trying to solve.
+          A web app, an AI agent, a print kiosk, or a full platform — bring it to a team that has
+          shipped them all. Tell us what you're trying to solve.
         </p>
       </div>
       <a
@@ -65,7 +66,7 @@ const year = 2026; // build-time constant (CI builds annually / on push)
       <nav aria-label="Products">
         <h3 class="font-mono text-xs uppercase tracking-[0.18em] text-faint">Products</h3>
         <ul class="mt-4 flex flex-col gap-2.5 text-sm">
-          {products.map((p) => (
+          {footerProducts.map((p) => (
             <li><a href={`/products/${p.slug}`} class="text-muted transition-colors hover:text-ink">{p.name}</a></li>
           ))}
         </ul>
