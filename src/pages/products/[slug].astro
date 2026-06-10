@@ -1,6 +1,7 @@
 ---
 import Base from '@/layouts/Base.astro';
 import Button from '@/components/Button.astro';
+import CurioShowcase from '@/components/CurioShowcase.astro';
 import { Icon } from 'astro-icon/components';
 import { products, site } from '@/data/site';
 
@@ -78,6 +79,8 @@ const a = accent[product.accent];
       </div>
     </div>
   </section>
+
+  {product.id === 'curio' && <CurioShowcase />}
 
   <!-- Features -->
   <section class="py-20 md:py-28">

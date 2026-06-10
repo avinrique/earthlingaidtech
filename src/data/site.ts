@@ -152,7 +152,7 @@ export const products: Product[] = [
     summary:
       'Live at SVIT and East Horizon School — secure exam and placement testing with intelligent proctoring and AI-assisted grading.',
     description:
-      'Prepzer0 is our flagship EdTech product — an AI-powered examination, assessment, and placement-testing platform for colleges, schools, and organizations. It combines secure exam delivery, intelligent proctoring, AI-assisted evaluation, and rich reporting in one flexible system. It already runs in real classrooms, and has powered a campus placement drive at BGS College of Engineering & Technology.',
+      'Prepzer0 is our flagship EdTech product — an AI-powered examination, assessment, and placement-testing platform for colleges, schools, and organizations. It combines secure exam delivery, intelligent proctoring, AI-assisted evaluation, and rich reporting in one flexible system. It already runs in real classrooms, and has powered a demo placement test at BGS College of Engineering & Technology (BGSCET).',
     features: [
       { title: 'Secure delivery & intelligent proctoring', body: 'Hardened examination workflows with AI-powered activity monitoring, built for high-stakes assessment and recruitment testing.' },
       { title: 'AI-assisted evaluation', body: 'Intelligent grading that cuts manual effort while keeping educators in control — live scores and submission status at a glance.' },
@@ -160,6 +160,7 @@ export const products: Product[] = [
       { title: 'Custom assessment logic', body: 'Configurable scoring, question banks, and detailed analytics & reporting.' },
     ],
     highlights: ['Sai Vidya Institute of Technology (SVIT)', 'East Horizon School'],
+    url: 'https://prepzer0.co.in',
     image: {
       src: '/images/products/prepzer0/dashboard.jpg',
       alt: 'Prepzer0 examiner dashboard — live exam candidates with scores, activity status, and submission times',
@@ -167,6 +168,7 @@ export const products: Product[] = [
       height: 720,
     },
     gallery: [
+      { src: '/images/products/prepzer0/site-home.jpg', alt: 'prepzer0.co.in — Prepare, Practice, Succeed: the live Prepzer0 platform landing page', width: 1440, height: 760 },
       { src: '/images/products/prepzer0/bgs-lab-1.jpg', alt: 'Students taking a Prepzer0 placement test in a computer lab at BGS College of Engineering & Technology', width: 1600, height: 1200 },
       { src: '/images/products/prepzer0/bgs-lab-2.jpg', alt: 'Prepzer0 exam interface running across lab workstations during a campus placement drive', width: 1600, height: 1200 },
       { src: '/images/products/prepzer0/bgs-lab-3.jpg', alt: 'A full lab of candidates working through a Prepzer0 assessment', width: 1600, height: 1200 },
@@ -272,6 +274,37 @@ export const products: Product[] = [
   },
 ];
 
+/* ---- Curio course catalog (mirrors curio repo src/lib/courses.ts) ---- */
+export type CurioCourse = {
+  slug: string;
+  title: string;
+  subject: string;
+  guide: string;
+  accent: string;
+  accent2: string;
+  emoji: string;
+  scenes: number;
+  level: string;
+  liveUrl: string | null;
+  topics: string[];
+};
+
+export const curioCourses: CurioCourse[] = [
+  { slug: 'cosmos', title: 'Cosmos', subject: 'Physics', guide: 'Nova', accent: '#4EA8FF', accent2: '#A78BFA', emoji: '🪐', scenes: 16, level: 'Beginner', liveUrl: null, topics: ['Newton’s laws', 'Gravity', 'Orbits', 'Kepler'] },
+  { slug: 'volta', title: 'Volta', subject: 'Electronics', guide: 'Sparky', accent: '#38E0D0', accent2: '#36D399', emoji: '⚡', scenes: 13, level: 'Beginner', liveUrl: 'https://volta-blush.vercel.app', topics: ['Voltage & current', 'Components', 'Circuits', 'Logic gates'] },
+  { slug: 'prism', title: 'Prism', subject: 'Light & Optics', guide: 'Ray', accent: '#FFD15C', accent2: '#38E0D0', emoji: '🔆', scenes: 13, level: 'Beginner', liveUrl: 'https://prism-delta-gules.vercel.app', topics: ['Reflection', 'Refraction', 'Lenses & the eye', 'Colour'] },
+  { slug: 'elementa', title: 'Elementa', subject: 'Chemistry', guide: 'Ato', accent: '#A78BFA', accent2: '#38E0D0', emoji: '⚛️', scenes: 13, level: 'Beginner', liveUrl: 'https://elementa-six.vercel.app', topics: ['Atoms', 'Electron shells', 'Periodic table', 'Bonding'] },
+  { slug: 'pyvisual', title: 'PyVisual', subject: 'Python', guide: 'Py', accent: '#4EA8FF', accent2: '#FFD15C', emoji: '🐍', scenes: 13, level: 'Beginner', liveUrl: 'https://pyvisual.vercel.app', topics: ['Variables & types', 'Booleans & logic', 'Loops', 'Lists & functions'] },
+  { slug: 'helix', title: 'Helix', subject: 'Genetics', guide: 'Gene', accent: '#A78BFA', accent2: '#38E0D0', emoji: '🧬', scenes: 13, level: 'Beginner', liveUrl: 'https://helix-navy.vercel.app', topics: ['Double helix', 'Replication', 'DNA→RNA→protein', 'Inheritance'] },
+  { slug: 'chlora', title: 'Chlora', subject: 'Biology', guide: 'Sprout', accent: '#36D399', accent2: '#FFD15C', emoji: '🌱', scenes: 13, level: 'Beginner', liveUrl: 'https://chlora-opal.vercel.app', topics: ['Leaves & chloroplasts', 'Light reactions', 'Calvin cycle', 'Carbon cycle'] },
+  { slug: 'reacta', title: 'Reacta', subject: 'Chemistry II', guide: 'Mol', accent: '#FF8A4C', accent2: '#FFB347', emoji: '⚗️', scenes: 13, level: 'Intermediate', liveUrl: 'https://reacta-tau.vercel.app', topics: ['Stoichiometry', 'Energy', 'Equilibrium', 'Acids & redox'] },
+  { slug: 'pulse', title: 'Pulse', subject: 'Human Body', guide: 'Pip', accent: '#FF5C5C', accent2: '#FFB347', emoji: '🫀', scenes: 13, level: 'Beginner', liveUrl: 'https://pulse-delta-olive.vercel.app', topics: ['Cells & systems', 'Heart & blood', 'Lungs & breathing', 'Nerves & immunity'] },
+  { slug: 'nimbus', title: 'Nimbus', subject: 'Cloud Computing', guide: 'Nimbus', accent: '#4EA8FF', accent2: '#38E0D0', emoji: '☁️', scenes: 13, level: 'Intermediate', liveUrl: 'https://nimbus-sable.vercel.app', topics: ['Data centers', 'VMs & containers', 'Scaling & CDN', 'Serverless'] },
+  { slug: 'relay', title: 'Relay', subject: 'Networking', guide: 'Packet', accent: '#38E0D0', accent2: '#4EA8FF', emoji: '🌐', scenes: 13, level: 'Intermediate', liveUrl: 'https://relay-alpha-five.vercel.app', topics: ['Packets', 'IP & DNS', 'Routing & TCP', 'HTTPS & the web'] },
+  { slug: 'axiom', title: 'Axiom', subject: 'Algebra', guide: 'Xan', accent: '#4EA8FF', accent2: '#FFD15C', emoji: '✖️', scenes: 13, level: 'Beginner', liveUrl: 'https://axiom-vert-phi.vercel.app', topics: ['Variables & equations', 'Functions & graphs', 'Slope & systems', 'Quadratics'] },
+  { slug: 'cvisual', title: 'CVisual', subject: 'C Programming', guide: 'Bit', accent: '#36D399', accent2: '#FFD15C', emoji: '💻', scenes: 34, level: 'Beginner', liveUrl: null, topics: ['I/O & types', 'Booleans', 'Conditionals', 'Loops'] },
+];
+
 /* ---- "How we work" / approach ---- */
 export const approach: { step: string; title: string; body: string }[] = [
   { step: '01', title: 'Listen', body: 'We sit with your team and find the real bottleneck — not the feature list. The problem comes first; the technology comes second.' },
@@ -345,10 +378,19 @@ export const workshops = {
       focus: ['Ethical Hacking', 'Linux', 'Blockchain'],
     },
   ] as Speaker[],
-  /* Photos go here as files land in /public/images/workshops. */
-  gallery: [] as GalleryItem[],
-  /* Trimmed highlight reel; set src once the cut clip is in /public/video. */
-  video: null as null | { src: string; poster?: string },
+  /* Real photos from our campus sessions (/public/images/workshops). */
+  gallery: [
+    { src: '/images/workshops/ws-5.jpg', alt: 'Instructors presenting "What is an LLM?" during an agentic AI workshop in a packed computer lab', span: 'tall' },
+    { src: '/images/workshops/ws-1.jpg', alt: 'Students working through hands-on coding exercises at their workstations' },
+    { src: '/images/workshops/ws-2.jpg', alt: 'An instructor walking the room while students follow along on their machines' },
+    { src: '/images/workshops/ws-6.jpg', alt: 'A full lab of students following a live demo on the projector', span: 'tall' },
+    { src: '/images/workshops/ws-7.jpg', alt: 'A workshop session in progress — instructor presenting to a full room', span: 'wide' },
+    { src: '/images/workshops/ws-3.jpg', alt: 'Students coding along during a lab-first workshop session' },
+    { src: '/images/workshops/ws-4.jpg', alt: 'A bright computer lab set up for a hands-on workshop' },
+    { src: '/images/workshops/ws-8.jpg', alt: 'Mentors moving table to table while students build', span: 'wide' },
+  ] as GalleryItem[],
+  /* Highlight reel cut from real session footage (/public/video). */
+  video: { src: '/video/workshop-reel.mp4', poster: '/video/workshop-reel-poster.jpg' } as null | { src: string; poster?: string },
 } as const;
 
 /* ---- Clients & collaborations (real names from app.txt; notes only where known) ---- */
