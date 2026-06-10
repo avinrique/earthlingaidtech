@@ -405,17 +405,39 @@ export const clients: { name: string; note?: string }[] = [
   { name: 'ThePixelSphere', note: 'Studio' },
 ];
 
-/* ---- Technology stack (real tools we ship with), grouped by layer ---- */
-export const techStack: {
-  category: string;
-  icon: string;
-  accent: 'accent' | 'teal' | 'violet' | 'amber';
-  items: string[];
-}[] = [
-  { category: 'Cloud & Infrastructure', icon: 'cloud', accent: 'accent', items: ['AWS', 'Microsoft Azure', 'Vercel'] },
-  { category: 'Databases', icon: 'database', accent: 'teal', items: ['MongoDB', 'PostgreSQL'] },
-  { category: 'AI Models', icon: 'sparkles', accent: 'violet', items: ['Claude', 'OpenAI', 'Gemini'] },
-  { category: 'Hardware', icon: 'cpu', accent: 'amber', items: ['Raspberry Pi'] },
+/* ---- Technology stack (real tools we ship with).
+   Two marquee rows; icon = simple-icons name (astro-icon `simple-icons:<id>`). ---- */
+export type TechItem = { name: string; icon: string };
+
+export const techBuild: TechItem[] = [
+  { name: 'React', icon: 'react' },
+  { name: 'Next.js', icon: 'nextdotjs' },
+  { name: 'Node.js', icon: 'nodedotjs' },
+  { name: 'TypeScript', icon: 'typescript' },
+  { name: 'Python', icon: 'python' },
+  { name: 'Flutter', icon: 'flutter' },
+  { name: 'React Native', icon: 'react' },
+  { name: 'Express', icon: 'express' },
+  { name: 'Astro', icon: 'astro' },
+  { name: 'Tailwind CSS', icon: 'tailwindcss' },
+  { name: 'Three.js', icon: 'threedotjs' },
+];
+
+export const techRun: TechItem[] = [
+  { name: 'AWS', icon: 'amazonwebservices' },
+  { name: 'Microsoft Azure', icon: 'microsoftazure' },
+  { name: 'Vercel', icon: 'vercel' },
+  { name: 'MongoDB', icon: 'mongodb' },
+  { name: 'PostgreSQL', icon: 'postgresql' },
+  { name: 'Docker', icon: 'docker' },
+  { name: 'Nginx', icon: 'nginx' },
+  { name: 'GitHub Actions', icon: 'githubactions' },
+  { name: 'Raspberry Pi', icon: 'raspberrypi' },
+  { name: 'Claude', icon: 'claude' },
+  { name: 'OpenAI', icon: 'openai' },
+  { name: 'Gemini', icon: 'googlegemini' },
+  { name: 'Ollama', icon: 'ollama' },
+  { name: 'n8n', icon: 'n8n' },
 ];
 
 /* ---- Why us (every claim grounded in real work) ---- */

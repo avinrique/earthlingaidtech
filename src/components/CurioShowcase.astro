@@ -1,6 +1,7 @@
 ---
 import { Icon } from 'astro-icon/components';
 import Button from '@/components/Button.astro';
+import CurioHeroDemo from '@/components/CurioHeroDemo.astro';
 import { curioCourses } from '@/data/site';
 
 const live = curioCourses.filter((c) => c.liveUrl);
@@ -11,6 +12,8 @@ const demos = [
   { id: 'circuit', title: 'Current in a circuit', course: 'Volta', body: 'Electrons drift around a loop and a lamp glows brighter as the current rises.' },
 ];
 ---
+
+<CurioHeroDemo />
 
 <!-- Live mini-demos: the Curio feel, rendered right here -->
 <section class="border-t border-line py-20 md:py-28">
@@ -308,18 +311,5 @@ const demos = [
   }
 
   const starters: Record<string, (c: HTMLCanvasElement) => void> = { orbit, prism, circuit };
-  // Start each demo only when it scrolls into view (saves battery, feels alive).
-  const io = new IntersectionObserver(
-    (entries, obs) => {
-      entries.forEach((e) => {
-        if (e.isIntersecting) {
-          const el = e.target as HTMLCanvasElement;
-          starters[el.dataset.demo!]?.(el);
-          obs.unobserve(el);
-        }
-      });
-    },
-    { rootMargin: '0px 0px -10% 0px' },
-  );
-  document.querySelectorAll<HTMLCanvasElement>('canvas[data-demo]').forEach((c) => io.observe(c));
+  document.querySelectorAll<HTMLCanvasElement>('canvas[data-demo]').forEach((c) => starters[c.dataset.demo!]?.(c));
 </script>

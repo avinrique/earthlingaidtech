@@ -1,0 +1,336 @@
+---
+import { Icon } from 'astro-icon/components';
+---
+
+<!-- One idea, the Curio way: Newton's cannonball, live and pokeable -->
+<section class="border-t border-line py-20 md:py-28">
+  <div class="container-app">
+    <div class="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
+      <div>
+        <span class="eyebrow reveal"><span class="size-1.5 rounded-full bg-accent"></span>What Curio does</span>
+        <h2 class="reveal mt-5 text-3xl md:text-4xl" data-delay="1">
+          Why doesn't the Moon <span class="text-gradient">fall down?</span>
+        </h2>
+        <p class="reveal mt-4 text-muted" data-delay="2">
+          This is a real Curio lesson, running live on this page. Newton asked: fire a cannonball
+          fast enough, and does it ever land? Watch the answer build — then grab the slider and
+          find the magic speed yourself.
+        </p>
+
+        <ol class="reveal mt-7 grid gap-3" data-delay="3">
+          <li class="flex items-start gap-3 rounded-2xl border border-line bg-surface/30 p-4">
+            <span class="mt-0.5 font-mono text-xs text-accent">01</span>
+            <span class="text-sm text-body">Watch it come alive — every concept is animated, never a wall of text.</span>
+          </li>
+          <li class="flex items-start gap-3 rounded-2xl border border-line bg-surface/30 p-4">
+            <span class="mt-0.5 font-mono text-xs text-teal">02</span>
+            <span class="text-sm text-body">Poke at it yourself — drag the speed and break the experiment.</span>
+          </li>
+          <li class="flex items-start gap-3 rounded-2xl border border-line bg-surface/30 p-4">
+            <span class="mt-0.5 font-mono text-xs text-violet">03</span>
+            <span class="text-sm text-body">Make it click — the a-ha moment is yours, not the narrator's.</span>
+          </li>
+        </ol>
+      </div>
+
+      <figure class="reveal overflow-hidden rounded-3xl border border-line bg-canvas-deep shadow-pop" data-delay="2">
+        <div class="relative aspect-[4/3.4] sm:aspect-[4/3]">
+          <canvas id="cannonball" class="absolute inset-0 size-full"></canvas>
+          <!-- Nova's caption bubble -->
+          <div class="pointer-events-none absolute inset-x-4 top-4 flex justify-start">
+            <div class="flex max-w-[85%] items-start gap-2.5 rounded-2xl border border-line bg-canvas/80 px-4 py-3 backdrop-blur-sm">
+              <span class="text-lg leading-none">🪐</span>
+              <p class="text-sm leading-snug text-body">
+                <span class="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-faint">Nova · your guide</span><br />
+                <span id="cb-caption">Let's fire a cannonball off a very tall mountain…</span>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <figcaption class="border-t border-line p-5">
+          <div class="flex items-center gap-4">
+            <Icon name="lucide:gauge" class="size-5 shrink-0 text-accent" />
+            <input
+              id="cb-speed"
+              type="range"
+              min="20"
+              max="125"
+              value="35"
+              step="1"
+              aria-label="Launch speed as a percentage of orbital speed"
+              class="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-surface-3 accent-[#4a9eff]"
+            />
+            <span class="w-32 shrink-0 text-right font-mono text-xs text-muted">
+              <span id="cb-readout" class="text-ink">35%</span> of orbital
+            </span>
+          </div>
+        </figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Newton's cannonball — semi-implicit Euler around a central body, canvas 2D.
+  const canvas = document.getElementById('cannonball') as HTMLCanvasElement | null;
+  const slider = document.getElementById('cb-speed') as HTMLInputElement | null;
+  const readout = document.getElementById('cb-readout');
+  const caption = document.getElementById('cb-caption');
+
+  if (canvas && slider && readout && caption) {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const ctx = canvas.getContext('2d')!;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let stars: { x: number; y: number; r: number; a: number }[] = [];
+
+    const fit = () => {
+      const r = canvas.getBoundingClientRect();
+      canvas.width = r.width * dpr;
+      canvas.height = r.height * dpr;
+      // deterministic starfield per size
+      stars = [];
+      let seed = 42;
+      const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+      for (let i = 0; i < 90; i++) {
+        stars.push({ x: rnd() * canvas.width, y: rnd() * canvas.height, r: rnd() * 1.4 + 0.4, a: rnd() * 0.5 + 0.15 });
+      }
+    };
+    fit();
+    new ResizeObserver(fit).observe(canvas);
+
+    // Auto-story: each landing fires the next, faster shot — until orbit.
+    const AUTO_STEPS = [35, 52, 68, 80, 90, 96, 101];
+    let autoIdx = 0;
+    let manual = false;
+
+    let speedPct = AUTO_STEPS[0];
+    let p = { x: 0, y: 0 };
+    let v = { x: 0, y: 0 };
+    let trail: { x: number; y: number }[] = [];
+    let flying = false;
+    let impact: { x: number; y: number; t: number } | null = null;
+    let angleAcc = 0;
+    let lastTh = 0;
+    let orbited = false;
+    let relaunchAt = 0;
+
+    const geom = () => {
+      const w = canvas.width, h = canvas.height;
+      const cx = w / 2, cy = h * 0.56;
+      const R = Math.min(w, h) * 0.21;
+      const r0 = R * 1.45;
+      const vc = (2 * Math.PI * r0) / (7.5 * 60); // px per frame for ~7.5s circular orbit
+      const GM = vc * vc * r0;
+      return { w, h, cx, cy, R, r0, vc, GM };
+    };
+
+    const setCaption = (txt: string) => { if (caption.textContent !== txt) caption.textContent = txt; };
+
+    const captionFor = (pct: number, mode: 'flying' | 'landed' | 'orbit') => {
+      if (mode === 'orbit') return 'It keeps falling — and keeps missing the ground. That’s an orbit. The Moon does this forever. 🛰️';
+      if (pct < 40) return 'Too slow. Gravity wins — it falls right back down.';
+      if (pct < 85) return 'Faster! It travels farther before gravity pulls it in…';
+      if (pct < 97) return 'So close — it almost made it all the way around!';
+      if (pct <= 110) return 'Watch… it keeps missing the ground!';
+      return 'Extra speed stretches the path into a long ellipse — it swings far out and comes back.';
+    };
+
+    const launch = (pct: number) => {
+      const g = geom();
+      speedPct = pct;
+      p = { x: 0, y: -g.r0 };
+      v = { x: g.vc * (pct / 100), y: 0 };
+      trail = [];
+      flying = true;
+      orbited = false;
+      angleAcc = 0;
+      lastTh = Math.atan2(p.y, p.x);
+      setCaption(captionFor(pct, 'flying'));
+    };
+
+    slider.addEventListener('input', () => {
+      manual = true;
+      const pct = Number(slider.value);
+      readout.textContent = pct + '%';
+      launch(pct);
+    });
+
+    const tick = (now: number) => {
+      const g = geom();
+      // physics (substeps for stability)
+      if (flying && !reduce) {
+        for (let s = 0; s < 4; s++) {
+          const d2 = p.x * p.x + p.y * p.y;
+          const d = Math.sqrt(d2);
+          const a = g.GM / d2;
+          v.x += (-p.x / d) * a * 0.25;
+          v.y += (-p.y / d) * a * 0.25;
+          p.x += v.x * 0.25;
+          p.y += v.y * 0.25;
+        }
+        trail.push({ x: p.x, y: p.y });
+        if (trail.length > 900) trail.shift();
+
+        // orbit detection: a full revolution without landing
+        const th = Math.atan2(p.y, p.x);
+        let dth = th - lastTh;
+        if (dth > Math.PI) dth -= 2 * Math.PI;
+        if (dth < -Math.PI) dth += 2 * Math.PI;
+        angleAcc += dth;
+        lastTh = th;
+        if (!orbited && Math.abs(angleAcc) > 2 * Math.PI) {
+          orbited = true;
+          setCaption(captionFor(speedPct, 'orbit'));
+        }
+
+        // impact
+        const dist = Math.sqrt(p.x * p.x + p.y * p.y);
+        if (dist <= g.R + 2) {
+          flying = false;
+          impact = { x: p.x, y: p.y, t: now };
+          relaunchAt = now + 850;
+          setCaption(captionFor(speedPct, 'landed'));
+        }
+        // far escape: bring it back after it leaves the frame for a while
+        if (dist > Math.max(g.w, g.h) * 1.4) {
+          flying = false;
+          relaunchAt = now + 400;
+        }
+      }
+
+      // auto-story relaunch
+      if (!flying && !reduce && now >= relaunchAt && relaunchAt !== 0) {
+        if (!manual && autoIdx < AUTO_STEPS.length - 1) autoIdx++;
+        const pct = manual ? Number(slider.value) : AUTO_STEPS[autoIdx];
+        if (!manual) { slider.value = String(pct); readout.textContent = pct + '%'; }
+        launch(pct);
+      }
+
+      // ---- draw ----
+      ctx.clearRect(0, 0, g.w, g.h);
+      ctx.fillStyle = '#07080a';
+      ctx.fillRect(0, 0, g.w, g.h);
+      // stars
+      for (const st of stars) {
+        ctx.globalAlpha = st.a;
+        ctx.fillStyle = '#aeb7c4';
+        ctx.fillRect(st.x, st.y, st.r, st.r);
+      }
+      ctx.globalAlpha = 1;
+
+      ctx.save();
+      ctx.translate(g.cx, g.cy);
+
+      // planet + atmosphere
+      const grad = ctx.createRadialGradient(0, 0, g.R * 0.2, 0, 0, g.R);
+      grad.addColorStop(0, '#16324f');
+      grad.addColorStop(1, '#0c1c38');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(0, 0, g.R, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(74,158,255,0.45)';
+      ctx.lineWidth = Math.max(1.2, g.w / 800);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(74,158,255,0.12)';
+      ctx.lineWidth = g.R * 0.16;
+      ctx.beginPath();
+      ctx.arc(0, 0, g.R * 1.1, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // mountain + cannon at launch point
+      const g0 = { x: 0, y: -g.R };
+      ctx.fillStyle = '#1c2128';
+      ctx.beginPath();
+      ctx.moveTo(g0.x - g.R * 0.1, g0.y + g.R * 0.02);
+      ctx.lineTo(g0.x, -g.r0 + g.R * 0.06);
+      ctx.lineTo(g0.x + g.R * 0.1, g0.y + g.R * 0.02);
+      ctx.closePath();
+      ctx.fill();
+
+      // faint circular-orbit reference ring
+      ctx.setLineDash([4, 10]);
+      ctx.strokeStyle = 'rgba(244,247,251,0.10)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(0, 0, g.r0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // trail
+      if (trail.length > 1) {
+        ctx.globalCompositeOperation = 'lighter';
+        for (let i = 1; i < trail.length; i++) {
+          const a = i / trail.length;
+          ctx.strokeStyle = `rgba(45,212,191,${0.05 + a * 0.55})`;
+          ctx.lineWidth = Math.max(1.2, g.w / 700) * (0.4 + a * 0.6);
+          ctx.beginPath();
+          ctx.moveTo(trail[i - 1].x, trail[i - 1].y);
+          ctx.lineTo(trail[i].x, trail[i].y);
+          ctx.stroke();
+        }
+        ctx.globalCompositeOperation = 'source-over';
+      }
+
+      // cannonball
+      if (flying || reduce) {
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.shadowColor = '#8ac2ff';
+        ctx.shadowBlur = 14;
+        ctx.fillStyle = '#8ac2ff';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, Math.max(3, g.w / 320), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.globalCompositeOperation = 'source-over';
+      }
+
+      // impact flash
+      if (impact && now - impact.t < 500) {
+        const k = (now - impact.t) / 500;
+        ctx.globalAlpha = 1 - k;
+        ctx.strokeStyle = '#fbbf24';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(impact.x, impact.y, 4 + k * g.R * 0.3, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.restore();
+    };
+
+    const frame = (now: number) => {
+      tick(now);
+      if (!reduce) requestAnimationFrame(frame);
+    };
+
+    // Test/debug hooks: synthetic stepping that bypasses rAF entirely.
+    let synth = 0;
+    (window as any).__cbStep = (n = 60) => {
+      for (let i = 0; i < n; i++) { synth += 16.7; tick(synth); }
+      return JSON.stringify({ synth: Math.round(synth), flying, speedPct, autoIdx, manual, trail: trail.length, caption: caption.textContent });
+    };
+
+    // start immediately (rAF self-throttles when the tab is hidden)
+    if (reduce) {
+      // static fallback: mid-speed arc + caption
+      launch(80);
+      const g = geom();
+      for (let i = 0; i < 600; i++) {
+        const d2 = p.x * p.x + p.y * p.y;
+        const d = Math.sqrt(d2);
+        const a = g.GM / d2;
+        v.x += (-p.x / d) * a; v.y += (-p.y / d) * a;
+        p.x += v.x; p.y += v.y;
+        trail.push({ x: p.x, y: p.y });
+        if (Math.sqrt(p.x * p.x + p.y * p.y) <= g.R) break;
+      }
+      frame(performance.now());
+    } else {
+      launch(AUTO_STEPS[0]);
+      requestAnimationFrame(frame);
+    }
+  }
+</script>

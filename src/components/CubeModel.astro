@@ -371,9 +371,15 @@ import CubeLogo from './CubeLogo.astro';
             for (const n of [outerNode, middleNode, coreNode]) prevPos.set(n, n.position.clone());
           }
 
-          // play every baked clip (one per cube) on one looping mixer
+          // play every baked clip (one per cube) on one mixer. PingPong instead of
+          // Repeat: forward = assemble, backward = drift apart — the timeline is
+          // continuous at both ends, so the loop never visibly "restarts".
           mixer = new THREE.AnimationMixer(model);
-          for (const clip of gltf.animations) mixer.clipAction(clip).play();
+          for (const clip of gltf.animations) {
+            const action = mixer.clipAction(clip);
+            action.setLoop(THREE.LoopPingPong, Infinity);
+            action.play();
+          }
           const clipDur = gltf.animations.reduce((d, c) => Math.max(d, c.duration), 0) || 10;
           const ASSEMBLED_T = clipDur * 0.53; // a moment when the cube is fully assembled
 
