@@ -193,6 +193,14 @@ import CubeLogo from './CubeLogo.astro';
       let prevDistC = 1;
       let elapsed = 0;      // seconds, drives the gentle shake wobble
 
+      // Manual timeline drive: a cosine sweep between the start/end of the
+      // baked MOTION (holds trimmed) — velocity is sinusoidal, so the cube
+      // never parks; it eases through the fit and straight back out.
+      let motionT0 = 0;     // first moment anything moves
+      let motionT1 = 0;     // last moment anything moves
+      let phase = 0;        // cosine phase, advanced in draw()
+      let sweepHalfPeriod = 11; // seconds per assemble (or unwind) pass; set from the motion span
+
       // prev positions, used to gate shake to (roughly) stationary cubes
       const prevPos = new Map<THREE.Object3D, THREE.Vector3>();
       // Gentle, slow wobble — only while a cube is apart AND nearly stationary
@@ -371,15 +379,12 @@ import CubeLogo from './CubeLogo.astro';
             for (const n of [outerNode, middleNode, coreNode]) prevPos.set(n, n.position.clone());
           }
 
-          // play every baked clip (one per cube) on one mixer. PingPong instead of
-          // Repeat: forward = assemble, backward = drift apart — the timeline is
-          // continuous at both ends, so the loop never visibly "restarts".
+          // Play every baked clip (one per cube) on one mixer. Time is driven
+          // manually in draw() — a continuous cosine sweep between the two ends
+          // of the baked MOTION (static holds trimmed), so the cube assembles,
+          // eases straight into unwinding, and never visibly parks or restarts.
           mixer = new THREE.AnimationMixer(model);
-          for (const clip of gltf.animations) {
-            const action = mixer.clipAction(clip);
-            action.setLoop(THREE.LoopPingPong, Infinity);
-            action.play();
-          }
+          for (const clip of gltf.animations) mixer.clipAction(clip).play();
           const clipDur = gltf.animations.reduce((d, c) => Math.max(d, c.duration), 0) || 10;
           const ASSEMBLED_T = clipDur * 0.53; // a moment when the cube is fully assembled
 
@@ -400,6 +405,35 @@ import CubeLogo from './CubeLogo.astro';
           if (coreNode) homeCore.copy(coreNode.position);
           const center = new THREE.Box3().setFromObject(model).getCenter(new THREE.Vector3());
           model.position.sub(center);
+
+          // Trim the static holds off both ends of the baked timeline: scan the
+          // clip and find the first/last instants any piece actually moves.
+          {
+            const nodes = [outerNode, middleNode, coreNode].filter(Boolean) as THREE.Object3D[];
+            const step = 1 / 24;
+            mixer.setTime(0);
+            model.updateMatrixWorld(true);
+            const start = nodes.map((n) => n.position.clone());
+            let prev = nodes.map((n) => n.position.clone());
+            let firstMove = -1;
+            let lastMove = 0;
+            for (let t = step; t <= clipDur + 1e-3; t += step) {
+              mixer.setTime(t);
+              model.updateMatrixWorld(true);
+              const moved = nodes.some((n, i) => n.position.distanceTo(prev[i]) > 0.004);
+              if (moved) {
+                if (firstMove < 0 && nodes.some((n, i) => n.position.distanceTo(start[i]) > 0.01)) firstMove = t;
+                lastMove = t;
+              }
+              prev = nodes.map((n) => n.position.clone());
+            }
+            motionT0 = Math.max(0, (firstMove < 0 ? 0 : firstMove) - 0.3);
+            motionT1 = Math.min(clipDur, lastMove + 0.25);
+            if (motionT1 - motionT0 < 1) { motionT0 = 0; motionT1 = clipDur; } // safety
+            // pace the sweep off the real motion span: mid-sweep stays close to
+            // the baked tempo, ends ease through instead of holding
+            sweepHalfPeriod = (motionT1 - motionT0) * 1.15;
+          }
 
           pivot.add(model);
 
@@ -434,8 +468,8 @@ import CubeLogo from './CubeLogo.astro';
             return;
           }
 
-          // animated path: start at the top of the loop (cubes scattered) and play
-          mixer.setTime(0);
+          // animated path: start at the top of the sweep (cubes scattered) and play
+          mixer.setTime(motionT0);
           model.updateMatrixWorld(true);
           if (middleNode) prevDistM = middleNode.position.distanceTo(homeMiddle);
           if (coreNode) prevDistC = coreNode.position.distanceTo(homeCore);
@@ -467,8 +501,12 @@ import CubeLogo from './CubeLogo.astro';
         lastTime = now;
         elapsed += dt;
 
-        // advance the Blender-baked combine animation
-        mixer.update(dt);
+        // Drive the baked combine animation with a continuous cosine sweep:
+        // forward through the motion window, then smoothly back — sinusoidal
+        // velocity means it never freezes, only breathes through the ends.
+        phase += (dt * Math.PI) / sweepHalfPeriod;
+        const u = 0.5 - 0.5 * Math.cos(phase);
+        mixer.setTime(motionT0 + (motionT1 - motionT0) * u);
 
         // outshine flash the instant the middle, then the core, snaps home
         const dM = middleNode ? middleNode.position.distanceTo(homeMiddle) : 1;
