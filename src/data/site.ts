@@ -36,7 +36,7 @@ export const stats: { value: string; label: string; accent?: string }[] = [
   { value: '600+', label: 'Students trained', accent: 'accent' },
   { value: '6', label: 'Products built', accent: 'teal' },
   { value: '2', label: 'Prepzer0 deployments', accent: 'violet' },
-  { value: '6', label: 'Client partners', accent: 'amber' },
+  { value: '8+', label: 'Client partners', accent: 'amber' },
 ];
 
 /* ---- Capabilities / services ---- */
@@ -393,14 +393,29 @@ export const workshops = {
   video: { src: '/video/workshop-reel.mp4', poster: '/video/workshop-reel-poster.jpg' } as null | { src: string; poster?: string },
 } as const;
 
-/* ---- Clients & collaborations (real names from app.txt; notes only where known) ---- */
+/* ---- Clients & collaborations (real names; notes only where known) ---- */
 export const clients: { name: string; note?: string }[] = [
-  { name: 'Woostaa' },
+  { name: 'Woostaa', note: 'Housing solution' },
+  { name: 'Curota.ai', note: 'AI data annotation' },
+  { name: 'CampusPathway', note: 'Admissions · EdTech' },
   { name: 'OrynConsulting', note: 'Consulting' },
   { name: 'SalesSphere360', note: 'Sales' },
   { name: 'Halde20', note: 'Restaurant · Switzerland' },
-  { name: 'Chillaxmandu' },
+  { name: 'Chillaxmandu', note: 'Lifestyle' },
   { name: 'ThePixelSphere', note: 'Studio' },
+];
+
+/* ---- Technology stack (real tools we ship with), grouped by layer ---- */
+export const techStack: {
+  category: string;
+  icon: string;
+  accent: 'accent' | 'teal' | 'violet' | 'amber';
+  items: string[];
+}[] = [
+  { category: 'Cloud & Infrastructure', icon: 'cloud', accent: 'accent', items: ['AWS', 'Microsoft Azure', 'Vercel'] },
+  { category: 'Databases', icon: 'database', accent: 'teal', items: ['MongoDB', 'PostgreSQL'] },
+  { category: 'AI Models', icon: 'sparkles', accent: 'violet', items: ['Claude', 'OpenAI', 'Gemini'] },
+  { category: 'Hardware', icon: 'cpu', accent: 'amber', items: ['Raspberry Pi'] },
 ];
 
 /* ---- Why us (every claim grounded in real work) ---- */

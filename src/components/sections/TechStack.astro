@@ -1,0 +1,55 @@
+---
+import { Icon } from 'astro-icon/components';
+import SectionHeading from '../SectionHeading.astro';
+import { techStack } from '@/data/site';
+
+interface Props {
+  heading?: boolean;
+}
+const { heading = true } = Astro.props;
+
+// Static maps so Tailwind generates the utilities (no dynamic class names).
+const accentMap: Record<string, { text: string; ring: string; chip: string; dot: string }> = {
+  accent: { text: 'text-accent', ring: 'ring-accent/25', chip: 'group-hover:border-accent/30', dot: 'bg-accent' },
+  teal: { text: 'text-teal', ring: 'ring-teal/25', chip: 'group-hover:border-teal/30', dot: 'bg-teal' },
+  violet: { text: 'text-violet', ring: 'ring-violet/25', chip: 'group-hover:border-violet/30', dot: 'bg-violet' },
+  amber: { text: 'text-amber', ring: 'ring-amber/25', chip: 'group-hover:border-amber/30', dot: 'bg-amber' },
+};
+---
+
+<section class="py-20 md:py-28">
+  <div class="container-app">
+    {heading && (
+      <SectionHeading
+        eyebrow="Our stack"
+        title="Built on tools <span class='text-accent'>we trust</span>"
+        subtitle="Production-grade infrastructure, databases, AI models, and hardware — the same stack we use to ship and to teach."
+      />
+    )}
+
+    <div class:list={['grid gap-4 sm:grid-cols-2 lg:grid-cols-4', heading ? 'mt-14' : 'mt-2']}>
+      {techStack.map((g, i) => {
+        const a = accentMap[g.accent];
+        return (
+          <div
+            class="reveal group flex flex-col rounded-2xl border border-line bg-surface/30 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
+            data-delay={String((i % 4) + 1)}
+          >
+            <div class:list={['grid size-11 place-items-center rounded-xl bg-white/[0.03] ring-1 ring-inset', a.ring]}>
+              <Icon name={`lucide:${g.icon}`} class:list={['size-5', a.text]} />
+            </div>
+            <h3 class="mt-5 font-mono text-xs uppercase tracking-[0.16em] text-faint">{g.category}</h3>
+            <ul class="mt-4 flex flex-col gap-2">
+              {g.items.map((t) => (
+                <li class:list={['flex items-center gap-2.5 rounded-xl border border-line bg-white/[0.02] px-3.5 py-2.5 text-sm font-medium text-body transition-colors duration-300', a.chip]}>
+                  <span class:list={['size-1.5 shrink-0 rounded-full', a.dot]}></span>
+                  {t}
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</section>
