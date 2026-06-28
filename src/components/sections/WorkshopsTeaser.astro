@@ -3,42 +3,55 @@ import { Icon } from 'astro-icon/components';
 import { workshops } from '@/data/site';
 ---
 
-<section class="py-20 md:py-28">
+<section class="py-16 md:py-20">
   <div class="container-app">
-    <div class="reveal relative overflow-hidden rounded-3xl border border-line bg-surface/40 p-8 md:p-12">
+    <div class="reveal relative overflow-hidden rounded-3xl border border-line bg-surface/40 p-4 md:p-6">
       <div class="bg-grid pointer-events-none absolute inset-0 opacity-40 [mask-image:radial-gradient(ellipse_70%_80%_at_100%_0%,black,transparent)]"></div>
       <div class="glow-accent pointer-events-none absolute -left-20 bottom-0 size-80 opacity-40"></div>
 
-      <div class="relative grid gap-10 lg:grid-cols-[1fr_auto] lg:items-center">
-        <div class="max-w-xl">
+      <div class="relative grid gap-6 lg:grid-cols-[0.9fr_1fr] lg:items-stretch">
+        <div class="flex flex-col justify-between p-4 md:p-6">
+          <div class="max-w-xl">
           <span class="eyebrow"><span class="size-1.5 rounded-full bg-teal"></span>Workshops &amp; training</span>
-          <h2 class="mt-5 text-3xl md:text-4xl">Hands-on training that builds real, industry-aligned skills</h2>
+          <h2 class="mt-5 text-3xl md:text-4xl">Training students with the same stack we ship.</h2>
           <p class="mt-4 text-muted">
-            We run practical, lab-first workshops for students and institutions — seven tracks
-            spanning web, agentic AI, cloud, DevOps, security, Linux, and blockchain — emphasizing
-            real-world systems over theory.
+            Lab-first workshops for colleges and institutions across web, agentic AI, cloud,
+            DevOps, security, Linux, and blockchain.
           </p>
+          </div>
 
-          <div class="mt-7 flex flex-wrap gap-2">
-            {workshops.tracks.map((t) => (
+          <div class="mt-6 flex flex-wrap gap-2">
+            {workshops.tracks.slice(0, 7).map((t) => (
               <span class="rounded-full border border-line bg-white/[0.02] px-3 py-1.5 text-sm text-muted">{t.title}</span>
             ))}
           </div>
 
-          <a href="/workshops" class="group mt-8 inline-flex items-center gap-2 font-medium text-accent">
+          <a href="/workshops" class="group mt-7 inline-flex items-center gap-2 font-medium text-accent">
             See workshop programs
             <Icon name="lucide:arrow-right" class="size-4 transition-transform group-hover:translate-x-1" />
           </a>
         </div>
 
-        <dl class="grid grid-cols-2 gap-6 sm:grid-cols-4 lg:grid-cols-1 lg:border-l lg:border-line lg:pl-10">
-          {workshops.stats.map((s) => (
-            <div class="flex flex-col gap-1">
-              <dt class="order-2 text-xs text-faint">{s.label}</dt>
-              <dd class="order-1 font-display text-3xl font-semibold text-ink lg:text-4xl">{s.value}</dd>
-            </div>
-          ))}
-        </dl>
+        <div class="grid gap-3 sm:grid-cols-[1fr_0.7fr]">
+          <div class="overflow-hidden rounded-2xl border border-line bg-canvas">
+            <img
+              src="/images/workshops/ws-7.jpg"
+              alt="Earthling Aidtech workshop session with students in a computer lab"
+              width="1600"
+              height="1200"
+              loading="lazy"
+              class="aspect-[4/3] h-full w-full object-cover"
+            />
+          </div>
+          <dl class="grid grid-cols-2 gap-3 sm:grid-cols-1">
+            {workshops.stats.map((s) => (
+              <div class="flex flex-col justify-center rounded-2xl border border-line bg-canvas/50 p-4">
+                <dt class="order-2 text-xs text-faint">{s.label}</dt>
+                <dd class="order-1 font-display text-2xl font-semibold text-ink">{s.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
       </div>
     </div>
   </div>

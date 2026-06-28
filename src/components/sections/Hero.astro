@@ -1,7 +1,6 @@
 ---
-import CubeModel from '../CubeModel.astro';
 import Button from '../Button.astro';
-import { stats, site } from '@/data/site';
+import { services, stats } from '@/data/site';
 ---
 
 <section class="relative isolate overflow-hidden">
@@ -13,32 +12,43 @@ import { stats, site } from '@/data/site';
     <div class="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-line-strong to-transparent"></div>
   </div>
 
-  <div class="container-app grid items-center gap-12 pt-32 pb-20 md:pt-40 md:pb-28 lg:grid-cols-[1.05fr_0.95fr]">
+  <div class="container-app grid items-center gap-12 pt-28 pb-16 md:pt-36 md:pb-20 lg:grid-cols-[1.02fr_0.98fr]">
     <!-- Copy -->
     <div class="flex flex-col items-start">
       <span class="eyebrow reveal">
         <span class="size-1.5 rounded-full bg-accent shadow-[0_0_12px_2px_rgba(74,158,255,0.6)]"></span>
-        Product &amp; engineering studio · Bengaluru
+        Product &amp; engineering studio · Nepal + Bengaluru
       </span>
 
       <h1 class="reveal mt-6 text-balance font-display text-[length:var(--text-hero)] font-semibold leading-[1.03] tracking-[-0.025em] text-ink" data-delay="1">
-        We build the tech<br class="hidden sm:block" />
-        people actually <span class="text-gradient">use.</span>
+        Software, AI, SEO and hardware<br class="hidden sm:block" />
+        built by one <span class="text-gradient">hands-on team.</span>
       </h1>
 
       <p class="reveal mt-6 max-w-xl text-lg leading-relaxed text-muted" data-delay="2">
-        Web apps, AI agents, EdTech platforms, automation, and hardware — <span class="text-body">designed,
-        engineered, and shipped by one team.</span> Prepzer0 already runs at SVIT and East Horizon
-        School, with 600+ students trained along the way.
+        We help institutions, NGOs, startups, and businesses turn messy requirements into shipped
+        products: web and mobile apps, AI agents, EdTech platforms, SEO/GEO, automation, and
+        hardware-backed systems.
       </p>
 
-      <div class="reveal mt-9 flex flex-wrap items-center gap-3" data-delay="3">
+      <div class="reveal mt-6 flex max-w-xl flex-wrap gap-2" data-delay="3">
+        {services.map((s) => (
+          <a
+            href={`/services#${s.id}`}
+            class="rounded-full border border-line bg-surface/35 px-3.5 py-2 text-sm text-body transition-colors hover:border-line-strong hover:bg-surface-2/60"
+          >
+            {s.title}
+          </a>
+        ))}
+      </div>
+
+      <div class="reveal mt-8 flex flex-wrap items-center gap-3" data-delay="4">
         <Button href="/products" size="lg" iconRight="arrow-right">Explore our work</Button>
         <Button href="/contact" size="lg" variant="secondary">Start a project</Button>
       </div>
 
       <!-- Stat proof bar -->
-      <dl class="reveal mt-14 grid w-full max-w-lg grid-cols-2 gap-x-8 gap-y-6 border-t border-line pt-8 sm:grid-cols-4" data-delay="4">
+      <dl class="reveal mt-10 grid w-full max-w-lg grid-cols-2 gap-x-8 gap-y-6 border-t border-line pt-7 sm:grid-cols-4" data-delay="5">
         {stats.map((s) => (
           <div class="flex flex-col gap-1">
             <dt class="order-2 text-xs text-faint">{s.label}</dt>
@@ -48,9 +58,45 @@ import { stats, site } from '@/data/site';
       </dl>
     </div>
 
-    <!-- Signature visual: real WebGL 3D model of the brand mark -->
-    <div class="reveal relative mx-auto hidden w-full max-w-md md:block" data-delay="2">
-      <CubeModel />
+    <!-- Real proof visual: product + workshop media -->
+    <div class="reveal relative mx-auto w-full max-w-xl" data-delay="2">
+      <div class="relative overflow-hidden rounded-3xl border border-line bg-surface/40 p-3 shadow-card">
+        <div class="grid gap-3">
+          <div class="overflow-hidden rounded-2xl border border-line bg-canvas">
+            <img
+              src="/images/products/prepzer0/dashboard.jpg"
+              alt="Prepzer0 examiner dashboard running live assessment workflows"
+              width="1036"
+              height="720"
+              class="aspect-[16/10] w-full object-cover"
+              loading="eager"
+            />
+          </div>
+
+          <div class="grid grid-cols-[0.9fr_1.1fr] gap-3">
+            <div class="overflow-hidden rounded-2xl border border-line bg-canvas">
+              <img
+                src="/images/workshops/ws-5.jpg"
+                alt="Students attending an Earthling Aidtech hands-on technical workshop"
+                width="1600"
+                height="1200"
+                class="aspect-[4/5] h-full w-full object-cover"
+                loading="eager"
+              />
+            </div>
+            <div class="flex flex-col justify-between rounded-2xl border border-line bg-canvas/60 p-5">
+              <div>
+                <p class="font-mono text-xs uppercase tracking-[0.16em] text-accent-bright">Live proof</p>
+                <h2 class="mt-3 text-2xl">Products in classrooms. Workshops in labs.</h2>
+              </div>
+              <p class="mt-6 text-sm leading-relaxed text-muted">
+                Prepzer0 is deployed, 600+ students have trained with us, and our client work spans
+                education, public health, fintech, software, and AI.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>

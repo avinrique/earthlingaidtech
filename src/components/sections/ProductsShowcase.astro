@@ -18,24 +18,24 @@ const accentText: Record<string, string> = {
 };
 ---
 
-<section id="products" class="py-20 md:py-28">
+<section id="products" class="py-16 md:py-20">
   <div class="container-app">
     {heading && (
       <SectionHeading
         eyebrow="Products"
-        title="Things we've <span class='text-accent'>shipped</span>"
-        subtitle="A product company at heart — exam platforms live in classrooms, a learning platform on the way, and hardware on the bench."
+        title="Proof that we can <span class='text-accent'>ship</span>"
+        subtitle="A small set of products shows the range: EdTech platforms, AI learning, WhatsApp-connected hardware, and automation."
       />
     )}
 
-    <div class:list={['grid gap-4 lg:grid-cols-2', heading ? 'mt-14' : 'mt-2']}>
+    <div class:list={['grid gap-4 lg:grid-cols-[1.15fr_0.85fr]', heading ? 'mt-10' : 'mt-2']}>
       <!-- Flagship -->
       <a
         href={`/products/${flagship.slug}`}
-        class="reveal group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-line bg-surface/40 p-8 transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 lg:row-span-2 lg:p-10"
+        class="reveal group relative grid overflow-hidden rounded-3xl border border-line bg-surface/40 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 md:grid-cols-[0.9fr_1.1fr] md:gap-6 lg:p-7"
       >
         <div class="glow-accent pointer-events-none absolute -right-20 -top-20 size-72 opacity-50 transition-opacity duration-300 group-hover:opacity-80"></div>
-        <div class="relative">
+        <div class="relative flex flex-col">
           <div class="flex items-center justify-between">
             <div class="grid size-14 place-items-center rounded-2xl bg-accent/10 ring-1 ring-inset ring-accent/30">
               <Icon name={`lucide:${flagship.icon}`} class="size-7 text-accent" />
@@ -45,12 +45,16 @@ const accentText: Record<string, string> = {
             </span>
           </div>
 
-          <h3 class="mt-7 font-display text-3xl font-semibold text-ink lg:text-4xl">{flagship.name}</h3>
+          <h3 class="mt-6 font-display text-3xl font-semibold text-ink lg:text-4xl">{flagship.name}</h3>
           <p class="mt-1 text-sm font-medium text-accent">{flagship.kicker}</p>
-          <p class="mt-4 max-w-md text-base leading-relaxed text-muted">{flagship.description}</p>
+          <p class="mt-4 max-w-md text-base leading-relaxed text-muted">{flagship.summary}</p>
+          <span class="mt-6 inline-flex items-center gap-2 font-medium text-accent">
+            Explore {flagship.name}
+            <Icon name="lucide:arrow-right" class="size-4 transition-transform group-hover:translate-x-1" />
+          </span>
         </div>
 
-        <div class="relative mt-8">
+        <div class="relative mt-6 md:mt-0">
           {flagship.image && (
             <div class="overflow-hidden rounded-xl border border-line shadow-card">
               <img
@@ -59,28 +63,25 @@ const accentText: Record<string, string> = {
                 width={flagship.image.width}
                 height={flagship.image.height}
                 loading="lazy"
-                class="h-auto w-full object-cover transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:scale-[1.03]"
+                class="aspect-[4/3] h-full w-full object-cover transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:scale-[1.03]"
               />
             </div>
           )}
-          <p class="mt-6 font-mono text-xs uppercase tracking-[0.16em] text-faint">Deployed at</p>
+          <p class="mt-4 font-mono text-xs uppercase tracking-[0.16em] text-faint">Deployed at</p>
           <div class="mt-3 flex flex-wrap gap-2">
             {flagship.highlights?.map((h) => (
               <span class="rounded-lg border border-line bg-white/[0.02] px-3 py-1.5 text-sm text-body">{h}</span>
             ))}
           </div>
-          <span class="mt-7 inline-flex items-center gap-2 font-medium text-accent">
-            Explore {flagship.name}
-            <Icon name="lucide:arrow-right" class="size-4 transition-transform group-hover:translate-x-1" />
-          </span>
         </div>
       </a>
 
       <!-- Other products -->
-      {rest.map((p) => (
+      <div class="grid gap-4">
+      {rest.slice(0, 4).map((p) => (
         <a
           href={`/products/${p.slug}`}
-          class="reveal group relative flex flex-col overflow-hidden rounded-3xl border border-line bg-surface/40 p-8 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
+          class="reveal group relative flex flex-col overflow-hidden rounded-2xl border border-line bg-surface/40 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
         >
           <div class="flex items-center justify-between">
             <div class="grid size-12 place-items-center rounded-xl bg-white/[0.03] ring-1 ring-inset ring-line-strong">
@@ -90,13 +91,14 @@ const accentText: Record<string, string> = {
           </div>
           <h3 class="mt-5 text-xl">{p.name}</h3>
           <p class:list={['mt-1 text-sm font-medium', accentText[p.accent]]}>{p.kicker}</p>
-          <p class="mt-3 text-[0.95rem] leading-relaxed text-muted">{p.summary}</p>
+          <p class="mt-3 text-sm leading-relaxed text-muted">{p.summary}</p>
           <span class="mt-5 inline-flex items-center gap-2 text-sm font-medium text-body transition-colors group-hover:text-ink">
             Learn more
             <Icon name="lucide:arrow-right" class="size-4 transition-transform group-hover:translate-x-1" />
           </span>
         </a>
       ))}
+      </div>
     </div>
   </div>
 </section>
