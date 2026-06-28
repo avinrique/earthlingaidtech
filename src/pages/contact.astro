@@ -59,8 +59,15 @@ const mailto = `mailto:${site.email}?subject=${subject}&body=${body}`;
 
           <div class="reveal flex flex-col rounded-2xl border border-line bg-surface/30 p-6" data-delay="2">
             <Icon name="lucide:map-pin" class="size-6 text-violet" />
-            <h3 class="mt-4 text-base">Based in</h3>
-            <span class="mt-1 text-sm text-faint">{site.location}</span>
+            <h3 class="mt-4 text-base">Locations</h3>
+            <div class="mt-2 flex flex-col gap-3">
+              {site.offices.map((office) => (
+                <p class="text-sm leading-relaxed">
+                  <span class="block font-medium text-body">{office.label}</span>
+                  <span class="text-faint">{office.address}</span>
+                </p>
+              ))}
+            </div>
           </div>
         </div>
       </div>

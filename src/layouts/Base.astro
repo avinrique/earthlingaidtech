@@ -37,11 +37,22 @@ const orgSchema = {
   foundingDate: site.founded,
   email: site.email,
   sameAs: [site.social.github],
-  address: {
-    '@type': 'PostalAddress',
-    addressLocality: 'Bengaluru',
-    addressCountry: 'IN',
-  },
+  address: [
+    {
+      '@type': 'PostalAddress',
+      streetAddress: 'Biratnagar Metropolitan City-6',
+      addressLocality: 'Biratnagar',
+      addressRegion: 'Morang, Province No. 1',
+      addressCountry: 'NP',
+    },
+    {
+      '@type': 'PostalAddress',
+      streetAddress: 'BMSIT BICEP',
+      addressLocality: 'Bengaluru',
+      addressRegion: 'Karnataka',
+      addressCountry: 'IN',
+    },
+  ],
   slogan: site.tagline,
 };
 ---

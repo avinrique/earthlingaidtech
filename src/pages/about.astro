@@ -3,7 +3,7 @@ import Base from '@/layouts/Base.astro';
 import PageHeader from '@/components/PageHeader.astro';
 import Approach from '@/components/sections/Approach.astro';
 import WhyUs from '@/components/sections/WhyUs.astro';
-import { site } from '@/data/site';
+import { companyProof, leadership, site } from '@/data/site';
 ---
 
 <Base
@@ -39,6 +39,47 @@ import { site } from '@/data/site';
           systems.
         </p>
       </div>
+    </div>
+  </section>
+
+  <!-- Leadership & registration -->
+  <section class="py-8 md:py-14">
+    <div class="container-app grid gap-6 lg:grid-cols-[1fr_0.9fr] lg:gap-8">
+      <div class="reveal rounded-3xl border border-line bg-surface/30 p-8 md:p-10">
+        <p class="eyebrow"><span class="size-1.5 rounded-full bg-teal"></span>Leadership</p>
+        <h2 class="mt-4 text-3xl md:text-4xl">Founder-led engineering</h2>
+        <div class="mt-8 grid gap-4 sm:grid-cols-2">
+          {leadership.map((person, i) => (
+            <article
+              class="rounded-2xl border border-line bg-canvas/35 p-5"
+              data-delay={i + 1}
+            >
+              <h3 class="text-xl">{person.name}</h3>
+              <p class="mt-1 font-mono text-xs uppercase tracking-[0.18em] text-accent-bright">
+                {person.role}
+              </p>
+              <p class="mt-4 text-sm leading-relaxed text-muted">{person.body}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <aside class="reveal rounded-3xl border border-line bg-surface/30 p-8 md:p-10" data-delay="1">
+        <p class="eyebrow"><span class="size-1.5 rounded-full bg-amber"></span>Company record</p>
+        <h2 class="mt-4 text-3xl md:text-4xl">Registered and operating across two bases</h2>
+        <p class="mt-4 text-muted">
+          {site.legalName} is incorporated with the Office of the Company Registrar, Government of
+          Nepal, and operates with an active Bengaluru presence at BMSIT BICEP.
+        </p>
+        <dl class="mt-8 grid gap-3 sm:grid-cols-2">
+          {companyProof.map((item) => (
+            <div class="rounded-2xl border border-line bg-canvas/35 p-4">
+              <dt class="font-mono text-[0.68rem] uppercase tracking-[0.16em] text-faint">{item.label}</dt>
+              <dd class="mt-2 font-display text-xl font-semibold text-ink">{item.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </aside>
     </div>
   </section>
 

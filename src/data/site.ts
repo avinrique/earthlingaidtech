@@ -5,7 +5,7 @@
 
 export const site = {
   name: 'Earthling Aidtech',
-  legalName: 'Earthling Aidtech Private Limited',
+  legalName: 'Earthling Aid Tech Private Limited',
   shortName: 'EarthlingAidTech',
   domain: 'earthlingaidtech.com',
   url: 'https://earthlingaidtech.com',
@@ -14,12 +14,47 @@ export const site = {
     'Earthling Aidtech builds custom software — web apps, automation, desktop tools, and AI agents — plus EdTech platforms, robotics, and hardware products. Prepzer0 runs at SVIT and East Horizon School; 600+ students trained. A product & engineering studio in Bengaluru.',
   email: 'services@earthlingaidtech.com',
   emailAlt: 'earthlingaidtech@gmail.com',
-  location: 'Bengaluru, India',
-  founded: '2026',
+  location: 'Biratnagar, Nepal · Bengaluru, India',
+  founded: '2026-05-27',
+  registrationNo: '393454/82/83',
+  authorizedCapital: 'NPR 500,000',
+  paidUpCapital: 'NPR 500,000',
+  offices: [
+    {
+      label: 'Registered office',
+      address: 'Biratnagar Metropolitan City-6, Morang, Province No. 1, Nepal',
+    },
+    {
+      label: 'Bengaluru presence',
+      address: 'BMSIT BICEP, Bengaluru, Karnataka, India',
+    },
+  ],
   social: {
     github: 'https://github.com/avinrique',
   },
 } as const;
+
+export const leadership = [
+  {
+    name: 'Abhinav Gupta',
+    role: 'Founder & CEO',
+    body:
+      'Leads product direction, client delivery, and applied AI engineering across Prepzer0, agentic-AI systems, EdTech platforms, and production software.',
+  },
+  {
+    name: 'Sai Kartik Ketha',
+    role: 'Co-founder & CTO',
+    body:
+      'Leads technical architecture, systems engineering, security labs, and hands-on implementation across software, automation, and hardware-backed products.',
+  },
+] as const;
+
+export const companyProof = [
+  { value: '27 May 2026', label: 'Incorporated' },
+  { value: site.registrationNo, label: 'Registration no.' },
+  { value: site.authorizedCapital, label: 'Authorized capital' },
+  { value: site.paidUpCapital, label: 'Paid-up capital' },
+] as const;
 
 export type NavLink = { label: string; href: string };
 
@@ -367,13 +402,13 @@ export const workshops = {
   speakers: [
     {
       name: 'Abhinav Gupta',
-      role: 'Founder & Lead Instructor',
+      role: 'Founder & CEO',
       bio: 'Engineer and founder of Earthling Aidtech — builds agentic-AI systems, EdTech platforms, and production software, and brings that same hands-on practice into the classroom.',
       focus: ['Agentic AI', 'Web Development', 'Cloud & DevOps'],
     },
     {
       name: 'Sai Kartik Ketha',
-      role: 'Instructor & Technical Lead',
+      role: 'Co-founder & CTO',
       bio: 'Leads technical sessions across security and systems — translating real engineering workflows into labs students can actually run and reuse.',
       focus: ['Ethical Hacking', 'Linux', 'Blockchain'],
     },
