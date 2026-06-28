@@ -67,7 +67,7 @@ export const stats: { value: string; label: string; accent?: string }[] = [
   { value: '600+', label: 'Students trained', accent: 'accent' },
   { value: '6', label: 'Products built', accent: 'teal' },
   { value: '2', label: 'Prepzer0 deployments', accent: 'violet' },
-  { value: '12+', label: 'Client partners', accent: 'amber' },
+  { value: '13+', label: 'Client partners', accent: 'amber' },
 ];
 
 /* ---- Capabilities / services ---- */
@@ -445,6 +445,7 @@ export const clients: { name: string; note?: string }[] = [
   { name: 'CHD Group', note: 'NGO' },
   { name: 'EPICH', note: 'Public health' },
   { name: 'Perenhil', note: 'Healthcare' },
+  { name: 'Credley', note: 'Fintech' },
   { name: 'Woostaa', note: 'Housing solution' },
   { name: 'Curota.ai', note: 'AI data annotation' },
   { name: 'CampusPathway', note: 'Admissions · EdTech' },
