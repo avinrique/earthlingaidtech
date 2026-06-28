@@ -11,7 +11,7 @@ export const site = {
   url: 'https://earthlingaidtech.com',
   tagline: 'Engineering Intelligence. Empowering Humans.',
   description:
-    'Earthling Aidtech builds custom software — web apps, automation, desktop tools, and AI agents — plus EdTech platforms, robotics, and hardware products. Prepzer0 runs at SVIT and East Horizon School; 600+ students trained. A product & engineering studio in Bengaluru.',
+    'Earthling Aidtech builds custom software — web apps, automation, desktop tools, AI agents, SEO/GEO visibility systems, EdTech platforms, robotics, and hardware products. Prepzer0 runs at SVIT and East Horizon School; 600+ students trained. A product & engineering studio in Bengaluru.',
   email: 'services@earthlingaidtech.com',
   emailAlt: 'earthlingaidtech@gmail.com',
   location: 'Biratnagar, Nepal · Bengaluru, India',
@@ -125,6 +125,21 @@ export const services: Service[] = [
       'AI-assisted monitoring & evaluation',
       'Interactive courseware & custom LMS',
       'Flexible deployment & reporting',
+    ],
+  },
+  {
+    id: 'seo-geo',
+    icon: 'search',
+    accent: 'teal',
+    title: 'SEO & GEO',
+    tag: 'Search · AI visibility',
+    summary:
+      'Technical SEO and Generative Engine Optimization for brands that need to be found in Google, answer engines, AI search, and LLM-assisted discovery.',
+    points: [
+      'Technical SEO audits, fixes & performance cleanup',
+      'Content architecture for search intent',
+      'Schema, metadata, sitemap & indexing workflows',
+      'GEO for AI search, answer engines & LLM visibility',
     ],
   },
   {
