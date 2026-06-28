@@ -17,8 +17,6 @@ export const site = {
   location: 'Biratnagar, Nepal · Bengaluru, India',
   founded: '2026-05-27',
   registrationNo: '393454/82/83',
-  authorizedCapital: 'NPR 500,000',
-  paidUpCapital: 'NPR 500,000',
   offices: [
     {
       label: 'Registered office',
@@ -52,8 +50,6 @@ export const leadership = [
 export const companyProof = [
   { value: '27 May 2026', label: 'Incorporated' },
   { value: site.registrationNo, label: 'Registration no.' },
-  { value: site.authorizedCapital, label: 'Authorized capital' },
-  { value: site.paidUpCapital, label: 'Paid-up capital' },
 ] as const;
 
 export type NavLink = { label: string; href: string };
