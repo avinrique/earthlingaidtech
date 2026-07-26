@@ -193,21 +193,28 @@ import CubeLogo from './CubeLogo.astro';
       let prevDistC = 1;
       let elapsed = 0;      // seconds, drives the gentle shake wobble
 
-      // Manual timeline drive: a cosine sweep between the start/end of the
-      // baked MOTION (holds trimmed) — velocity is sinusoidal, so the cube
-      // never parks; it eases through the fit and straight back out.
-      let motionT0 = 0;     // first moment anything moves
-      let motionT1 = 0;     // last moment anything moves
+      // Manual timeline drive: a cosine sweep through an activity-weighted
+      // remap of the baked clip — playback glides quickly through every
+      // static hold (wherever it sits in the timeline) and keeps the animated
+      // beats, so the cube never visibly parks, in either direction.
+      let timeRemap: Float32Array | null = null; // normalized cumulative activity per sample
+      let clipDurG = 10;    // clip duration, captured at load for draw()
       let phase = 0;        // cosine phase, advanced in draw()
-      let sweepHalfPeriod = 11; // seconds per assemble (or unwind) pass; set from the motion span
+      let sweepHalfPeriod = 11; // seconds per assemble (or unwind) pass; set from real motion time
 
       // prev positions, used to gate shake to (roughly) stationary cubes
       const prevPos = new Map<THREE.Object3D, THREE.Vector3>();
-      // Gentle, slow wobble — only while a cube is apart AND nearly stationary
-      // (waiting to combine), so it never fights the baked combine motion.
-      const applyShake = (node: THREE.Object3D, home: THREE.Vector3, speed: number) => {
-        if (node.position.distanceTo(home) < 0.3 || speed > 0.25) return;
-        const a = 0.012; // gentle, slow float (not a jittery shake)
+      // Gentle, slow wobble — only while a cube is apart AND nearly stationary.
+      // The weight FADES in/out (never gates) so engaging can't pop the pose.
+      const wobbleW = new Map<THREE.Object3D, number>();
+      const applyShake = (node: THREE.Object3D, home: THREE.Vector3, speed: number, dt: number) => {
+        const apart = THREE.MathUtils.smoothstep(node.position.distanceTo(home), 0.25, 0.6);
+        const calm = 1 - THREE.MathUtils.smoothstep(speed, 0.12, 0.3);
+        const prevW = wobbleW.get(node) ?? 0;
+        const w = prevW + (apart * calm - prevW) * Math.min(1, dt * 2.5);
+        wobbleW.set(node, w);
+        if (w < 0.001) return;
+        const a = 0.012 * w; // gentle, slow float (not a jittery shake)
         const ph = node.id;
         node.position.x += a * Math.sin(elapsed * 1.0 + ph * 1.7);
         node.position.y += a * Math.sin(elapsed * 1.2 + ph * 0.6);
@@ -406,33 +413,46 @@ import CubeLogo from './CubeLogo.astro';
           const center = new THREE.Box3().setFromObject(model).getCenter(new THREE.Vector3());
           model.position.sub(center);
 
-          // Trim the static holds off both ends of the baked timeline: scan the
-          // clip and find the first/last instants any piece actually moves.
+          // Build an activity-weighted time remap of the baked clip: sample
+          // how much the pieces actually move (translation + rotation) at each
+          // instant, then make playback progress proportional to that activity
+          // (with a small floor). Static holds — at the ends OR mid-clip —
+          // compress to a brief glide; the animated beats keep their feel.
           {
             const nodes = [outerNode, middleNode, coreNode].filter(Boolean) as THREE.Object3D[];
             const step = 1 / 24;
+            const N = Math.max(2, Math.round(clipDur / step) + 1);
+            const act = new Float32Array(N);
             mixer.setTime(0);
             model.updateMatrixWorld(true);
-            const start = nodes.map((n) => n.position.clone());
-            let prev = nodes.map((n) => n.position.clone());
-            let firstMove = -1;
-            let lastMove = 0;
-            for (let t = step; t <= clipDur + 1e-3; t += step) {
-              mixer.setTime(t);
+            const prevP = nodes.map((n) => n.position.clone());
+            const prevQ = nodes.map((n) => n.quaternion.clone());
+            for (let k = 1; k < N; k++) {
+              mixer.setTime(Math.min(clipDur, k * step));
               model.updateMatrixWorld(true);
-              const moved = nodes.some((n, i) => n.position.distanceTo(prev[i]) > 0.004);
-              if (moved) {
-                if (firstMove < 0 && nodes.some((n, i) => n.position.distanceTo(start[i]) > 0.01)) firstMove = t;
-                lastMove = t;
-              }
-              prev = nodes.map((n) => n.position.clone());
+              let a = 0;
+              nodes.forEach((n, i) => {
+                a += n.position.distanceTo(prevP[i]);
+                a += 1.5 * prevQ[i].angleTo(n.quaternion);
+                prevP[i].copy(n.position);
+                prevQ[i].copy(n.quaternion);
+              });
+              act[k] = a;
             }
-            motionT0 = Math.max(0, (firstMove < 0 ? 0 : firstMove) - 0.3);
-            motionT1 = Math.min(clipDur, lastMove + 0.25);
-            if (motionT1 - motionT0 < 1) { motionT0 = 0; motionT1 = clipDur; } // safety
-            // pace the sweep off the real motion span: mid-sweep stays close to
-            // the baked tempo, ends ease through instead of holding
-            sweepHalfPeriod = (motionT1 - motionT0) * 1.15;
+            let sum = 0;
+            for (let k = 1; k < N; k++) sum += act[k];
+            const mean = sum / (N - 1) || 1e-4;
+            const floor = mean * 0.12;
+            const remap = new Float32Array(N);
+            let cum = 0;
+            for (let k = 1; k < N; k++) { cum += Math.max(act[k], floor); remap[k] = cum; }
+            for (let k = 1; k < N; k++) remap[k] /= cum;
+            timeRemap = remap;
+            clipDurG = clipDur;
+            // pace the sweep off the time that's genuinely in motion
+            let active = 0;
+            for (let k = 1; k < N; k++) if (act[k] > mean * 0.25) active++;
+            sweepHalfPeriod = Math.max(8, (active / 24) * 1.15);
           }
 
           pivot.add(model);
@@ -469,7 +489,7 @@ import CubeLogo from './CubeLogo.astro';
           }
 
           // animated path: start at the top of the sweep (cubes scattered) and play
-          mixer.setTime(motionT0);
+          mixer.setTime(0);
           model.updateMatrixWorld(true);
           if (middleNode) prevDistM = middleNode.position.distanceTo(homeMiddle);
           if (coreNode) prevDistC = coreNode.position.distanceTo(homeCore);
@@ -501,12 +521,21 @@ import CubeLogo from './CubeLogo.astro';
         lastTime = now;
         elapsed += dt;
 
-        // Drive the baked combine animation with a continuous cosine sweep:
-        // forward through the motion window, then smoothly back — sinusoidal
-        // velocity means it never freezes, only breathes through the ends.
+        // Drive the baked combine animation with a continuous cosine sweep
+        // through the activity remap: sinusoidal velocity at the ends, holds
+        // compressed everywhere — the cube breathes and never parks.
         phase += (dt * Math.PI) / sweepHalfPeriod;
         const u = 0.5 - 0.5 * Math.cos(phase);
-        mixer.setTime(motionT0 + (motionT1 - motionT0) * u);
+        if (timeRemap) {
+          // invert the monotonic cumulative-activity curve (binary search)
+          let lo = 0, hi = timeRemap.length - 1;
+          while (lo + 1 < hi) { const m = (lo + hi) >> 1; if (timeRemap[m] < u) lo = m; else hi = m; }
+          const span = timeRemap[hi] - timeRemap[lo] || 1;
+          const frac = (u - timeRemap[lo]) / span;
+          mixer.setTime(((lo + frac) / (timeRemap.length - 1)) * clipDurG);
+        } else {
+          mixer.setTime(u * clipDurG);
+        }
 
         // outshine flash the instant the middle, then the core, snaps home
         const dM = middleNode ? middleNode.position.distanceTo(homeMiddle) : 1;
@@ -527,7 +556,7 @@ import CubeLogo from './CubeLogo.astro';
           const prev = prevPos.get(node);
           const speed = prev ? node.position.distanceTo(prev) / Math.max(dt, 1e-3) : 0;
           if (prev) prev.copy(node.position);
-          applyShake(node, home, speed);
+          applyShake(node, home, speed, dt);
         }
 
         // ease the hover boost
