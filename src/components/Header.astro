@@ -4,8 +4,12 @@ import CubeLogo from './CubeLogo.astro';
 import Button from './Button.astro';
 import { nav, site } from '@/data/site';
 
-const path = Astro.url.pathname.replace(/\/$/, '') || '/';
-const isActive = (href: string) => path === href || (href !== '/' && path.startsWith(href));
+const trim = (p: string) => p.replace(/\/$/, '') || '/';
+const path = trim(Astro.url.pathname);
+const isActive = (rawHref: string) => {
+  const href = trim(rawHref);
+  return path === href || (href !== '/' && path.startsWith(`${href}/`));
+};
 ---
 
 <header id="site-header" class="fixed inset-x-0 top-0 z-50 transition-all duration-300">
@@ -39,7 +43,7 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
 
       <div class="flex items-center gap-2">
         <div class="hidden md:block">
-          <Button href="/contact" size="md" iconRight="arrow-up-right">Start a project</Button>
+          <Button href="/contact/" size="md" iconRight="arrow-up-right">Start a project</Button>
         </div>
         <!-- Mobile toggle -->
         <button
@@ -81,7 +85,7 @@ const isActive = (href: string) => path === href || (href !== '/' && path.starts
         ))}
       </div>
       <div class="mt-auto flex flex-col gap-3">
-        <Button href="/contact" size="lg" iconRight="arrow-right" class="w-full">Start a project</Button>
+        <Button href="/contact/" size="lg" iconRight="arrow-right" class="w-full">Start a project</Button>
         <a href={`mailto:${site.email}`} class="text-center text-sm text-faint">{site.email}</a>
       </div>
     </nav>

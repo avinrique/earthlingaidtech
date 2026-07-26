@@ -21,7 +21,7 @@ const year = 2026; // build-time constant (CI builds annually / on push)
         </p>
       </div>
       <a
-        href="/contact"
+        href="/contact/"
         class="group inline-flex shrink-0 items-center gap-2 rounded-full bg-accent px-6 py-3.5 font-semibold text-on-accent transition-all duration-300 hover:bg-accent-hover hover:-translate-y-0.5"
       >
         Get in touch
@@ -58,7 +58,7 @@ const year = 2026; // build-time constant (CI builds annually / on push)
         <h3 class="font-mono text-xs uppercase tracking-[0.18em] text-faint">Capabilities</h3>
         <ul class="mt-4 flex flex-col gap-2.5 text-sm">
           {services.map((s) => (
-            <li><a href={`/services#${s.id}`} class="text-muted transition-colors hover:text-ink">{s.title}</a></li>
+            <li><a href={`/services/#${s.id}`} class="text-muted transition-colors hover:text-ink">{s.title}</a></li>
           ))}
         </ul>
       </nav>
@@ -67,7 +67,7 @@ const year = 2026; // build-time constant (CI builds annually / on push)
         <h3 class="font-mono text-xs uppercase tracking-[0.18em] text-faint">Products</h3>
         <ul class="mt-4 flex flex-col gap-2.5 text-sm">
           {footerProducts.map((p) => (
-            <li><a href={`/products/${p.slug}`} class="text-muted transition-colors hover:text-ink">{p.name}</a></li>
+            <li><a href={`/products/${p.slug}/`} class="text-muted transition-colors hover:text-ink">{p.name}</a></li>
           ))}
         </ul>
       </nav>

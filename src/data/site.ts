@@ -55,11 +55,11 @@ export const companyProof = [
 export type NavLink = { label: string; href: string };
 
 export const nav: NavLink[] = [
-  { label: 'Services', href: '/services' },
-  { label: 'Products', href: '/products' },
-  { label: 'Workshops', href: '/workshops' },
-  { label: 'About', href: '/about' },
-  { label: 'Contact', href: '/contact' },
+  { label: 'Services', href: '/services/' },
+  { label: 'Products', href: '/products/' },
+  { label: 'Workshops', href: '/workshops/' },
+  { label: 'About', href: '/about/' },
+  { label: 'Contact', href: '/contact/' },
 ];
 
 /* ---- Hero stats / proof bar (every number is real, from app.txt) ---- */

@@ -31,7 +31,7 @@ const accentText: Record<string, string> = {
     <div class:list={['grid gap-4 lg:grid-cols-2', heading ? 'mt-14' : 'mt-2']}>
       <!-- Flagship -->
       <a
-        href={`/products/${flagship.slug}`}
+        href={`/products/${flagship.slug}/`}
         class="reveal group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-line bg-surface/40 p-8 transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 lg:row-span-2 lg:p-10"
       >
         <div class="glow-accent pointer-events-none absolute -right-20 -top-20 size-72 opacity-50 transition-opacity duration-300 group-hover:opacity-80"></div>
@@ -79,7 +79,7 @@ const accentText: Record<string, string> = {
       <!-- Other products -->
       {rest.map((p) => (
         <a
-          href={`/products/${p.slug}`}
+          href={`/products/${p.slug}/`}
           class="reveal group relative flex flex-col overflow-hidden rounded-3xl border border-line bg-surface/40 p-8 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
         >
           <div class="flex items-center justify-between">

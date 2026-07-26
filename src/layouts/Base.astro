@@ -23,7 +23,12 @@ const {
 } = Astro.props;
 
 const pageTitle = title ? `${title} · ${site.name}` : `${site.name} — ${site.tagline}`;
-const canonical = new URL(Astro.url.pathname, site.url).href;
+// Always canonicalise to the trailing-slash form — that is what GitHub Pages
+// actually serves; the bare path 301-redirects to it.
+const canonicalPath = Astro.url.pathname.endsWith('/')
+  ? Astro.url.pathname
+  : `${Astro.url.pathname}/`;
+const canonical = new URL(canonicalPath, site.url).href;
 const ogImageUrl = new URL(ogImage, site.url).href;
 
 const orgSchema = {
