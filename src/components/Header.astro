@@ -61,15 +61,25 @@ const isActive = (rawHref: string) => {
     </div>
   </div>
 
-  <!-- Mobile menu -->
+  <!-- Mobile menu.
+       `100dvh` rather than `inset-0`: on iOS Safari a fixed full-inset overlay
+       is measured against the *large* viewport, so the bottom CTA hides behind
+       the URL bar. The panel is opaque instead of backdrop-blurred — a
+       full-screen backdrop-filter is the single most expensive thing you can
+       animate on a mid-tier phone, and at this opacity nothing shows through
+       anyway. -->
   <div
     id="mobile-menu"
-    class="invisible fixed inset-0 top-0 z-40 translate-y-[-8px] opacity-0 transition-all duration-300 md:hidden"
+    class="invisible fixed inset-x-0 top-0 z-40 h-[100dvh] translate-y-[-8px] overflow-hidden opacity-0 transition-[opacity,transform,visibility] duration-300 md:hidden"
   >
-    <div class="absolute inset-0 bg-canvas-deep/80 backdrop-blur-xl"></div>
-    <nav class="container-app relative flex h-full flex-col pt-24 pb-10" aria-label="Mobile">
-      <div class="flex flex-col gap-1">
-        {nav.map((link, i) => (
+    <div class="absolute inset-0 bg-canvas-deep"></div>
+    <div class="glow-accent pointer-events-none absolute -top-32 left-1/2 size-[520px] -translate-x-1/2 opacity-40"></div>
+    <nav
+      class="container-app relative flex h-full flex-col overflow-y-auto overscroll-contain pt-24 pb-[max(2.5rem,env(safe-area-inset-bottom))]"
+      aria-label="Mobile"
+    >
+      <div class="flex flex-col">
+        {nav.map((link) => (
           <a
             href={link.href}
             aria-current={isActive(link.href) ? 'page' : undefined}
@@ -77,46 +87,66 @@ const isActive = (rawHref: string) => {
               'flex items-center justify-between border-b border-line py-4 font-display text-2xl font-medium transition-colors',
               isActive(link.href) ? 'text-accent' : 'text-ink hover:text-accent',
             ]}
-            style={`transition-delay:${i * 30}ms`}
           >
             {link.label}
-            <Icon name="lucide:arrow-up-right" class="size-5 text-faint" />
+            <Icon name="lucide:arrow-up-right" class="size-5 text-faint" aria-hidden="true" />
           </a>
         ))}
       </div>
-      <div class="mt-auto flex flex-col gap-3">
+      <div class="mt-auto flex flex-col gap-3 pt-10">
         <Button href="/contact/" size="lg" iconRight="arrow-right" class="w-full">Start a project</Button>
-        <a href={`mailto:${site.email}`} class="text-center text-sm text-faint">{site.email}</a>
+        <a href={`mailto:${site.email}`} class="py-2 text-center text-sm text-faint">{site.email}</a>
       </div>
     </nav>
   </div>
 </header>
 
 <script>
-  const header = document.getElementById('site-header');
   const bar = document.getElementById('header-bar');
   const toggle = document.getElementById('menu-toggle');
   const menu = document.getElementById('mobile-menu');
   const openIcon = document.querySelector('.menu-open');
   const closeIcon = document.querySelector('.menu-close');
+  // Everything the menu covers, so it can be taken out of the a11y tree and
+  // the tab order while the panel is up.
+  const behind = [document.getElementById('main'), document.querySelector('footer')].filter(
+    Boolean,
+  ) as HTMLElement[];
 
-  // Scroll-aware header chrome
-  const onScroll = () => {
+  // ---- Scroll-aware header chrome. rAF-throttled: the raw scroll event fires
+  // far more often than the class can actually change.
+  let ticking = false;
+  const applyChrome = () => {
+    ticking = false;
     if (!bar) return;
-    if (window.scrollY > 12) {
-      bar.classList.add('glass', 'border-line', 'shadow-[0_8px_30px_rgba(0,0,0,0.4)]');
-    } else {
-      bar.classList.remove('glass', 'border-line', 'shadow-[0_8px_30px_rgba(0,0,0,0.4)]');
-    }
+    bar.classList.toggle('glass', window.scrollY > 12);
+    bar.classList.toggle('border-line', window.scrollY > 12);
+    bar.classList.toggle('shadow-[0_8px_30px_rgba(0,0,0,0.4)]', window.scrollY > 12);
   };
-  onScroll();
-  window.addEventListener('scroll', onScroll, { passive: true });
+  applyChrome();
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(applyChrome);
+    },
+    { passive: true },
+  );
 
-  // Mobile menu
+  // ---- Mobile menu
   let open = false;
+  let scrollY = 0;
+
+  const focusables = () =>
+    Array.from(
+      menu?.querySelectorAll<HTMLElement>('a[href], button:not([disabled])') ?? [],
+    ).filter((el) => el.offsetParent !== null);
+
   const setMenu = (next: boolean) => {
+    if (!menu || !toggle || next === open) return;
     open = next;
-    if (!menu || !toggle) return;
+
     menu.classList.toggle('invisible', !open);
     menu.classList.toggle('opacity-0', !open);
     menu.classList.toggle('translate-y-[-8px]', !open);
@@ -124,9 +154,54 @@ const isActive = (rawHref: string) => {
     closeIcon?.classList.toggle('hidden', !open);
     toggle.setAttribute('aria-expanded', String(open));
     toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-    document.body.style.overflow = open ? 'hidden' : '';
+    behind.forEach((el) => el.toggleAttribute('inert', open));
+
+    if (open) {
+      // Position-fixed scroll lock: `overflow: hidden` alone does not hold on
+      // iOS Safari. Pin the body and restore the exact offset on close.
+      scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      focusables()[0]?.focus();
+    } else {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.width = '';
+      window.scrollTo({ top: scrollY, behavior: 'instant' as ScrollBehavior });
+      toggle.focus();
+    }
   };
+
   toggle?.addEventListener('click', () => setMenu(!open));
   menu?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setMenu(false)));
-  window.addEventListener('keydown', (e) => e.key === 'Escape' && open && setMenu(false));
+
+  window.addEventListener('keydown', (e) => {
+    if (!open) return;
+    if (e.key === 'Escape') {
+      setMenu(false);
+      return;
+    }
+    if (e.key !== 'Tab') return;
+    // Keep focus inside the panel — without this, Tab walks into the page
+    // hidden behind it.
+    const items = focusables();
+    if (!items.length) return;
+    const first = items[0];
+    const last = items[items.length - 1];
+    const active = document.activeElement;
+    if (e.shiftKey && (active === first || active === toggle)) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && active === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  });
+
+  // A rotate to landscape can cross the md breakpoint, where the panel is
+  // display:none — make sure we do not leave the body pinned and inert.
+  window.matchMedia('(min-width: 768px)').addEventListener('change', (e) => {
+    if (e.matches) setMenu(false);
+  });
 </script>

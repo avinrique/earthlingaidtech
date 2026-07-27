@@ -1,10 +1,13 @@
 ---
 /**
- * CubeModel — loads the real 3D brand mark (public/models/eat-cube.glb, built
- * in Blender from the nested-cube logo) with Three.js + GLTFLoader. The model
- * auto-rotates and follows the pointer; it renders on a transparent canvas over
- * a CSS glow. Falls back to the static SVG logo when WebGL is unavailable or the
- * user prefers reduced motion.
+ * CubeModel — the 3D brand mark.
+ *
+ * Ships as a pure-CSS/SVG cube by default (`CubeLogo`, ~1 kB inline, animates
+ * on the compositor). The Three.js upgrade — 640 kB raw / 164 kB gzip once you
+ * count GLTFLoader + EffectComposer + UnrealBloomPass — is a *lazy* chunk that
+ * only downloads on a wide, mouse-driven, non-metered device once the cube is
+ * about to enter the viewport. Phones, tablets, data-saver, low-core machines
+ * and reduced-motion users never pay for it and keep the SVG.
  */
 import CubeLogo from './CubeLogo.astro';
 ---
@@ -20,7 +23,7 @@ import CubeLogo from './CubeLogo.astro';
   <canvas class="cube3d__canvas" data-cube-canvas aria-hidden="true"></canvas>
 
   <div class="cube3d__fallback" data-cube-fallback>
-    <CubeLogo size={220} animated title="Earthling Aidtech" />
+    <CubeLogo size={220} animated title="Earthling Aidtech" class="cube3d__svg" />
   </div>
 </div>
 
@@ -100,6 +103,13 @@ import CubeLogo from './CubeLogo.astro';
   }
   .cube3d__fallback[data-hidden] { opacity: 0; pointer-events: none; }
 
+  /* The SVG mark carries width/height attrs for its intrinsic ratio; let it
+     scale with the container so the mobile hero gets a proportional cube. */
+  .cube3d :global(.cube3d__svg) {
+    width: min(62%, 220px);
+    height: auto;
+  }
+
   @keyframes cube3d-pulse {
     0%, 100% { opacity: 0.5; transform: scale(0.96); }
     50% { opacity: 0.95; transform: scale(1.06); }
@@ -111,497 +121,55 @@ import CubeLogo from './CubeLogo.astro';
 </style>
 
 <script>
-  import * as THREE from 'three';
-  import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-  import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-  import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-  import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
-  import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
-
+  /**
+   * Gate for the Three.js upgrade. Everything below the dynamic import stays in
+   * the page's small entry chunk; `three` only leaves the server when a device
+   * clears every check.
+   */
   const root = document.querySelector<HTMLElement>('[data-cube3d]');
-  const canvas = root?.querySelector<HTMLCanvasElement>('[data-cube-canvas]');
-  const fallback = root?.querySelector<HTMLElement>('[data-cube-fallback]');
 
-  if (root && canvas) {
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (root) {
+    type NetInfo = { saveData?: boolean; effectiveType?: string };
+    const conn = (navigator as Navigator & { connection?: NetInfo }).connection;
+    const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
 
-    let renderer: THREE.WebGLRenderer | null = null;
-    try {
-      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    } catch {
-      renderer = null; // keep the SVG fallback
-    }
+    // A WebGL scene with bloom post-processing is a real GPU/CPU cost. Spend it
+    // only where it is both visible (the hero visual is `md:` and up) and
+    // affordable.
+    const capable =
+      window.matchMedia('(min-width: 768px) and (pointer: fine)').matches &&
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
+      !conn?.saveData &&
+      !/(^|-)2g$/.test(conn?.effectiveType ?? '') &&
+      (navigator.hardwareConcurrency ?? 8) >= 4 &&
+      (memory ?? 8) >= 4;
 
-    if (renderer) {
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.outputColorSpace = THREE.SRGBColorSpace;
-      // No tone-mapping: render the flat logo colors exactly (ACES was crushing
-      // the charcoal/slate shades to black). Bloom still lifts the bright core.
-      renderer.toneMapping = THREE.NoToneMapping;
-      renderer.setClearColor(0x000000, 0); // transparent through the composer
-
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
-      camera.position.set(0, 0, 7);
-
-      const pivot = new THREE.Group();
-      scene.add(pivot);
-      // Fixed pose set after load (looks down the nesting corner = the logo's
-      // isometric view). No auto-rotation, no pointer-tilt — the only motion is
-      // assemble-on-load and explode-on-hover.
-
-      // Flat SVG-style model: the materials carry their own color (lightly
-      // emissive), so we just need soft, even light to keep the tri-tone faces
-      // reading true — no environment map / heavy reflections.
-      scene.add(new THREE.AmbientLight(0xffffff, 0.28));
-      const key = new THREE.DirectionalLight(0xffffff, 0.5);
-      key.position.set(3, 5, 6);
-      scene.add(key);
-      const fill = new THREE.DirectionalLight(0xbcd4ff, 0.22);
-      fill.position.set(-5, -2, 3);
-      scene.add(fill);
-
-      // ---- post-processing: neon bloom ----
-      const composer = new EffectComposer(renderer);
-      const renderPass = new RenderPass(scene, camera);
-      renderPass.clearAlpha = 0;
-      composer.addPass(renderPass);
-      const BLOOM_STRENGTH = 0.38;
-      const bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), BLOOM_STRENGTH, 0.55, 0.9);
-      composer.addPass(bloomPass);
-      composer.addPass(new OutputPass());
-
-      let model: THREE.Object3D | null = null;
-      let mixer: THREE.AnimationMixer | null = null;
-      let coreMat: THREE.MeshBasicMaterial | null = null;
-      const EDGE_BASE = new THREE.Color(0x4aa8ff).multiplyScalar(2.0);
-      const edgeMats: THREE.LineBasicMaterial[] = [];
-      let pulse = 0;        // surge, fired when middle (then core) snaps home
-
-      // ---- cube nodes + their assembled "home" positions (local to EatCube).
-      // The combine motion is baked in Blender and played by the mixer; here we
-      // only read each cube's distance-from-home to time the outshine flash, the
-      // gentle idle shake, and the core glow. ----
-      let outerNode: THREE.Object3D | null = null;
-      let middleNode: THREE.Object3D | null = null;
-      let coreNode: THREE.Object3D | null = null;
-      // assembled "home" positions, captured from the model after load
-      const homeOuter = new THREE.Vector3();
-      const homeMiddle = new THREE.Vector3();
-      const homeCore = new THREE.Vector3();
-      let prevDistM = 1;
-      let prevDistC = 1;
-      let elapsed = 0;      // seconds, drives the gentle shake wobble
-
-      // Manual timeline drive: a cosine sweep through an activity-weighted
-      // remap of the baked clip — playback glides quickly through every
-      // static hold (wherever it sits in the timeline) and keeps the animated
-      // beats, so the cube never visibly parks, in either direction.
-      let timeRemap: Float32Array | null = null; // normalized cumulative activity per sample
-      let clipDurG = 10;    // clip duration, captured at load for draw()
-      let phase = 0;        // cosine phase, advanced in draw()
-      let sweepHalfPeriod = 11; // seconds per assemble (or unwind) pass; set from real motion time
-
-      // prev positions, used to gate shake to (roughly) stationary cubes
-      const prevPos = new Map<THREE.Object3D, THREE.Vector3>();
-      // Gentle, slow wobble — only while a cube is apart AND nearly stationary.
-      // The weight FADES in/out (never gates) so engaging can't pop the pose.
-      const wobbleW = new Map<THREE.Object3D, number>();
-      const applyShake = (node: THREE.Object3D, home: THREE.Vector3, speed: number, dt: number) => {
-        const apart = THREE.MathUtils.smoothstep(node.position.distanceTo(home), 0.25, 0.6);
-        const calm = 1 - THREE.MathUtils.smoothstep(speed, 0.12, 0.3);
-        const prevW = wobbleW.get(node) ?? 0;
-        const w = prevW + (apart * calm - prevW) * Math.min(1, dt * 2.5);
-        wobbleW.set(node, w);
-        if (w < 0.001) return;
-        const a = 0.012 * w; // gentle, slow float (not a jittery shake)
-        const ph = node.id;
-        node.position.x += a * Math.sin(elapsed * 1.0 + ph * 1.7);
-        node.position.y += a * Math.sin(elapsed * 1.2 + ph * 0.6);
-        node.position.z += a * Math.sin(elapsed * 0.85 + ph * 2.4);
+    if (capable) {
+      let booted = false;
+      const boot = () => {
+        if (booted) return;
+        booted = true;
+        import('@/scripts/cube3d')
+          .then((m) => m.initCube(root))
+          .catch(() => { /* network/parse failure → the SVG mark stays put */ });
       };
-
-      // ---- logo colors: each piece gets the flat-logo tri-tone (top / right /
-      // left shades) baked as per-face vertex colors and rendered UNLIT
-      // (MeshBasic) so it reads exactly like the 2D mark. ----
-      // Logo hues, lifted for the dark page background so the three cubes read
-      // as clearly distinct (the literal SVG greys vanish against near-black).
-      const SHADES: Record<string, [number, number, number]> = {
-        outer:  [0x5a5f66, 0x444a52, 0x33383f],   // charcoal → visible cool grey
-        middle: [0x8fa3b8, 0x617388, 0x495872],   // cool slate (clearly lighter)
-        core:   [0x9fd0ff, 0x4a9eff, 0x2e7bd6],   // brand blue (brightest)
-      };
-      const colorize = (mesh: THREE.Mesh, shades: [number, number, number]) => {
-        let g = mesh.geometry as THREE.BufferGeometry;
-        if (g.index) { g = g.toNonIndexed(); mesh.geometry = g; }
-        const pos = g.attributes.position;
-        const colors = new Float32Array(pos.count * 3);
-        const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
-        const ab = new THREE.Vector3(), ac = new THREE.Vector3(), nrm = new THREE.Vector3();
-        const top = new THREE.Color(shades[0]).convertSRGBToLinear();
-        const right = new THREE.Color(shades[1]).convertSRGBToLinear();
-        const left = new THREE.Color(shades[2]).convertSRGBToLinear();
-        for (let i = 0; i < pos.count; i += 3) {
-          a.fromBufferAttribute(pos, i); b.fromBufferAttribute(pos, i + 1); c.fromBufferAttribute(pos, i + 2);
-          ab.subVectors(b, a); ac.subVectors(c, a); nrm.crossVectors(ab, ac).normalize();
-          const ax = Math.abs(nrm.x), ay = Math.abs(nrm.y), az = Math.abs(nrm.z);
-          let col = left;
-          if (ay >= ax && ay >= az) col = nrm.y > 0 ? top : left;     // up-facing = top shade
-          else if (ax >= az) col = nrm.x > 0 ? right : left;
-          else col = nrm.z > 0 ? right : left;
-          for (let k = 0; k < 3; k++) { const j = (i + k) * 3; colors[j] = col.r; colors[j + 1] = col.g; colors[j + 2] = col.b; }
-        }
-        g.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-        const mat = new THREE.MeshBasicMaterial({ vertexColors: true });
-        mesh.material = mat;
-        return mat;
-      };
-
-      // ---- electrons: glowing dots that RANDOM-WALK the cube edges (a traveling
-      // cubical path, not a surface wash), parented to each piece. ----
-      const dotTex = (() => {
-        const cv = document.createElement('canvas'); cv.width = cv.height = 64;
-        const g = cv.getContext('2d')!;
-        const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-        gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.3, 'rgba(190,225,255,0.95)'); gr.addColorStop(1, 'rgba(120,180,255,0)');
-        g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
-        const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; return t;
-      })();
-      type Graph = { verts: THREE.Vector3[]; nbr: number[][] };
-      type Walker = { a: number; b: number; u: number; speed: number };
-      type EJet = { graph: Graph; walkers: Walker[]; positions: Float32Array; geo: THREE.BufferGeometry; mat: THREE.PointsMaterial; pts: THREE.Points };
-      const ejets: EJet[] = [];
-      const buildGraph = (geometry: THREE.BufferGeometry): Graph => {
-        const eg = new THREE.EdgesGeometry(geometry, 30);
-        const p = eg.attributes.position;
-        const verts: THREE.Vector3[] = []; const key2i = new Map<string, number>(); const nbr: number[][] = [];
-        const idx = (x: number, y: number, z: number) => {
-          const k = `${x.toFixed(3)},${y.toFixed(3)},${z.toFixed(3)}`;
-          let i = key2i.get(k);
-          if (i === undefined) { i = verts.length; verts.push(new THREE.Vector3(x, y, z)); key2i.set(k, i); nbr[i] = []; }
-          return i;
-        };
-        for (let i = 0; i < p.count; i += 2) {
-          const i0 = idx(p.getX(i), p.getY(i), p.getZ(i));
-          const i1 = idx(p.getX(i + 1), p.getY(i + 1), p.getZ(i + 1));
-          if (i0 !== i1) { nbr[i0].push(i1); nbr[i1].push(i0); }
-        }
-        eg.dispose();
-        return { verts, nbr };
-      };
-      const makeJet = (node: THREE.Object3D, count: number): EJet | null => {
-        const mesh = node as THREE.Mesh;
-        if (!mesh.geometry) return null;
-        const graph = buildGraph(mesh.geometry);
-        if (graph.verts.length < 2) return null;
-        const walkers: Walker[] = [];
-        for (let i = 0; i < count; i++) {
-          const a = Math.floor(Math.random() * graph.verts.length);
-          const ns = graph.nbr[a]; if (!ns || !ns.length) continue;
-          walkers.push({ a, b: ns[Math.floor(Math.random() * ns.length)], u: Math.random(), speed: 0.7 + Math.random() * 0.8 });
-        }
-        if (!walkers.length) return null;
-        const positions = new Float32Array(walkers.length * 3);
-        const geo = new THREE.BufferGeometry();
-        geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        const mat = new THREE.PointsMaterial({ size: 0.13, map: dotTex, color: 0xdcefff, transparent: true, opacity: 0.9, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, sizeAttenuation: true, toneMapped: false });
-        const pts = new THREE.Points(geo, mat); pts.renderOrder = 4; node.add(pts);
-        return { graph, walkers, positions, geo, mat, pts };
-      };
-      const updateJets = (dt: number, flow: number, glow: number) => {
-        for (const e of ejets) {
-          e.mat.opacity = glow;
-          const p = e.positions, V = e.graph.verts;
-          for (let i = 0; i < e.walkers.length; i++) {
-            const w = e.walkers[i];
-            w.u += w.speed * dt * flow;
-            while (w.u >= 1) {
-              w.u -= 1;
-              const ns = e.graph.nbr[w.b];
-              let next = w.a;
-              if (ns && ns.length) {
-                next = ns[Math.floor(Math.random() * ns.length)];
-                if (ns.length > 1 && next === w.a) next = ns[(ns.indexOf(w.a) + 1) % ns.length]; // avoid backtracking
-              }
-              w.a = w.b; w.b = next;
-            }
-            const A = V[w.a], B = V[w.b];
-            p[i * 3] = A.x + (B.x - A.x) * w.u; p[i * 3 + 1] = A.y + (B.y - A.y) * w.u; p[i * 3 + 2] = A.z + (B.z - A.z) * w.u;
-          }
-          e.geo.attributes.position.needsUpdate = true;
-        }
-      };
-
-      const resize = () => {
-        const s = root.clientWidth;
-        if (!s) return;
-        const dpr = Math.min(window.devicePixelRatio, 2);
-        renderer!.setPixelRatio(dpr);
-        renderer!.setSize(s, s, false);
-        composer.setPixelRatio(dpr);
-        composer.setSize(s, s);
-        bloomPass.setSize(s, s);
-        camera.aspect = 1;
-        camera.updateProjectionMatrix();
-      };
-      resize();
-      new ResizeObserver(resize).observe(root);
-
-      // ---- load the Blender model (with the baked combine animation) ----
-      const url = `${import.meta.env.BASE_URL}models/eat-cube.glb`;
-      new GLTFLoader().load(
-        url,
-        (gltf) => {
-          model = gltf.scene;
-
-          // grab the three cube nodes, a core material to glow, and build the
-          // glowing wireframe edges (parented to each mesh so they follow the anim)
-          model.traverse((o) => {
-            const name = o.name || '';
-            if (name.includes('CubeOuter')) outerNode = o;
-            else if (name.includes('CubeMiddle')) middleNode = o;
-            else if (name.includes('CubeCore')) coreNode = o;
-
-            if ((o as THREE.Mesh).isMesh) {
-              const mesh = o as THREE.Mesh;
-              const fam = name.includes('CubeCore') ? 'core' : name.includes('CubeMiddle') ? 'middle' : 'outer';
-              const mat = colorize(mesh, SHADES[fam]);   // flat logo tri-tone faces
-              if (fam === 'core') coreMat = mat;
-              // faint edge outline (subtle, like the flat logo's seams)
-              const edges = new THREE.LineSegments(
-                new THREE.EdgesGeometry(mesh.geometry, 30),
-                new THREE.LineBasicMaterial({ color: EDGE_BASE.clone(), toneMapped: false, transparent: true, opacity: 0.16, depthWrite: false }),
-              );
-              edges.renderOrder = 2;
-              mesh.add(edges);
-              edgeMats.push(edges.material as THREE.LineBasicMaterial);
-              // a few electrons that random-walk this piece's edges
-              const jet = makeJet(mesh, fam === 'outer' ? 3 : fam === 'middle' ? 3 : 2);
-              if (jet) ejets.push(jet);
-            }
-          });
-
-          // prev-position trackers (for gating the gentle shake)
-          if (outerNode && middleNode && coreNode) {
-            for (const n of [outerNode, middleNode, coreNode]) prevPos.set(n, n.position.clone());
-          }
-
-          // Play every baked clip (one per cube) on one mixer. Time is driven
-          // manually in draw() — a continuous cosine sweep between the two ends
-          // of the baked MOTION (static holds trimmed), so the cube assembles,
-          // eases straight into unwinding, and never visibly parks or restarts.
-          mixer = new THREE.AnimationMixer(model);
-          for (const clip of gltf.animations) mixer.clipAction(clip).play();
-          const clipDur = gltf.animations.reduce((d, c) => Math.max(d, c.duration), 0) || 10;
-          const ASSEMBLED_T = clipDur * 0.53; // a moment when the cube is fully assembled
-
-          // clean isometric viewed straight down the cube's corner (hexagonal,
-          // like the flat logo): point the +corner at the camera, then roll so an
-          // edge sits vertical
-          // tilt a touch off the pure corner so the telescoped "opened" line is
-          // visible (looking straight down the axis hid it), then roll level
-          pivot.quaternion.setFromUnitVectors(new THREE.Vector3(1, 1, -1).normalize(), new THREE.Vector3(0.32, 0.2, 1).normalize());
-          pivot.rotateZ(THREE.MathUtils.degToRad(-12));
-
-          // center the model on its ASSEMBLED pose, so the logo rests centered,
-          // and capture each piece's home position there for the distance checks
-          mixer.setTime(ASSEMBLED_T);
-          model.updateMatrixWorld(true);
-          if (outerNode) homeOuter.copy(outerNode.position);
-          if (middleNode) homeMiddle.copy(middleNode.position);
-          if (coreNode) homeCore.copy(coreNode.position);
-          const center = new THREE.Box3().setFromObject(model).getCenter(new THREE.Vector3());
-          model.position.sub(center);
-
-          // Build an activity-weighted time remap of the baked clip: sample
-          // how much the pieces actually move (translation + rotation) at each
-          // instant, then make playback progress proportional to that activity
-          // (with a small floor). Static holds — at the ends OR mid-clip —
-          // compress to a brief glide; the animated beats keep their feel.
-          {
-            const nodes = [outerNode, middleNode, coreNode].filter(Boolean) as THREE.Object3D[];
-            const step = 1 / 24;
-            const N = Math.max(2, Math.round(clipDur / step) + 1);
-            const act = new Float32Array(N);
-            mixer.setTime(0);
-            model.updateMatrixWorld(true);
-            const prevP = nodes.map((n) => n.position.clone());
-            const prevQ = nodes.map((n) => n.quaternion.clone());
-            for (let k = 1; k < N; k++) {
-              mixer.setTime(Math.min(clipDur, k * step));
-              model.updateMatrixWorld(true);
-              let a = 0;
-              nodes.forEach((n, i) => {
-                a += n.position.distanceTo(prevP[i]);
-                a += 1.5 * prevQ[i].angleTo(n.quaternion);
-                prevP[i].copy(n.position);
-                prevQ[i].copy(n.quaternion);
-              });
-              act[k] = a;
-            }
-            let sum = 0;
-            for (let k = 1; k < N; k++) sum += act[k];
-            const mean = sum / (N - 1) || 1e-4;
-            const floor = mean * 0.12;
-            const remap = new Float32Array(N);
-            let cum = 0;
-            for (let k = 1; k < N; k++) { cum += Math.max(act[k], floor); remap[k] = cum; }
-            for (let k = 1; k < N; k++) remap[k] /= cum;
-            timeRemap = remap;
-            clipDurG = clipDur;
-            // pace the sweep off the time that's genuinely in motion
-            let active = 0;
-            for (let k = 1; k < N; k++) if (act[k] > mean * 0.25) active++;
-            sweepHalfPeriod = Math.max(8, (active / 24) * 1.15);
-          }
-
-          pivot.add(model);
-
-          // Frame to fit the most-spread moment of the whole loop so nothing clips.
-          {
-            const fov = (camera.fov * Math.PI) / 180;
-            let rMax = 0;
-            for (const frac of [0, 0.15, 0.3, 0.45, 0.6, 0.78, 0.95]) {
-              mixer.setTime(clipDur * frac);
-              pivot.updateMatrixWorld(true);
-              const s = new THREE.Box3().setFromObject(pivot).getBoundingSphere(new THREE.Sphere());
-              rMax = Math.max(rMax, s.center.length() + s.radius);
-            }
-            if (!rMax) rMax = 2.5;
-            const dist = (rMax / Math.sin(fov / 2)) * 1.08;
-            camera.position.set(0, 0, dist);
-            camera.near = Math.max(0.01, dist - rMax * 2);
-            camera.far = dist + rMax * 4;
-            camera.updateProjectionMatrix();
-          }
-
-          canvas.setAttribute('data-ready', '');
-          fallback?.setAttribute('data-hidden', '');
-
-          if (reduce) {
-            // no animation: hold the assembled logo, electrons hidden
-            mixer.setTime(ASSEMBLED_T);
-            for (const edge of edgeMats) edge.color.copy(EDGE_BASE);
-            for (const e of ejets) e.pts.visible = false;
-            canvas.style.opacity = '1';
-            composer.render();
-            return;
-          }
-
-          // animated path: start at the top of the sweep (cubes scattered) and play
-          mixer.setTime(0);
-          model.updateMatrixWorld(true);
-          if (middleNode) prevDistM = middleNode.position.distanceTo(homeMiddle);
-          if (coreNode) prevDistC = coreNode.position.distanceTo(homeCore);
-          composer.render();
-          if (visible) kick();
-        },
-        undefined,
-        () => { /* load error → keep SVG fallback visible */ },
-      );
-
-      // ---- hover intensifies (desktop pointers only): faster, brighter electron
-      // flow + a spark, without touching the baked combine timeline ----
-      let hoverTarget = 0;
-      let hoverBoost = 0;
-      const coarse = window.matchMedia('(pointer: coarse)').matches;
-      if (!reduce && !coarse) {
-        root.addEventListener('pointerenter', () => { hoverTarget = 1; pulse = Math.max(pulse, 0.5); kick(); });
-        root.addEventListener('pointerleave', () => { hoverTarget = 0; });
-      }
-
-      let lastTime = 0;
-      let raf = 0;
-      let running = false;
-      let visible = true;
-
-      const draw = (now: number) => {
-        if (!running || !mixer) return;
-        const dt = lastTime ? Math.min(0.05, (now - lastTime) / 1000) : 0.016;
-        lastTime = now;
-        elapsed += dt;
-
-        // Drive the baked combine animation with a continuous cosine sweep
-        // through the activity remap: sinusoidal velocity at the ends, holds
-        // compressed everywhere — the cube breathes and never parks.
-        phase += (dt * Math.PI) / sweepHalfPeriod;
-        const u = 0.5 - 0.5 * Math.cos(phase);
-        if (timeRemap) {
-          // invert the monotonic cumulative-activity curve (binary search)
-          let lo = 0, hi = timeRemap.length - 1;
-          while (lo + 1 < hi) { const m = (lo + hi) >> 1; if (timeRemap[m] < u) lo = m; else hi = m; }
-          const span = timeRemap[hi] - timeRemap[lo] || 1;
-          const frac = (u - timeRemap[lo]) / span;
-          mixer.setTime(((lo + frac) / (timeRemap.length - 1)) * clipDurG);
-        } else {
-          mixer.setTime(u * clipDurG);
-        }
-
-        // outshine flash the instant the middle, then the core, snaps home
-        const dM = middleNode ? middleNode.position.distanceTo(homeMiddle) : 1;
-        const dC = coreNode ? coreNode.position.distanceTo(homeCore) : 1;
-        if (prevDistM > 0.06 && dM <= 0.06) pulse = Math.max(pulse, 1.0);   // combine #1
-        if (prevDistC > 0.06 && dC <= 0.06) pulse = Math.max(pulse, 1.4);   // combine #2 (all together)
-        prevDistM = dM;
-        prevDistC = dC;
-        if (pulse > 0) { pulse -= dt * 2.2; if (pulse < 0.001) pulse = 0; }
-
-        // gentle shake — only while a cube is apart AND nearly stationary
-        // (waiting to combine); speed is derived from the baked motion itself
-        const cubes: Array<[THREE.Object3D | null, THREE.Vector3]> = [
-          [outerNode, homeOuter], [middleNode, homeMiddle], [coreNode, homeCore],
-        ];
-        for (const [node, home] of cubes) {
-          if (!node) continue;
-          const prev = prevPos.get(node);
-          const speed = prev ? node.position.distanceTo(prev) / Math.max(dt, 1e-3) : 0;
-          if (prev) prev.copy(node.position);
-          applyShake(node, home, speed, dt);
-        }
-
-        // ease the hover boost
-        hoverBoost += (hoverTarget - hoverBoost) * Math.min(1, dt * 6);
-
-        // core flashes (brighten its flat color) on each surge + hover
-        if (coreMat) coreMat.color.setScalar(1 + 1.3 * pulse + 0.4 * hoverBoost);
-        bloomPass.strength = BLOOM_STRENGTH + 0.6 * pulse + 0.3 * hoverBoost;
-        const eScale = 1 + 1.6 * pulse + 0.7 * hoverBoost;
-        for (const edge of edgeMats) edge.color.copy(EDGE_BASE).multiplyScalar(eScale);
-
-        // electrons random-walk the edges; faster + brighter on each connect + hover
-        const flow = 1 + 2.6 * pulse + 2.0 * hoverBoost;
-        const glow = Math.min(1, 0.85 + 0.4 * pulse + 0.3 * hoverBoost);
-        updateJets(dt, flow, glow);
-
-        canvas.style.opacity = '1';
-
-        composer.render();
-        if (visible) raf = requestAnimationFrame(draw);
-        else running = false;
-      };
-
-      function kick() {
-        if (reduce || !model || !visible || running) return;
-        running = true;
-        lastTime = 0;
-        raf = requestAnimationFrame(draw);
-      }
-      const stop = () => { running = false; cancelAnimationFrame(raf); };
 
       if ('IntersectionObserver' in window) {
-        new IntersectionObserver((entries) => {
-          visible = entries[0].isIntersecting;
-          if (visible) kick(); else stop();
-        }, { threshold: 0.05 }).observe(root);
+        // Start fetching a little before the cube scrolls in so the swap from
+        // SVG to canvas lands off-screen rather than in front of the user.
+        const io = new IntersectionObserver(
+          (entries) => {
+            if (entries.some((e) => e.isIntersecting)) {
+              io.disconnect();
+              boot();
+            }
+          },
+          { rootMargin: '300px' },
+        );
+        io.observe(root);
       } else {
-        kick();
+        boot();
       }
-
-      // pause when the tab is backgrounded (battery), resume on return
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) stop(); else kick();
-      });
-      window.addEventListener('pagehide', stop);
     }
   }
 </script>

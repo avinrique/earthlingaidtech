@@ -3,6 +3,8 @@ import Base from '@/layouts/Base.astro';
 import Button from '@/components/Button.astro';
 import CurioShowcase from '@/components/CurioShowcase.astro';
 import { Icon } from 'astro-icon/components';
+import { Picture, getImage } from 'astro:assets';
+import { asset } from '@/lib/images';
 import { products, site } from '@/data/site';
 
 export function getStaticPaths() {
@@ -19,6 +21,12 @@ const accent: Record<string, { text: string; ring: string; bg: string; border: s
   amber: { text: 'text-amber', ring: 'ring-amber/30', bg: 'bg-amber/10', border: 'border-amber/30', glow: 'rgba(251,191,36,0.22)' },
 };
 const a = accent[product.accent];
+
+// The hero shot is the LCP element on a product page — decode it eagerly and
+// tell the preload scanner it matters. Everything further down stays lazy.
+const heroPoster = product.video?.poster
+  ? await getImage({ src: asset(product.video.poster), format: 'webp', width: 1280 })
+  : null;
 ---
 
 <Base title={product.name} description={product.summary}>
@@ -67,11 +75,15 @@ const a = accent[product.accent];
 
         {product.image && (
           <figure class="reveal mt-10 w-full max-w-4xl overflow-hidden rounded-2xl border border-line shadow-pop" data-delay="4">
-            <img
-              src={product.image.src}
+            <Picture
+              src={asset(product.image.src)}
               alt={product.image.alt}
-              width={product.image.width}
-              height={product.image.height}
+              formats={['avif', 'webp']}
+              widths={[480, 800, 1200, 1600]}
+              sizes="(min-width: 1024px) 896px, 100vw"
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
               class="h-auto w-full object-cover"
             />
           </figure>
@@ -129,11 +141,11 @@ const a = accent[product.accent];
               <video
                 class="size-full object-cover"
                 src={product.video.src}
-                poster={product.video.poster}
+                poster={heroPoster?.src}
                 controls
                 muted
                 playsinline
-                preload="metadata"
+                preload="none"
               ></video>
             </div>
           )}
@@ -145,12 +157,14 @@ const a = accent[product.accent];
               ]}
               data-delay={String((i % 3) + 1)}
             >
-              <img
-                src={g.src}
+              <Picture
+                src={asset(g.src)}
                 alt={g.alt}
-                width={g.width}
-                height={g.height}
+                formats={['avif', 'webp']}
+                widths={[400, 700, 1000]}
+                sizes="(min-width: 1024px) 380px, (min-width: 640px) 50vw, 100vw"
                 loading="lazy"
+                decoding="async"
                 class="size-full object-cover transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:scale-105"
               />
             </figure>
@@ -168,7 +182,7 @@ const a = accent[product.accent];
         {others.map((p) => (
           <a
             href={`/products/${p.slug}/`}
-            class="reveal group flex items-center gap-4 rounded-2xl border border-line bg-surface/30 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
+            class="reveal group flex min-w-0 items-center gap-4 rounded-2xl border border-line bg-surface/30 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
           >
             <div class="grid size-12 shrink-0 place-items-center rounded-xl bg-white/[0.03] ring-1 ring-inset ring-line-strong">
               <Icon name={`lucide:${p.icon}`} class:list={['size-6', accent[p.accent].text]} />

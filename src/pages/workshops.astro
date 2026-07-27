@@ -3,9 +3,21 @@ import Base from '@/layouts/Base.astro';
 import PageHeader from '@/components/PageHeader.astro';
 import Button from '@/components/Button.astro';
 import { Icon } from 'astro-icon/components';
+import { Picture, getImage } from 'astro:assets';
+import { asset } from '@/lib/images';
 import { workshops } from '@/data/site';
 
 const { stats, tracks, speakers, institutions, gallery, video } = workshops;
+
+// The gallery is a 2-col grid on phones and 4-col inside a 1200px container on
+// desktop, with `wide`/`tall` items spanning two columns. Feed the browser the
+// real rendered widths so it never downloads a 1600px file for a 152px slot.
+const gallerySizes = (span?: string) =>
+  span === 'wide'
+    ? '(min-width: 1024px) 560px, 100vw'
+    : '(min-width: 1024px) 280px, 50vw';
+
+const videoPoster = video ? await getImage({ src: asset('/video/workshop-reel-poster.jpg'), format: 'webp', width: 1280 }) : null;
 
 // Static maps so Tailwind generates these utilities (no dynamic class names).
 const accentMap: Record<string, { text: string; ring: string }> = {
@@ -65,10 +77,14 @@ const accentMap: Record<string, { text: string; ring: string }> = {
               ]}
               data-delay={String((i % 4) + 1)}
             >
-              <img
-                src={g.src}
+              <Picture
+                src={asset(g.src)}
                 alt={g.alt}
-                loading={i < 4 ? 'eager' : 'lazy'}
+                formats={['avif', 'webp']}
+                widths={[300, 600, 900, 1200]}
+                sizes={gallerySizes(g.span)}
+                loading="lazy"
+                decoding="async"
                 class="size-full object-cover transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:scale-105"
               />
               <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-canvas-deep/70 via-transparent to-transparent opacity-70"></div>
@@ -95,10 +111,10 @@ const accentMap: Record<string, { text: string; ring: string }> = {
               <video
                 class="size-full object-cover"
                 src={video.src}
-                poster={video.poster}
+                poster={videoPoster?.src}
                 controls
                 playsinline
-                preload="metadata"
+                preload="none"
               ></video>
             </div>
             <div class="flex flex-col justify-center gap-4 p-8 md:p-12">

@@ -1,5 +1,7 @@
 ---
 import { Icon } from 'astro-icon/components';
+import { Picture } from 'astro:assets';
+import { asset } from '@/lib/images';
 import { workshops } from '@/data/site';
 ---
 
@@ -34,12 +36,14 @@ import { workshops } from '@/data/site';
 
         <div class="grid gap-3 sm:grid-cols-[1fr_0.7fr]">
           <div class="overflow-hidden rounded-2xl border border-line bg-canvas">
-            <img
-              src="/images/workshops/ws-7.jpg"
+            <Picture
+              src={asset('/images/workshops/ws-7.jpg')}
               alt="Earthling Aidtech workshop session with students in a computer lab"
-              width="1600"
-              height="1200"
+              formats={['avif', 'webp']}
+              widths={[400, 700, 1000]}
+              sizes="(min-width: 1024px) 380px, (min-width: 640px) 55vw, 100vw"
               loading="lazy"
+              decoding="async"
               class="aspect-[4/3] h-full w-full object-cover"
             />
           </div>

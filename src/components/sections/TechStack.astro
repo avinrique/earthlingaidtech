@@ -26,7 +26,7 @@ const rowB = [...techRun, ...techRun];
   <div class:list={['flex flex-col gap-5', heading ? 'mt-14' : 'mt-2']}>
     <!-- Row 1: what we build with -->
     <div class="group relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-      <div class="flex w-max animate-[marquee_44s_linear_infinite] items-center gap-4 pr-4 group-hover:[animation-play-state:paused]">
+      <div data-marquee class="flex w-max animate-[marquee_44s_linear_infinite] items-center gap-4 pr-4 group-hover:[animation-play-state:paused]">
         {rowA.map((t) => (
           <div class="flex shrink-0 items-center gap-3 rounded-2xl border border-line bg-surface/40 px-5 py-3.5 transition-colors duration-300 hover:border-line-strong hover:bg-surface-2/60">
             <Icon name={`simple-icons:${t.icon}`} class="size-6 text-muted" />
@@ -38,7 +38,7 @@ const rowB = [...techRun, ...techRun];
 
     <!-- Row 2: what we run on (counter-scroll) -->
     <div class="group relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-      <div class="flex w-max animate-[marquee_52s_linear_infinite_reverse] items-center gap-4 pr-4 group-hover:[animation-play-state:paused]">
+      <div data-marquee class="flex w-max animate-[marquee_52s_linear_infinite_reverse] items-center gap-4 pr-4 group-hover:[animation-play-state:paused]">
         {rowB.map((t) => (
           <div class="flex shrink-0 items-center gap-3 rounded-2xl border border-line bg-surface/40 px-5 py-3.5 transition-colors duration-300 hover:border-line-strong hover:bg-surface-2/60">
             <Icon name={`simple-icons:${t.icon}`} class="size-6 text-muted" />

@@ -16,6 +16,12 @@ export default defineConfig({
   // Legacy URLs from the pre-Astro static site are redirected by hand-written
   // meta-refresh stubs in `public/` — Astro's `redirects` option would turn
   // `/ai-robot.html` into a directory under `trailingSlash: 'always'`.
+  // Warm the next page while the current one is on screen. Astro's prefetch
+  // already stands down on save-data and 2G, so this stays polite on mobile.
+  prefetch: {
+    prefetchAll: true,
+    defaultStrategy: 'viewport',
+  },
   integrations: [
     icon({
       iconDir: 'src/icons',
