@@ -30,7 +30,7 @@ import { whyUs, rnd } from '@/data/site';
           data-delay={String((i % 2) + 1)}
         >
           <div class="grid size-10 shrink-0 place-items-center rounded-lg bg-white/[0.03] ring-1 ring-inset ring-line-strong transition-colors group-hover:ring-accent/30">
-            <Icon name={`lucide:${w.icon}`} class="size-5 text-accent" />
+            <Icon name={`lucide:${w.icon}`} class="size-5 text-accent" aria-hidden="true" />
           </div>
           <div>
             <h3 class="text-base">{w.title}</h3>

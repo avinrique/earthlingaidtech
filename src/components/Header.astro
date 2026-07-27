@@ -13,7 +13,10 @@ const isActive = (rawHref: string) => {
 ---
 
 <header id="site-header" class="fixed inset-x-0 top-0 z-50 transition-all duration-300">
-  <div class="container-app">
+  {/* `relative z-50` keeps the bar — and therefore the ✕ toggle — painted above
+      the z-40 mobile panel. Without it the open menu covers its own close
+      button and the only way out is picking a nav link. */}
+  <div class="container-app relative z-50">
     <div
       id="header-bar"
       class="mt-3 flex h-14 items-center justify-between rounded-full border border-transparent px-3 pl-4 transition-all duration-300 sm:h-15"
@@ -54,8 +57,8 @@ const isActive = (rawHref: string) => {
           aria-expanded="false"
           aria-controls="mobile-menu"
         >
-          <Icon name="lucide:menu" class="menu-open size-6" />
-          <Icon name="lucide:x" class="menu-close hidden size-6" />
+          <Icon name="lucide:menu" class="menu-open size-6" aria-hidden="true" />
+          <Icon name="lucide:x" class="menu-close hidden size-6" aria-hidden="true" />
         </button>
       </div>
     </div>

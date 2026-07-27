@@ -16,11 +16,14 @@ export default defineConfig({
   // Legacy URLs from the pre-Astro static site are redirected by hand-written
   // meta-refresh stubs in `public/` — Astro's `redirects` option would turn
   // `/ai-robot.html` into a directory under `trailingSlash: 'always'`.
-  // Warm the next page while the current one is on screen. Astro's prefetch
-  // already stands down on save-data and 2G, so this stays polite on mobile.
+  // Warm the next page on intent, not on sight. `viewport` would speculatively
+  // pull every linked page in view — from the homepage that is ~136 kB gzip of
+  // HTML competing with the images and fonts of the page being read. `hover`
+  // (which also covers keyboard focus) costs nothing until someone aims at a
+  // link, and pages are now 17-25 kB gzip anyway.
   prefetch: {
     prefetchAll: true,
-    defaultStrategy: 'viewport',
+    defaultStrategy: 'hover',
   },
   integrations: [
     icon({

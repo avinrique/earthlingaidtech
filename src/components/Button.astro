@@ -52,12 +52,11 @@ const Tag = href ? 'a' : 'button';
   {...(isExternal ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
   {...rest}
 >
-  {icon && <Icon name={`lucide:${icon}`} class="size-[1.05em] -ml-0.5 shrink-0" />}
+  {icon && <Icon name={`lucide:${icon}`} class="size-[1.05em] -ml-0.5 shrink-0" aria-hidden="true" />}
   <span><slot /></span>
   {iconRight && (
     <Icon
       name={`lucide:${iconRight}`}
-      class="size-[1.05em] -mr-0.5 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5"
-    />
+      class="size-[1.05em] -mr-0.5 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5" aria-hidden="true" />
   )}
 </Tag>

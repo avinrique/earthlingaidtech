@@ -25,7 +25,7 @@ const year = 2026; // build-time constant (CI builds annually / on push)
         class="group inline-flex shrink-0 items-center gap-2 rounded-full bg-accent px-6 py-3.5 font-semibold text-on-accent transition-all duration-300 hover:bg-accent-hover hover:-translate-y-0.5"
       >
         Get in touch
-        <Icon name="lucide:arrow-right" class="size-5 transition-transform group-hover:translate-x-0.5" />
+        <Icon name="lucide:arrow-right" class="size-5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
       </a>
     </div>
 
@@ -79,7 +79,7 @@ const year = 2026; // build-time constant (CI builds annually / on push)
       <div class="flex items-center gap-5">
         <a href={`mailto:${site.email}`} class="transition-colors hover:text-ink">{site.email}</a>
         <a href={site.social.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" class="transition-colors hover:text-ink">
-          <Icon name="lucide:github" class="size-5" />
+          <Icon name="lucide:github" class="size-5" aria-hidden="true" />
         </a>
       </div>
     </div>

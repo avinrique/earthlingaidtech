@@ -117,7 +117,10 @@ const orgSchema = {
 
     <Header />
 
-    <main id="main">
+    {/* tabindex="-1" so the skip link actually moves focus. Without it Safari
+        scrolls to #main but leaves focus in the header, and the next Tab drops
+        the user back at the top of the nav. */}
+    <main id="main" tabindex="-1" class="focus:outline-none">
       <slot />
     </main>
 

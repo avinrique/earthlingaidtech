@@ -1,6 +1,8 @@
 ---
 import { clients } from '@/data/site';
-const row = [...clients, ...clients];
+// The marquee needs two identical halves so `translateX(-50%)` loops seamlessly.
+// Rendering them as two groups (rather than one flat doubled array) lets the
+// second be aria-hidden — otherwise every client name is announced twice.
 ---
 
 <section class="border-y border-line bg-canvas-deep/50 py-14">
@@ -11,14 +13,21 @@ const row = [...clients, ...clients];
   </div>
 
   <div class="group relative mt-9 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)]">
-    <div data-marquee class="flex w-max animate-[marquee_36s_linear_infinite] items-center gap-12 pr-12 group-hover:[animation-play-state:paused]">
-      {row.map((c) => (
-        <div class="flex shrink-0 items-baseline gap-2">
-          <span class="font-display text-xl font-semibold tracking-tight text-faint transition-colors duration-300 hover:text-ink">
-            {c.name}
-          </span>
-          {c.note && <span class="font-mono text-[0.6rem] uppercase tracking-wider text-dim">{c.note}</span>}
-        </div>
+    <div data-marquee class="flex w-max animate-[marquee_36s_linear_infinite] group-hover:[animation-play-state:paused]">
+      {[false, true].map((isClone) => (
+        <ul
+          class="flex shrink-0 list-none items-center gap-12 pr-12"
+          aria-hidden={isClone ? 'true' : undefined}
+        >
+          {clients.map((c) => (
+            <li class="flex shrink-0 items-baseline gap-2">
+              <span class="font-display text-xl font-semibold tracking-tight text-faint transition-colors duration-300 hover:text-ink">
+                {c.name}
+              </span>
+              {c.note && <span class="font-mono text-[0.6rem] uppercase tracking-wider text-dim">{c.note}</span>}
+            </li>
+          ))}
+        </ul>
       ))}
     </div>
   </div>

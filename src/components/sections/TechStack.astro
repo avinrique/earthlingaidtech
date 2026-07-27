@@ -29,7 +29,7 @@ const rowB = [...techRun, ...techRun];
       <div data-marquee class="flex w-max animate-[marquee_44s_linear_infinite] items-center gap-4 pr-4 group-hover:[animation-play-state:paused]">
         {rowA.map((t) => (
           <div class="flex shrink-0 items-center gap-3 rounded-2xl border border-line bg-surface/40 px-5 py-3.5 transition-colors duration-300 hover:border-line-strong hover:bg-surface-2/60">
-            <Icon name={`simple-icons:${t.icon}`} class="size-6 text-muted" />
+            <Icon name={`simple-icons:${t.icon}`} class="size-6 text-muted" aria-hidden="true" />
             <span class="font-display text-base font-medium text-body">{t.name}</span>
           </div>
         ))}
@@ -41,7 +41,7 @@ const rowB = [...techRun, ...techRun];
       <div data-marquee class="flex w-max animate-[marquee_52s_linear_infinite_reverse] items-center gap-4 pr-4 group-hover:[animation-play-state:paused]">
         {rowB.map((t) => (
           <div class="flex shrink-0 items-center gap-3 rounded-2xl border border-line bg-surface/40 px-5 py-3.5 transition-colors duration-300 hover:border-line-strong hover:bg-surface-2/60">
-            <Icon name={`simple-icons:${t.icon}`} class="size-6 text-muted" />
+            <Icon name={`simple-icons:${t.icon}`} class="size-6 text-muted" aria-hidden="true" />
             <span class="font-display text-base font-medium text-body">{t.name}</span>
           </div>
         ))}

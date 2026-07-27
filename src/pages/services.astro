@@ -33,7 +33,7 @@ const accent: Record<string, { text: string; ring: string; dot: string; glow: st
             <div class={i % 2 === 1 ? 'lg:order-2' : ''}>
               <div class="reveal flex items-center gap-4">
                 <div class:list={['grid size-14 place-items-center rounded-2xl bg-white/[0.03] ring-1 ring-inset', a.ring]}>
-                  <Icon name={`lucide:${s.icon}`} class:list={['size-7', a.text]} />
+                  <Icon name={`lucide:${s.icon}`} class:list={['size-7', a.text]} aria-hidden="true" />
                 </div>
                 <span class:list={['font-mono text-xs uppercase tracking-[0.18em]', a.text]}>{s.tag}</span>
               </div>

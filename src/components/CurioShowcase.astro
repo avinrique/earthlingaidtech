@@ -113,7 +113,7 @@ const demos = [
               class="mt-5 inline-flex items-center gap-2 text-sm font-medium text-body transition-colors group-hover:text-ink"
             >
               Preview live
-              <Icon name="lucide:external-link" class="size-3.5 text-faint" />
+              <Icon name="lucide:external-link" class="size-3.5 text-faint" aria-hidden="true" />
             </a>
           )}
         </article>
@@ -129,6 +129,8 @@ const demos = [
 
 <script>
   // Three small canvas simulations in the Curio spirit. Pure 2D canvas — no deps.
+  import { loopWhileVisible } from '@/scripts/visible-loop';
+
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function setup(canvas: HTMLCanvasElement) {
@@ -187,13 +189,12 @@ const demos = [
         glowDot(ctx, x, y, p.size * (R / 420), p.color);
       }
       t += 0.016;
-      if (!reduce) requestAnimationFrame(frame);
     };
     // pre-darken the canvas fully once
     ctx.fillStyle = '#07080a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     if (reduce) { for (let i = 0; i < 600; i++) frame(); }
-    frame();
+    return frame;
   }
 
   /* ---- 2. Prism (Light & optics) ---- */
@@ -251,11 +252,10 @@ const demos = [
         dash(exit.x, exit.y, w + 10, exit.y + Math.tan(ang) * (w - exit.x), c, Math.max(1.6, w / 520));
       });
       t += reduce ? 0 : 0.016;
-      if (!reduce) requestAnimationFrame(frame);
     };
     ctx.fillStyle = '#07080a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    frame();
+    return frame;
   }
 
   /* ---- 3. Circuit (Volta) ---- */
@@ -303,13 +303,17 @@ const demos = [
         glowDot(ctx, p.x, p.y, Math.max(1.6, w / 420), '#2dd4bf');
       }
       t += reduce ? 0 : 0.016;
-      if (!reduce) requestAnimationFrame(frame);
     };
     ctx.fillStyle = '#07080a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    frame();
+    return frame;
   }
 
-  const starters: Record<string, (c: HTMLCanvasElement) => void> = { orbit, prism, circuit };
-  document.querySelectorAll<HTMLCanvasElement>('canvas[data-demo]').forEach((c) => starters[c.dataset.demo!]?.(c));
+  const starters: Record<string, (c: HTMLCanvasElement) => () => void> = { orbit, prism, circuit };
+  document.querySelectorAll<HTMLCanvasElement>('canvas[data-demo]').forEach((c) => {
+    const frame = starters[c.dataset.demo!]?.(c);
+    if (!frame) return;
+    frame();                                  // paint one frame so it is never blank
+    if (!reduce) loopWhileVisible(c, frame);  // then animate only while on screen
+  });
 </script>

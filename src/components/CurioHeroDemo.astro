@@ -35,10 +35,17 @@ import { Icon } from 'astro-icon/components';
 
       <figure class="reveal overflow-hidden rounded-3xl border border-line bg-canvas-deep shadow-pop" data-delay="2">
         <div class="relative aspect-[4/3.4] sm:aspect-[4/3]">
-          <canvas id="cannonball" class="absolute inset-0 size-full"></canvas>
-          <!-- Nova's caption bubble -->
-          <div class="pointer-events-none absolute inset-x-4 top-4 flex justify-start">
-            <div class="flex max-w-[85%] items-start gap-2.5 rounded-2xl border border-line bg-canvas/80 px-4 py-3 backdrop-blur-sm">
+          <canvas
+            id="cannonball"
+            class="absolute inset-0 size-full"
+            role="img"
+            aria-label="Simulation: a cannonball fired horizontally from a tall mountain. At low speed it curves back down and lands; as the launch speed approaches orbital speed its path stretches further around the planet until it circles without ever landing — an orbit."
+          ></canvas>
+          <!-- Nova's caption bubble. Anchored to the BOTTOM on phones: at 360px
+               the bubble wraps to four lines and, pinned to the top, it covered
+               the cannon and the entire upper half of the trajectory. -->
+          <div class="pointer-events-none absolute inset-x-3 bottom-3 flex justify-start sm:inset-x-4 sm:bottom-auto sm:top-4">
+            <div class="flex max-w-[92%] items-start gap-2.5 rounded-2xl border border-line bg-canvas/85 px-3.5 py-2.5 sm:max-w-[85%] sm:px-4 sm:py-3">
               <span class="text-lg leading-none">🪐</span>
               <p class="text-sm leading-snug text-body">
                 <span class="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-faint">Nova · your guide</span><br />
@@ -49,19 +56,20 @@ import { Icon } from 'astro-icon/components';
         </div>
 
         <figcaption class="border-t border-line p-5">
-          <div class="flex items-center gap-4">
-            <Icon name="lucide:gauge" class="size-5 shrink-0 text-accent" />
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <Icon name="lucide:gauge" class="size-5 shrink-0 text-accent" aria-hidden="true" />
             <input
               id="cb-speed"
+              class="cb-range min-w-40 flex-1 cursor-pointer"
               type="range"
               min="20"
               max="125"
               value="35"
               step="1"
               aria-label="Launch speed as a percentage of orbital speed"
-              class="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-surface-3 accent-[#4a9eff]"
+              aria-valuetext="35% of orbital speed"
             />
-            <span class="w-32 shrink-0 text-right font-mono text-xs text-muted">
+            <span class="shrink-0 text-right font-mono text-xs text-muted">
               <span id="cb-readout" class="text-ink">35%</span> of orbital
             </span>
           </div>
@@ -71,8 +79,62 @@ import { Icon } from 'astro-icon/components';
   </div>
 </section>
 
+<style>
+  /* `appearance: none` removes the native thumb, and nothing replaced it — on
+     iOS and Android the control rendered as a bare 6px line with no grabbable
+     handle at all. These rules rebuild the track and give it a 24px thumb that
+     clears the WCAG 2.2 target-size minimum. */
+  .cb-range {
+    appearance: none;
+    -webkit-appearance: none;
+    height: 24px;               /* touch target; the visible track is drawn below */
+    background: transparent;
+  }
+  .cb-range::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--color-surface-3);
+    border: 1px solid var(--color-line-strong);
+  }
+  .cb-range::-moz-range-track {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--color-surface-3);
+    border: 1px solid var(--color-line-strong);
+  }
+  .cb-range::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    margin-top: -9px;           /* centre the thumb on the 6px track */
+    border-radius: 999px;
+    background: var(--color-accent);
+    border: 2px solid var(--color-canvas);
+    box-shadow: 0 0 0 1px var(--color-accent), 0 2px 10px rgba(74, 158, 255, 0.5);
+    cursor: grab;
+  }
+  .cb-range::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    background: var(--color-accent);
+    border: 2px solid var(--color-canvas);
+    box-shadow: 0 0 0 1px var(--color-accent), 0 2px 10px rgba(74, 158, 255, 0.5);
+    cursor: grab;
+  }
+  .cb-range:active::-webkit-slider-thumb { cursor: grabbing; }
+  .cb-range:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 4px;
+    border-radius: 999px;
+  }
+</style>
+
 <script>
   // Newton's cannonball — semi-implicit Euler around a central body, canvas 2D.
+  import { loopWhileVisible } from '@/scripts/visible-loop';
+
   const canvas = document.getElementById('cannonball') as HTMLCanvasElement | null;
   const slider = document.getElementById('cb-speed') as HTMLInputElement | null;
   const readout = document.getElementById('cb-readout');
@@ -153,6 +215,9 @@ import { Icon } from 'astro-icon/components';
       manual = true;
       const pct = Number(slider.value);
       readout.textContent = pct + '%';
+      // The visible readout is decorative for AT; aria-valuetext is what a
+      // screen reader actually announces as the slider moves.
+      slider.setAttribute('aria-valuetext', `${pct}% of orbital speed`);
       launch(pct);
     });
 
@@ -203,7 +268,11 @@ import { Icon } from 'astro-icon/components';
       if (!flying && !reduce && now >= relaunchAt && relaunchAt !== 0) {
         if (!manual && autoIdx < AUTO_STEPS.length - 1) autoIdx++;
         const pct = manual ? Number(slider.value) : AUTO_STEPS[autoIdx];
-        if (!manual) { slider.value = String(pct); readout.textContent = pct + '%'; }
+        if (!manual) {
+          slider.value = String(pct);
+          readout.textContent = pct + '%';
+          slider.setAttribute('aria-valuetext', `${pct}% of orbital speed`);
+        }
         launch(pct);
       }
 
@@ -258,16 +327,25 @@ import { Icon } from 'astro-icon/components';
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // trail
+      // Trail. Drawn as a handful of polylines rather than one stroke() per
+      // segment: the trail holds up to 900 points, so the old loop issued ~900
+      // stroke calls and re-parsed ~900 rgba() strings every single frame —
+      // 15-40 ms on a mid-tier phone, which any tap then had to queue behind.
+      // Banding the fade into BANDS passes is visually equivalent at 8 steps.
       if (trail.length > 1) {
         ctx.globalCompositeOperation = 'lighter';
-        for (let i = 1; i < trail.length; i++) {
-          const a = i / trail.length;
+        const BANDS = 8;
+        const last = trail.length - 1;
+        for (let b = 0; b < BANDS; b++) {
+          const from = Math.floor((b * last) / BANDS);
+          const to = Math.floor(((b + 1) * last) / BANDS);
+          if (to <= from) continue;
+          const a = (b + 0.5) / BANDS;
           ctx.strokeStyle = `rgba(45,212,191,${0.05 + a * 0.55})`;
           ctx.lineWidth = Math.max(1.2, g.w / 700) * (0.4 + a * 0.6);
           ctx.beginPath();
-          ctx.moveTo(trail[i - 1].x, trail[i - 1].y);
-          ctx.lineTo(trail[i].x, trail[i].y);
+          ctx.moveTo(trail[from].x, trail[from].y);
+          for (let i = from + 1; i <= to; i++) ctx.lineTo(trail[i].x, trail[i].y);
           ctx.stroke();
         }
         ctx.globalCompositeOperation = 'source-over';
@@ -301,10 +379,7 @@ import { Icon } from 'astro-icon/components';
       ctx.restore();
     };
 
-    const frame = (now: number) => {
-      tick(now);
-      if (!reduce) requestAnimationFrame(frame);
-    };
+    const frame = (now: number) => tick(now);
 
     // Test/debug hooks: synthetic stepping that bypasses rAF entirely.
     let synth = 0;
@@ -313,7 +388,7 @@ import { Icon } from 'astro-icon/components';
       return JSON.stringify({ synth: Math.round(synth), flying, speedPct, autoIdx, manual, trail: trail.length, caption: caption.textContent });
     };
 
-    // start immediately (rAF self-throttles when the tab is hidden)
+    // Run only while the canvas is actually on screen — see visible-loop.ts.
     if (reduce) {
       // static fallback: mid-speed arc + caption
       launch(80);
@@ -330,7 +405,8 @@ import { Icon } from 'astro-icon/components';
       frame(performance.now());
     } else {
       launch(AUTO_STEPS[0]);
-      requestAnimationFrame(frame);
+      frame(performance.now());   // paint once so it is never blank pre-observer
+      loopWhileVisible(canvas, frame);
     }
   }
 </script>

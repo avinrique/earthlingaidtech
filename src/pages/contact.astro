@@ -32,7 +32,7 @@ const mailto = `mailto:${site.email}?subject=${subject}&body=${body}`;
           <div class="glow-accent pointer-events-none absolute -right-16 -top-16 size-60 opacity-60"></div>
           <div class="relative">
             <div class="grid size-12 place-items-center rounded-xl bg-accent/15 ring-1 ring-inset ring-accent/30">
-              <Icon name="lucide:mail" class="size-6 text-accent" />
+              <Icon name="lucide:mail" class="size-6 text-accent" aria-hidden="true" />
             </div>
             <h2 class="mt-5 text-2xl">Start a project</h2>
             <p class="mt-2 max-w-md text-muted">
@@ -41,7 +41,7 @@ const mailto = `mailto:${site.email}?subject=${subject}&body=${body}`;
             </p>
             <span class="mt-6 inline-flex items-center gap-2 font-semibold text-accent">
               {site.email}
-              <Icon name="lucide:arrow-up-right" class="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              <Icon name="lucide:arrow-up-right" class="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden="true" />
             </span>
           </div>
         </a>
@@ -52,13 +52,13 @@ const mailto = `mailto:${site.email}?subject=${subject}&body=${body}`;
             class="reveal group flex flex-col rounded-2xl border border-line bg-surface/30 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
             data-delay="1"
           >
-            <Icon name="lucide:inbox" class="size-6 text-teal" />
+            <Icon name="lucide:inbox" class="size-6 text-teal" aria-hidden="true" />
             <h3 class="mt-4 text-base">General enquiries</h3>
             <span class="mt-1 break-all text-sm text-faint transition-colors group-hover:text-body">{site.emailAlt}</span>
           </a>
 
           <div class="reveal flex flex-col rounded-2xl border border-line bg-surface/30 p-6" data-delay="2">
-            <Icon name="lucide:map-pin" class="size-6 text-violet" />
+            <Icon name="lucide:map-pin" class="size-6 text-violet" aria-hidden="true" />
             <h3 class="mt-4 text-base">Locations</h3>
             <div class="mt-2 flex flex-col gap-3">
               {site.offices.map((office) => (
@@ -78,7 +78,7 @@ const mailto = `mailto:${site.email}?subject=${subject}&body=${body}`;
         <ul class="mt-5 flex flex-col divide-y divide-line">
           {services.map((s) => (
             <li class="flex items-center gap-3 py-3.5">
-              <Icon name={`lucide:${s.icon}`} class="size-5 shrink-0 text-accent" />
+              <Icon name={`lucide:${s.icon}`} class="size-5 shrink-0 text-accent" aria-hidden="true" />
               <span class="text-body">{s.title}</span>
             </li>
           ))}

@@ -39,14 +39,14 @@ const heroPoster = product.video?.poster
 
     <div class="container-app pt-32 pb-16 md:pt-40 md:pb-24">
       <a href="/products/" class="reveal group inline-flex items-center gap-2 text-sm text-faint transition-colors hover:text-ink">
-        <Icon name="lucide:arrow-left" class="size-4 transition-transform group-hover:-translate-x-0.5" />
+        <Icon name="lucide:arrow-left" class="size-4 transition-transform group-hover:-translate-x-0.5" aria-hidden="true" />
         All products
       </a>
 
       <div class="mt-8 flex flex-col items-start gap-6">
         <div class="reveal flex items-center gap-4">
           <div class:list={['grid size-16 place-items-center rounded-2xl ring-1 ring-inset', a.bg, a.ring]}>
-            <Icon name={`lucide:${product.icon}`} class:list={['size-8', a.text]} />
+            <Icon name={`lucide:${product.icon}`} class:list={['size-8', a.text]} aria-hidden="true" />
           </div>
           <span class:list={['rounded-full border px-3 py-1 font-mono text-[0.65rem] uppercase tracking-[0.14em]', a.border, a.bg, a.text]}>
             {product.status}
@@ -105,7 +105,7 @@ const heroPoster = product.video?.poster
             data-delay={String((i % 2) + 1)}
           >
             <div class:list={['mb-4 size-9 rounded-lg ring-1 ring-inset grid place-items-center', a.bg, a.ring]}>
-              <Icon name="lucide:check" class:list={['size-5', a.text]} />
+              <Icon name="lucide:check" class:list={['size-5', a.text]} aria-hidden="true" />
             </div>
             <h3 class="text-lg">{f.title}</h3>
             <p class="mt-2 text-[0.95rem] leading-relaxed text-muted">{f.body}</p>
@@ -185,13 +185,13 @@ const heroPoster = product.video?.poster
             class="reveal group flex min-w-0 items-center gap-4 rounded-2xl border border-line bg-surface/30 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
           >
             <div class="grid size-12 shrink-0 place-items-center rounded-xl bg-white/[0.03] ring-1 ring-inset ring-line-strong">
-              <Icon name={`lucide:${p.icon}`} class:list={['size-6', accent[p.accent].text]} />
+              <Icon name={`lucide:${p.icon}`} class:list={['size-6', accent[p.accent].text]} aria-hidden="true" />
             </div>
             <div class="min-w-0">
               <h3 class="truncate text-base">{p.name}</h3>
               <p class="truncate text-sm text-faint">{p.kicker}</p>
             </div>
-            <Icon name="lucide:arrow-right" class="ml-auto size-5 shrink-0 text-faint transition-transform group-hover:translate-x-1" />
+            <Icon name="lucide:arrow-right" class="ml-auto size-5 shrink-0 text-faint transition-transform group-hover:translate-x-1" aria-hidden="true" />
           </a>
         ))}
       </div>
