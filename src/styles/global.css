@@ -278,7 +278,21 @@
   animation-play-state: paused;
 }
 @media (prefers-reduced-motion: reduce) {
-  [data-marquee] { animation: none !important; }
+  /* Stopping the animation alone would leave a `w-max` row clipped by its
+     overflow-hidden parent, hiding most of the list. Reflow it into a static
+     wrapped row and drop the duplicate half instead. */
+  [data-marquee] {
+    animation: none !important;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  [data-marquee] > [aria-hidden='true'] { display: none; }
+  [data-marquee] > ul {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-right: 0;
+  }
 }
 
 /* Scroll-reveal initial state (script adds .is-visible).

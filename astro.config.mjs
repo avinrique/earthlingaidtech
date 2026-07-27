@@ -29,7 +29,21 @@ export default defineConfig({
     icon({
       iconDir: 'src/icons',
     }),
-    sitemap(),
+    // Bare <loc> entries give crawlers no freshness signal at all. Stamping the
+    // build time is honest for a static marketing site: every deploy rebuilds
+    // every page, so "last modified" really is "last deployed".
+    sitemap({
+      lastmod: new Date(),
+      changefreq: 'monthly',
+      serialize: (item) => {
+        const path = new URL(item.url).pathname;
+        if (path === '/') item.priority = 1.0;
+        else if (['/services/', '/products/', '/workshops/', '/contact/'].includes(path)) item.priority = 0.9;
+        else if (path.startsWith('/products/')) item.priority = 0.8;
+        else item.priority = 0.6;
+        return item;
+      },
+    }),
   ],
   vite: {
     plugins: [tailwindcss()],

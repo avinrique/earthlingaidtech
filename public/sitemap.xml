@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Legacy sitemap URL. Search Console has /sitemap.xml on file from the
+  pre-Astro site, and it has been returning 404 since the rebuild (@astrojs/sitemap
+  emits /sitemap-index.xml). GitHub Pages cannot issue a redirect, so this is a
+  real sitemap index pointing at the generated file.
+-->
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://earthlingaidtech.com/sitemap-0.xml</loc>
+  </sitemap>
+</sitemapindex>

@@ -9,19 +9,34 @@ interface Props {
   /** Subtle idle float + glow, used in the hero. */
   animated?: boolean;
   title?: string;
+  /**
+   * Hide from assistive tech. Use wherever the mark sits inside an element that
+   * already carries the name — the header and footer logo links both have
+   * `aria-label="Earthling Aidtech — home"`, so an exposed <svg role="img"> in
+   * there just makes screen readers say the brand twice.
+   */
+  decorative?: boolean;
 }
-const { size = 40, class: className = '', animated = false, title = 'Earthling Aidtech' } = Astro.props;
+const {
+  size = 40,
+  class: className = '',
+  animated = false,
+  title = 'Earthling Aidtech',
+  decorative = false,
+} = Astro.props;
 ---
 
 <svg
   width={size}
   height={size}
   viewBox="-160 -160 320 320"
-  role="img"
-  aria-label={title}
+  role={decorative ? undefined : 'img'}
+  aria-label={decorative ? undefined : title}
+  aria-hidden={decorative ? 'true' : undefined}
+  focusable="false"
   class:list={['cube-logo', { 'cube-logo--animated': animated }, className]}
 >
-  <title>{title}</title>
+  {!decorative && <title>{title}</title>}
   <g fill="none" stroke="#0D0D0D" stroke-width="6" stroke-linejoin="round">
     <!-- Outer cube -->
     <polygon points="0,-148 128,-74 0,0 -128,-74" fill="#2E2E2E" />

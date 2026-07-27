@@ -5,7 +5,7 @@ import Button from '@/components/Button.astro';
 import { Icon } from 'astro-icon/components';
 import { Picture, getImage } from 'astro:assets';
 import { asset } from '@/lib/images';
-import { workshops } from '@/data/site';
+import { workshops, site } from '@/data/site';
 
 const { stats, tracks, speakers, institutions, gallery, video } = workshops;
 
@@ -19,6 +19,35 @@ const gallerySizes = (span?: string) =>
 
 const videoPoster = video ? await getImage({ src: asset('/video/workshop-reel-poster.jpg'), format: 'webp', width: 1280 }) : null;
 
+// The seven tracks are the most topically distinctive thing on the domain and
+// carried no structured data at all.
+const ORG = `${site.url}/#organization`;
+const pageUrl = `${site.url}/workshops/`;
+const workshopSchema = [
+  ...tracks.map((t) => ({
+    '@type': 'Course',
+    '@id': `${pageUrl}#${t.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+    name: t.title,
+    description: t.blurb,
+    url: pageUrl,
+    provider: { '@id': ORG },
+    inLanguage: 'en',
+    hasCourseInstance: {
+      '@type': 'CourseInstance',
+      courseMode: 'onsite',
+      courseWorkload: 'PT1D',
+    },
+  })),
+  {
+    '@type': 'BreadcrumbList',
+    '@id': `${pageUrl}#breadcrumbs`,
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${site.url}/` },
+      { '@type': 'ListItem', position: 2, name: 'Workshops & Training', item: pageUrl },
+    ],
+  },
+];
+
 // Static maps so Tailwind generates these utilities (no dynamic class names).
 const accentMap: Record<string, { text: string; ring: string }> = {
   accent: { text: 'text-accent', ring: 'group-hover:ring-accent/40' },
@@ -31,6 +60,7 @@ const accentMap: Record<string, { text: string; ring: string }> = {
 <Base
   title="Workshops & Training"
   description="Hands-on, lab-first workshops for students and institutions — Web Development, Agentic AI, Cloud, DevOps, Ethical Hacking, Linux, and Blockchain. 600+ students trained across leading engineering campuses."
+  schema={workshopSchema}
 >
   <PageHeader
     eyebrow="Workshops & training"

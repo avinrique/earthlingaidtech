@@ -4,7 +4,7 @@ import CubeLogo from './CubeLogo.astro';
 import { nav, services, products, site } from '@/data/site';
 
 const footerProducts = products.filter((p) => !p.lowKey);
-const year = 2026; // build-time constant (CI builds annually / on push)
+const year = new Date().getFullYear(); // stamped at build time, not hardcoded
 ---
 
 <footer class="relative mt-24 overflow-hidden border-t border-line bg-canvas-deep">
@@ -33,7 +33,7 @@ const year = 2026; // build-time constant (CI builds annually / on push)
     <div class="grid grid-cols-2 gap-8 py-14 sm:grid-cols-3 lg:grid-cols-5">
       <div class="col-span-2 sm:col-span-3 lg:col-span-2">
         <a href="/" class="flex items-center gap-2.5" aria-label={`${site.name} — home`}>
-          <CubeLogo size={32} />
+          <CubeLogo size={32} decorative />
           <span class="font-display text-base font-semibold tracking-tight text-ink">
             Earthling<span class="text-accent">AidTech</span>
           </span>
@@ -77,8 +77,8 @@ const year = 2026; // build-time constant (CI builds annually / on push)
     <div class="flex flex-col items-center justify-between gap-4 border-t border-line py-8 text-sm text-faint sm:flex-row">
       <p>© {year} {site.legalName}. All rights reserved.</p>
       <div class="flex items-center gap-5">
-        <a href={`mailto:${site.email}`} class="transition-colors hover:text-ink">{site.email}</a>
-        <a href={site.social.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub" class="transition-colors hover:text-ink">
+        <a href={`mailto:${site.email}`} class="block py-1.5 transition-colors hover:text-ink">{site.email}</a>
+        <a href={site.social.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub (opens in a new tab)" class="-m-2 grid size-11 place-items-center rounded-full transition-colors hover:bg-white/5 hover:text-ink">
           <Icon name="lucide:github" class="size-5" aria-hidden="true" />
         </a>
       </div>

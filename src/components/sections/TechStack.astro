@@ -8,8 +8,12 @@ interface Props {
 }
 const { heading = true } = Astro.props;
 
-const rowA = [...techBuild, ...techBuild];
-const rowB = [...techRun, ...techRun];
+// Two identical halves so translateX(-50%) loops seamlessly; the clone is
+// aria-hidden so screen readers hear each tool once, not twice.
+const rows = [
+  { items: techBuild, anim: 'animate-[marquee_44s_linear_infinite]' },
+  { items: techRun, anim: 'animate-[marquee_52s_linear_infinite_reverse]' },
+];
 ---
 
 <section class="py-20 md:py-28">
@@ -24,28 +28,21 @@ const rowB = [...techRun, ...techRun];
   </div>
 
   <div class:list={['flex flex-col gap-5', heading ? 'mt-14' : 'mt-2']}>
-    <!-- Row 1: what we build with -->
-    <div class="group relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-      <div data-marquee class="flex w-max animate-[marquee_44s_linear_infinite] items-center gap-4 pr-4 group-hover:[animation-play-state:paused]">
-        {rowA.map((t) => (
-          <div class="flex shrink-0 items-center gap-3 rounded-2xl border border-line bg-surface/40 px-5 py-3.5 transition-colors duration-300 hover:border-line-strong hover:bg-surface-2/60">
-            <Icon name={`simple-icons:${t.icon}`} class="size-6 text-muted" aria-hidden="true" />
-            <span class="font-display text-base font-medium text-body">{t.name}</span>
-          </div>
-        ))}
+    {rows.map((row) => (
+      <div class="group relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+        <div data-marquee class:list={['flex w-max group-hover:[animation-play-state:paused]', row.anim]}>
+          {[false, true].map((isClone) => (
+            <ul class="flex shrink-0 list-none items-center gap-4 pr-4" aria-hidden={isClone ? 'true' : undefined}>
+              {row.items.map((t) => (
+                <li class="flex shrink-0 items-center gap-3 rounded-2xl border border-line bg-surface/40 px-5 py-3.5 transition-colors duration-300 hover:border-line-strong hover:bg-surface-2/60">
+                  <Icon name={`simple-icons:${t.icon}`} class="size-6 text-muted" aria-hidden="true" />
+                  <span class="font-display text-base font-medium text-body">{t.name}</span>
+                </li>
+              ))}
+            </ul>
+          ))}
+        </div>
       </div>
-    </div>
-
-    <!-- Row 2: what we run on (counter-scroll) -->
-    <div class="group relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-      <div data-marquee class="flex w-max animate-[marquee_52s_linear_infinite_reverse] items-center gap-4 pr-4 group-hover:[animation-play-state:paused]">
-        {rowB.map((t) => (
-          <div class="flex shrink-0 items-center gap-3 rounded-2xl border border-line bg-surface/40 px-5 py-3.5 transition-colors duration-300 hover:border-line-strong hover:bg-surface-2/60">
-            <Icon name={`simple-icons:${t.icon}`} class="size-6 text-muted" aria-hidden="true" />
-            <span class="font-display text-base font-medium text-body">{t.name}</span>
-          </div>
-        ))}
-      </div>
-    </div>
+    ))}
   </div>
 </section>

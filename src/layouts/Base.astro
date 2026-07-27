@@ -10,14 +10,25 @@ interface Props {
   title?: string;
   description?: string;
   ogImage?: string;
+  ogImageWidth?: number;
+  ogImageHeight?: number;
+  ogImageAlt?: string;
+  ogType?: 'website' | 'article' | 'product';
   noindex?: boolean;
+  /** Extra JSON-LD nodes merged into the page's @graph (Product, Course, …). */
+  schema?: Record<string, unknown>[];
 }
 
 const {
   title,
   description = site.description,
   ogImage = '/og.png',
+  ogImageWidth = 1200,
+  ogImageHeight = 630,
+  ogImageAlt = `${site.name} — ${site.tagline}`,
+  ogType = 'website',
   noindex = false,
+  schema = [],
 } = Astro.props;
 
 const pageTitle = title ? `${title} · ${site.name}` : `${site.name} — ${site.tagline}`;
@@ -29,16 +40,32 @@ const canonicalPath = Astro.url.pathname.endsWith('/')
 const canonical = new URL(canonicalPath, site.url).href;
 const ogImageUrl = new URL(ogImage, site.url).href;
 
-const orgSchema = {
-  '@context': 'https://schema.org',
+// Stable @ids so Product/Course/Breadcrumb nodes on individual pages can point
+// at one canonical Organization instead of each page re-declaring an anonymous
+// copy of it.
+const ORG_ID = `${site.url}/#organization`;
+const SITE_ID = `${site.url}/#website`;
+
+const orgNode = {
   '@type': 'Organization',
-  name: site.legalName,
-  alternateName: site.shortName,
+  '@id': ORG_ID,
+  // `name` is what a knowledge panel shows — that should be the brand people
+  // search for, with the registrar string kept as the legal name.
+  name: site.name,
+  legalName: site.legalName,
+  alternateName: [site.shortName, site.legalName],
   url: site.url,
-  logo: `${site.url}/logo-mark-accent.svg`,
+  logo: {
+    '@type': 'ImageObject',
+    url: `${site.url}/og.png`,
+    width: 1200,
+    height: 630,
+  },
+  image: `${site.url}/og.png`,
   description: site.description,
   foundingDate: site.founded,
   email: site.email,
+  identifier: site.registrationNo,
   sameAs: [site.social.github],
   address: [
     {
@@ -58,6 +85,21 @@ const orgSchema = {
   ],
   slogan: site.tagline,
 };
+
+const siteNode = {
+  '@type': 'WebSite',
+  '@id': SITE_ID,
+  url: site.url,
+  name: site.name,
+  description: site.description,
+  publisher: { '@id': ORG_ID },
+  inLanguage: 'en',
+};
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [orgNode, siteNode, ...schema],
+};
 ---
 
 <!doctype html>
@@ -74,7 +116,10 @@ const orgSchema = {
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/icon-apple.png" />
-    <link rel="canonical" href={canonical} />
+    {/* A noindex page (the 404, served for every unknown URL) must not declare a
+        canonical — `/404/` does not exist, and pairing noindex with a canonical
+        risks the noindex being carried to the target. */}
+    {!noindex && <link rel="canonical" href={canonical} />}
     <meta name="generator" content={Astro.generator} />
     <meta name="theme-color" content="#0B0D10" />
     <meta name="color-scheme" content="dark" />
@@ -84,25 +129,27 @@ const orgSchema = {
     {noindex && <meta name="robots" content="noindex,nofollow" />}
 
     <!-- Open Graph -->
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImageUrl} />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content={`${site.name} — ${site.tagline}`} />
+    <meta property="og:image:width" content={String(ogImageWidth)} />
+    <meta property="og:image:height" content={String(ogImageHeight)} />
+    <meta property="og:image:alt" content={ogImageAlt} />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
 
     <link rel="sitemap" href="/sitemap-index.xml" />
 
-    <script type="application/ld+json" set:html={JSON.stringify(orgSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   </head>
 
   <body>
