@@ -1,4 +1,5 @@
 ---
+import Eyebrow from '@/components/Eyebrow.astro';
 import Base from '@/layouts/Base.astro';
 import PageHeader from '@/components/PageHeader.astro';
 import Button from '@/components/Button.astro';
@@ -89,8 +90,8 @@ const accentMap: Record<string, { text: string; ring: string }> = {
     <div class="container-app">
       <div class="flex flex-wrap items-end justify-between gap-6">
         <div class="max-w-2xl">
-          <span class="eyebrow reveal"><span class="size-1.5 rounded-full bg-teal"></span>On the ground</span>
-          <h2 class="reveal mt-5 text-3xl md:text-4xl" data-delay="1">Moments from our sessions</h2>
+          <Eyebrow tone="teal" class="reveal">On the ground</Eyebrow>
+          <h2 class="reveal mt-5 text-section" data-delay="1">Moments from our sessions</h2>
           <p class="reveal mt-4 text-muted" data-delay="2">
             Packed labs, full rooms, and students shipping real things by the end of the day. A
             glimpse of the energy we bring to every campus we walk into.
@@ -154,8 +155,8 @@ const accentMap: Record<string, { text: string; ring: string }> = {
               ></video>
             </div>
             <div class="flex flex-col justify-center gap-4 p-8 md:p-12">
-              <span class="eyebrow"><span class="size-1.5 rounded-full bg-accent"></span>Highlight reel</span>
-              <h2 class="text-2xl md:text-3xl">See a session in motion</h2>
+              <Eyebrow>Highlight reel</Eyebrow>
+              <h2 class="text-section">See a session in motion</h2>
               <p class="text-muted">
                 A short cut from one of our campus workshops — the rooms, the builds, and the people
                 behind them.
@@ -171,8 +172,8 @@ const accentMap: Record<string, { text: string; ring: string }> = {
   <section class="border-t border-line py-16 md:py-24">
     <div class="container-app">
       <div class="max-w-2xl">
-        <span class="eyebrow reveal"><span class="size-1.5 rounded-full bg-violet"></span>What we teach</span>
-        <h2 class="reveal mt-5 text-3xl md:text-4xl" data-delay="1">Seven tracks, one standard: build it yourself</h2>
+        <Eyebrow tone="violet" class="reveal">What we teach</Eyebrow>
+        <h2 class="reveal mt-5 text-section" data-delay="1">Seven tracks, one standard: build it yourself</h2>
         <p class="reveal mt-4 text-muted" data-delay="2">
           Every track is a guided lab. Students don't just watch — they configure, code, deploy, and
           troubleshoot real systems with us in the room.
@@ -184,7 +185,7 @@ const accentMap: Record<string, { text: string; ring: string }> = {
           const a = accentMap[t.accent];
           return (
             <div
-              class="reveal group relative overflow-hidden rounded-2xl border border-line bg-surface/30 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
+              class="reveal group relative overflow-hidden rounded-2xl border border-line bg-surface/30 p-6 transition-all duration-300 hover:border-line-strong"
               data-delay={String((i % 3) + 1)}
             >
               <div class:list={[
@@ -206,8 +207,8 @@ const accentMap: Record<string, { text: string; ring: string }> = {
   <section class="border-t border-line py-16 md:py-24">
     <div class="container-app">
       <div class="max-w-2xl">
-        <span class="eyebrow reveal"><span class="size-1.5 rounded-full bg-accent"></span>Who runs the room</span>
-        <h2 class="reveal mt-5 text-3xl md:text-4xl" data-delay="1">Led by engineers who ship</h2>
+        <Eyebrow class="reveal">Who runs the room</Eyebrow>
+        <h2 class="reveal mt-5 text-section" data-delay="1">Led by engineers who ship</h2>
         <p class="reveal mt-4 text-muted" data-delay="2">
           Sessions are headlined by our lead instructors and backed by a full multidisciplinary team
           — so labs stay hands-on and no student gets left behind.
@@ -265,7 +266,7 @@ const accentMap: Record<string, { text: string; ring: string }> = {
       <div class="reveal relative overflow-hidden rounded-3xl border border-line bg-surface/40 p-8 text-center md:p-14">
         <div class="glow-accent pointer-events-none absolute -top-24 left-1/2 size-96 -translate-x-1/2 opacity-40"></div>
         <div class="relative mx-auto max-w-2xl">
-          <h2 class="text-3xl md:text-4xl">Bring a workshop to your campus</h2>
+          <h2 class="text-section">Bring a workshop to your campus</h2>
           <p class="mt-4 text-muted">
             Hosting a department, a club, or a full cohort? Tell us the track and the headcount —
             we'll bring the labs, the team, and the energy.

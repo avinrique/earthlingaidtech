@@ -1,8 +1,7 @@
 ---
+import Eyebrow from '@/components/Eyebrow.astro';
 import Base from '@/layouts/Base.astro';
 import PageHeader from '@/components/PageHeader.astro';
-import Approach from '@/components/sections/Approach.astro';
-import WhyUs from '@/components/sections/WhyUs.astro';
 import { companyProof, leadership, site } from '@/data/site';
 ---
 
@@ -20,9 +19,9 @@ import { companyProof, leadership, site } from '@/data/site';
   <section class="py-20 md:py-28">
     <div class="container-app grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
       <div class="lg:sticky lg:top-28 lg:self-start">
-        <h2 class="reveal text-3xl md:text-4xl">Who we are</h2>
+        <h2 class="reveal text-section">Who we are</h2>
       </div>
-      <div class="flex max-w-2xl flex-col gap-6 text-lg leading-relaxed text-muted">
+      <div class="flex max-w-[65ch] flex-col gap-6 text-lg leading-relaxed text-muted">
         <p class="reveal">
           {site.shortName} operates at the convergence of advanced engineering and applied
           intelligence. Our work spans scalable EdTech platforms, autonomous AI systems, intelligent
@@ -46,8 +45,8 @@ import { companyProof, leadership, site } from '@/data/site';
   <section class="py-8 md:py-14">
     <div class="container-app grid gap-6 lg:grid-cols-[1fr_0.9fr] lg:gap-8">
       <div class="reveal rounded-3xl border border-line bg-surface/30 p-8 md:p-10">
-        <p class="eyebrow"><span class="size-1.5 rounded-full bg-teal"></span>Leadership</p>
-        <h2 class="mt-4 text-3xl md:text-4xl">Founder-led engineering</h2>
+        <Eyebrow tone="teal" as="p">Leadership</Eyebrow>
+        <h2 class="mt-4 text-section">Founder-led engineering</h2>
         <div class="mt-8 grid gap-4 sm:grid-cols-2">
           {leadership.map((person, i) => (
             <article
@@ -65,8 +64,8 @@ import { companyProof, leadership, site } from '@/data/site';
       </div>
 
       <aside class="reveal rounded-3xl border border-line bg-surface/30 p-8 md:p-10" data-delay="1">
-        <p class="eyebrow"><span class="size-1.5 rounded-full bg-amber"></span>Company record</p>
-        <h2 class="mt-4 text-3xl md:text-4xl">Registered and operating across two bases</h2>
+        <Eyebrow tone="amber" as="p">Company record</Eyebrow>
+        <h2 class="mt-4 text-section">Registered and operating across two bases</h2>
         <p class="mt-4 text-muted">
           {site.legalName} is incorporated with the Office of the Company Registrar, Government of
           Nepal, and operates with an active Bengaluru presence at BMSIT BICEP.
@@ -88,7 +87,7 @@ import { companyProof, leadership, site } from '@/data/site';
     <div class="container-narrow">
       <div class="reveal relative overflow-hidden rounded-3xl border border-line bg-surface/40 p-8 text-center md:p-14">
         <div class="glow-accent pointer-events-none absolute left-1/2 top-0 size-80 -translate-x-1/2 opacity-50"></div>
-        <p class="eyebrow justify-center"><span class="size-1.5 rounded-full bg-accent"></span>Our vision</p>
+        <Eyebrow center as="p">Our vision</Eyebrow>
         <p class="relative mt-6 font-display text-2xl font-medium leading-snug text-ink md:text-3xl">
           To responsibly design intelligent systems that enhance human capability, modernize
           education, and advance the integration of AI into both digital and physical environments.
@@ -97,6 +96,4 @@ import { companyProof, leadership, site } from '@/data/site';
     </div>
   </section>
 
-  <Approach />
-  <WhyUs />
 </Base>

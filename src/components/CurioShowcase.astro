@@ -1,4 +1,5 @@
 ---
+import Eyebrow from './Eyebrow.astro';
 import { Icon } from 'astro-icon/components';
 import Button from '@/components/Button.astro';
 import CurioHeroDemo from '@/components/CurioHeroDemo.astro';
@@ -18,8 +19,8 @@ const demos = [
 <!-- Live mini-demos: the Curio feel, rendered right here -->
 <section class="border-t border-line py-20 md:py-28">
   <div class="container-app">
-    <span class="eyebrow reveal"><span class="size-1.5 rounded-full bg-teal"></span>See it move</span>
-    <h2 class="reveal mt-5 text-3xl md:text-4xl" data-delay="1">Concepts that <span class="text-gradient">come alive</span></h2>
+    <Eyebrow tone="teal" class="reveal">See it move</Eyebrow>
+    <h2 class="reveal mt-5 text-section" data-delay="1">Concepts that <span class="text-gradient">come alive</span></h2>
     <p class="reveal mt-4 max-w-2xl text-muted" data-delay="2">
       This is the Curio method in miniature — three live simulations running right on this page, the
       same way every scene in every course moves. No walls of text. Just physics doing its thing.
@@ -28,7 +29,7 @@ const demos = [
     <div class="mt-12 grid gap-4 lg:grid-cols-3">
       {demos.map((d, i) => (
         <figure
-          class="reveal group overflow-hidden rounded-3xl border border-line bg-surface/40 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
+          class="reveal group overflow-hidden rounded-3xl border border-line bg-surface/40 transition-all duration-300 hover:border-line-strong"
           data-delay={String(i + 1)}
         >
           <div class="relative aspect-[4/3] bg-canvas-deep">
@@ -52,8 +53,8 @@ const demos = [
   <div class="container-app">
     <div class="flex flex-wrap items-end justify-between gap-8">
       <div class="max-w-2xl">
-        <span class="eyebrow reveal"><span class="size-1.5 rounded-full bg-violet"></span>The catalog</span>
-        <h2 class="reveal mt-5 text-3xl md:text-4xl" data-delay="1">{curioCourses.length} courses. {totalScenes}+ animated scenes.</h2>
+        <Eyebrow tone="violet" class="reveal">The catalog</Eyebrow>
+        <h2 class="reveal mt-5 text-section" data-delay="1">{curioCourses.length} courses. {totalScenes}+ animated scenes.</h2>
         <p class="reveal mt-4 text-muted" data-delay="2">
           Each course is a five-act story with its own guide character — {live.length} are live right
           now, free to preview.
@@ -74,7 +75,7 @@ const demos = [
     <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {curioCourses.map((c, i) => (
         <article
-          class="reveal group relative flex flex-col rounded-2xl border border-line bg-surface/30 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
+          class="reveal group relative flex flex-col rounded-2xl border border-line bg-surface/30 p-6 transition-colors duration-300 hover:border-line-strong"
           data-delay={String((i % 3) + 1)}
         >
           <div class="flex items-start justify-between gap-3">

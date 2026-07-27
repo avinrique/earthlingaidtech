@@ -1,0 +1,34 @@
+---
+/**
+ * Eyebrow — the mono kicker label with a glowing dot.
+ *
+ * This was hand-written in 16 places, and the dot's glow had drifted: 3 of the
+ * 16 carried a hardcoded `shadow-[0_0_12px_2px_rgba(74,158,255,0.6)]` and the
+ * other 13 rendered a flat dot. The glow is now derived from the tone, so every
+ * eyebrow on the site matches and adding a tone needs no new shadow value.
+ */
+interface Props {
+  tone?: 'accent' | 'teal' | 'violet' | 'amber';
+  /** Render as <p> where the label is not inline in a sentence. */
+  as?: 'span' | 'p';
+  center?: boolean;
+  class?: string;
+}
+
+const { tone = 'accent', as: Tag = 'span', center = false, class: className = '' } = Astro.props;
+
+const TONE: Record<string, string> = {
+  accent: 'var(--color-accent)',
+  teal: 'var(--color-teal)',
+  violet: 'var(--color-violet)',
+  amber: 'var(--color-amber)',
+};
+---
+
+<Tag
+  class:list={['eyebrow', center && 'justify-center', className]}
+  style={`--eyebrow-tone:${TONE[tone] ?? TONE.accent}`}
+>
+  <span class="eyebrow-dot" aria-hidden="true"></span>
+  <slot />
+</Tag>

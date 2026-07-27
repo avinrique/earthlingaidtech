@@ -1,4 +1,5 @@
 ---
+import Eyebrow from './Eyebrow.astro';
 import { Icon } from 'astro-icon/components';
 ---
 
@@ -7,8 +8,8 @@ import { Icon } from 'astro-icon/components';
   <div class="container-app">
     <div class="grid items-center gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
       <div>
-        <span class="eyebrow reveal"><span class="size-1.5 rounded-full bg-accent"></span>What Curio does</span>
-        <h2 class="reveal mt-5 text-3xl md:text-4xl" data-delay="1">
+        <Eyebrow class="reveal">What Curio does</Eyebrow>
+        <h2 class="reveal mt-5 text-section" data-delay="1">
           Why doesn't the Moon <span class="text-gradient">fall down?</span>
         </h2>
         <p class="reveal mt-4 text-muted" data-delay="2">

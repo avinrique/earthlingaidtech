@@ -1,4 +1,5 @@
 ---
+import Eyebrow from '@/components/Eyebrow.astro';
 import Base from '@/layouts/Base.astro';
 import Button from '@/components/Button.astro';
 import CubeLogo from '@/components/CubeLogo.astro';
@@ -13,8 +14,8 @@ import CubeLogo from '@/components/CubeLogo.astro';
 
     <div class="container-app flex flex-col items-center text-center">
       <CubeLogo size={72} animated decorative />
-      <p class="eyebrow mt-8"><span class="size-1.5 rounded-full bg-accent"></span>Error 404</p>
-      <h1 class="mt-4 font-display text-5xl font-semibold text-ink md:text-7xl">Lost in the system</h1>
+      <Eyebrow class="mt-8" as="p">Error 404</Eyebrow>
+      <h1 class="mt-4 font-display text-page font-semibold text-ink">Lost in the system</h1>
       <p class="mt-4 max-w-md text-lg text-muted">
         The page you're looking for doesn't exist or has moved. Let's get you back on track.
       </p>

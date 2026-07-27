@@ -1,4 +1,5 @@
 ---
+import Eyebrow from '../Eyebrow.astro';
 import { Icon } from 'astro-icon/components';
 import SectionHeading from '../SectionHeading.astro';
 import { whyUs, rnd } from '@/data/site';
@@ -14,7 +15,7 @@ import { whyUs, rnd } from '@/data/site';
       />
 
       <div class="reveal mt-8 rounded-2xl border border-line bg-surface/30 p-6" data-delay="2">
-        <p class="eyebrow"><span class="size-1.5 rounded-full bg-teal"></span>R&amp;D focus</p>
+        <Eyebrow tone="teal" as="p">R&amp;D focus</Eyebrow>
         <ul class="mt-4 flex flex-wrap gap-2">
           {rnd.map((r) => (
             <li class="rounded-full border border-line bg-white/[0.02] px-3 py-1.5 text-sm text-muted">{r}</li>

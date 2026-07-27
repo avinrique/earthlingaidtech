@@ -99,7 +99,7 @@ const productSchema = [
           </span>
         </div>
 
-        <h1 class="reveal font-display text-4xl font-semibold leading-[1.05] tracking-[-0.025em] text-ink md:text-6xl" data-delay="1">
+        <h1 class="reveal font-display text-page font-semibold text-ink" data-delay="1">
           {product.name}
         </h1>
         <p class:list={['reveal text-lg font-medium', a.text]} data-delay="1">{product.kicker}</p>
@@ -143,11 +143,11 @@ const productSchema = [
   <!-- Features -->
   <section class="py-20 md:py-28">
     <div class="container-app">
-      <h2 class="reveal text-3xl md:text-4xl">Key capabilities</h2>
+      <h2 class="reveal text-section">Key capabilities</h2>
       <div class="mt-10 grid gap-4 sm:grid-cols-2">
         {product.features.map((f, i) => (
           <div
-            class="reveal group rounded-2xl border border-line bg-surface/30 p-7 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
+            class="reveal group rounded-2xl border border-line bg-surface/30 p-7 transition-all duration-300 hover:border-line-strong"
             data-delay={String((i % 2) + 1)}
           >
             <div class:list={['mb-4 size-9 rounded-lg ring-1 ring-inset grid place-items-center', a.bg, a.ring]}>
@@ -176,7 +176,7 @@ const productSchema = [
   {(product.gallery || product.video) && (
     <section class="border-t border-line py-20 md:py-28">
       <div class="container-app">
-        <h2 class="reveal text-3xl md:text-4xl">{product.name} in the field</h2>
+        <h2 class="reveal text-section">{product.name} in the field</h2>
         <p class="reveal mt-3 max-w-xl text-muted" data-delay="1">
           Real rooms, real users — not mockups.
         </p>

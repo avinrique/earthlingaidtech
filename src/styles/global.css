@@ -49,13 +49,26 @@
   --font-sans: "Inter Variable", "Inter", "Inter Fallback", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  /* ---- Fluid display sizes ---- */
+  /* ---- Fluid display sizes ----
+     One ladder, used everywhere, so headings scale continuously instead of
+     snapping at a breakpoint. `text-4xl md:text-6xl` jumped 36px -> 60px at
+     exactly 768px on every inner page; `text-page` sweeps the same range.
+       hero    — the homepage h1 only
+       page    — every other h1 (PageHeader, product pages)
+       section — every h2
+  */
   --text-display: clamp(2.75rem, 1.5rem + 5.6vw, 5.5rem);
   --text-display--line-height: 1.02;
   --text-display--letter-spacing: -0.03em;
   --text-hero: clamp(2.5rem, 1.6rem + 4vw, 4.25rem);
   --text-hero--line-height: 1.05;
   --text-hero--letter-spacing: -0.025em;
+  --text-page: clamp(2.25rem, 1.35rem + 3.6vw, 3.75rem);
+  --text-page--line-height: 1.06;
+  --text-page--letter-spacing: -0.025em;
+  --text-section: clamp(1.875rem, 1.4rem + 1.9vw, 2.75rem);
+  --text-section--line-height: 1.12;
+  --text-section--letter-spacing: -0.02em;
 
   /* ---- Radius ---- */
   --radius-xl: 1rem;
@@ -207,6 +220,17 @@
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--color-accent-bright);
+}
+
+/* The eyebrow's leading dot. Glow is derived from `--eyebrow-tone` (set by the
+   Eyebrow component) so every tone gets a matching halo automatically. */
+.eyebrow-dot {
+  flex: none;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 999px;
+  background: var(--eyebrow-tone, var(--color-accent));
+  box-shadow: 0 0 12px 2px color-mix(in oklab, var(--eyebrow-tone, var(--color-accent)) 55%, transparent);
 }
 
 /* Gradient ink for emphasis words */

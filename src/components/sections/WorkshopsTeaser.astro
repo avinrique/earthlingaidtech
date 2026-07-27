@@ -1,4 +1,5 @@
 ---
+import Eyebrow from '../Eyebrow.astro';
 import { Icon } from 'astro-icon/components';
 import { Picture } from 'astro:assets';
 import { asset } from '@/lib/images';
@@ -14,8 +15,8 @@ import { workshops } from '@/data/site';
       <div class="relative grid gap-6 lg:grid-cols-[0.9fr_1fr] lg:items-stretch">
         <div class="flex flex-col justify-between p-4 md:p-6">
           <div class="max-w-xl">
-          <span class="eyebrow"><span class="size-1.5 rounded-full bg-teal"></span>Workshops &amp; training</span>
-          <h2 class="mt-5 text-3xl md:text-4xl">Training students with the same stack we ship.</h2>
+          <Eyebrow tone="teal">Workshops &amp; training</Eyebrow>
+          <h2 class="mt-5 text-section">Training students with the same stack we ship.</h2>
           <p class="mt-4 text-muted">
             Lab-first workshops for colleges and institutions across web, agentic AI, cloud,
             DevOps, security, Linux, and blockchain.
