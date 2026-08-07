@@ -305,7 +305,15 @@ function renderTabs() {
   }
 
   tabsEl.replaceChildren(frag);
-  totalEl.textContent = all === 1 ? '1 lead' : `${all} leads`;
+
+  // `counts` from the API is deliberately across every status AND every lead —
+  // it ignores `q` so the tabs keep showing the whole picture while you search.
+  // That makes the sum a lie for the *current view*, so while a search is
+  // active the headline number switches to `total`, which does respect both
+  // filters. Without this the topbar reads "42 leads" over a list of three.
+  totalEl.textContent = state.q
+    ? (state.total === 1 ? '1 match' : `${state.total} matches`)
+    : (all === 1 ? '1 lead' : `${all} leads`);
 }
 
 /* ── Loading / list ──────────────────────────────────────────────────────── */
@@ -413,6 +421,19 @@ function metaCell(label, value, link) {
     el('p', { class: 'meta__k', text: label }),
     el('p', { class: `meta__v${value ? '' : ' meta__v--none'}` }, [v]),
   ]);
+}
+
+/**
+ * tel: URI. Kept to digits plus a single leading `+` — encodeURIComponent turns
+ * `+` into `%2B` and spaces into `%20`, which several dialers refuse to parse.
+ * Building the scheme ourselves from a digits-only string also means a lead
+ * cannot smuggle in `javascript:`.
+ */
+function telHref(phone) {
+  if (!phone) return null;
+  const plus = /^\s*\+/.test(String(phone)) ? '+' : '';
+  const digits = String(phone).replace(/\D/g, '');
+  return digits ? `tel:${plus}${digits}` : null;
 }
 
 /** mailto: for a reply, with the lead's first name prefilled. */
@@ -583,7 +604,7 @@ function renderLead(lead) {
   const body = el('div', { class: 'lead__body', id: bodyId }, [
     el('div', { class: 'meta' }, [
       metaCell('Received', stamp(lead.created_at)),
-      metaCell('Phone', lead.phone, lead.phone ? `tel:${encodeURIComponent(lead.phone)}` : null),
+      metaCell('Phone', lead.phone, telHref(lead.phone)),
       metaCell('Budget', lead.budget),
       metaCell('Service', lead.service),
       metaCell('Source', lead.source),
@@ -629,7 +650,8 @@ async function copyText(text) {
     }
   } catch { /* fall through to the legacy path */ }
   try {
-    const ta = el('textarea', { style: 'position:fixed;top:-1000px;opacity:0' });
+    // Class, not an inline style: the CSP in vercel.json is `style-src 'self'`.
+    const ta = el('textarea', { class: 'offscreen', 'aria-hidden': 'true', tabindex: '-1' });
     ta.value = text;
     document.body.append(ta);
     ta.select();

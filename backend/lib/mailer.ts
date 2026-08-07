@@ -109,7 +109,12 @@ export async function notifyNewLead(id: number, lead: LeadInput): Promise<Notify
       // validateLead() has already stripped CR/LF from name and email, so neither can inject
       // additional headers here.
       subject: `New enquiry — ${subjectName}${subjectCompany}`,
-      replyTo: `${subjectName} <${lead.email}>`,
+      // Structured, NOT a hand-built "Name <addr>" string. Reply-To is an address *list*, so a
+      // name of `Bob <ops@victim.example>, x` in an interpolated string silently adds recipients:
+      // hitting Reply would then send our reply, and the quoted enquiry thread, to addresses the
+      // submitter chose. Passing the object lets nodemailer quote the display name properly and
+      // keeps exactly one address on the header.
+      replyTo: { name: subjectName, address: lead.email },
       text,
       html,
     });

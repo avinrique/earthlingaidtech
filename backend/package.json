@@ -8,7 +8,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "migrate": "node scripts/migrate.mjs",
+    "migrate": "node --env-file-if-exists=.env.local scripts/migrate.mjs",
     "dev": "vercel dev",
     "deploy": "vercel deploy --prod",
     "typecheck": "tsc --noEmit"

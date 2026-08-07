@@ -17,7 +17,10 @@ import { applyCors, methodNotAllowed } from '../lib/http.js';
  */
 function cell(value: unknown): string {
   const raw = value === null || value === undefined ? '' : String(value);
-  const guarded = /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw;
+  // Test past any leading whitespace: spreadsheets trim it before deciding a cell is a formula, so
+  // `  =HYPERLINK(...)` sails through a check anchored at index 0. `|` is included because
+  // `|'/C calc'!A0` is the classic DDE payload, which Excel treats as executable just like `=`.
+  const guarded = /^[\s]*[=+\-@|\t\r]/.test(raw) ? `'${raw}` : raw;
   return `"${guarded.replace(/"/g, '""')}"`;
 }
 

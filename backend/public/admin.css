@@ -78,6 +78,13 @@ button, input, textarea, select { font: inherit; color: inherit; }
 
 ::selection { background: rgba(74,158,255,0.32); color: var(--ink); }
 
+/* The icon sprite and the clipboard-fallback textarea used to carry inline
+   `style` attributes. vercel.json ships `style-src 'self'` with no
+   'unsafe-inline', which blocks style attributes as well as <style> blocks —
+   so they live here instead. Keep it that way: no inline styles in this app. */
+.sprite    { position: absolute; width: 0; height: 0; }
+.offscreen { position: fixed; top: -1000px; left: 0; opacity: 0; }
+
 @media (pointer: fine) {
   * { scrollbar-width: thin; scrollbar-color: var(--surface-3) transparent; }
   *::-webkit-scrollbar { width: 10px; height: 10px; }

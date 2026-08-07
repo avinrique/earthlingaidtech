@@ -397,13 +397,19 @@ const errCls = 'mt-1.5 text-sm text-amber';
 
       // Empty optionals are omitted rather than sent as "" — the column is
       // nullable and a blank string is not a nicer thing to read in the CRM.
+      //
+      // `source` carries the path *and* the query string: the API stores
+      // `source ?? page` in a single `source` column, so anything only present
+      // in `page` (utm_* campaign params, most usefully) is discarded. Putting
+      // the search string in `source` is what keeps it. `page` is still sent —
+      // the endpoint accepts it as the fallback when `source` is absent.
       const payload: Record<string, string | number> = {
         name: value('name'),
         email: value('email'),
         message: value('message'),
         website: (document.getElementById('lead-website') as HTMLInputElement).value,
         t: Number(tField.value) || Date.now(),
-        source: window.location.pathname,
+        source: window.location.pathname + window.location.search,
         page: window.location.href,
       };
       (['company', 'phone', 'service', 'budget'] as const).forEach((name) => {

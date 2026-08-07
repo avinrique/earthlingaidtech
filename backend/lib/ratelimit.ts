@@ -8,7 +8,10 @@
 
 import { sql } from './db.js';
 
-export type Bucket = 'lead' | 'login';
+export type Bucket = 'lead' | 'login' | 'notify';
+
+/** Key for a limit that is global rather than per-client. */
+export const GLOBAL = 'all';
 
 interface Rule {
   limit: number;
@@ -20,6 +23,19 @@ const RULES: Record<Bucket, Rule> = {
   lead: { limit: 5, windowMinutes: 60 },
   // Tight: this is the only thing standing in front of the admin password.
   login: { limit: 8, windowMinutes: 15 },
+  /**
+   * GLOBAL ceiling on outbound notification mail, deliberately not keyed by client.
+   *
+   * The per-IP `lead` rule bounds one attacker on one address. It bounds nothing for a botnet, or
+   * for anyone with a residential proxy pool or a single IPv6 /48 — and every accepted lead sends
+   * SMTP through the real services@ mailbox, so unbounded leads means an unbounded mail bill, a
+   * flooded inbox and a burnt sender reputation on the domain the business runs on. This caps the
+   * blast radius at something a human could still read.
+   *
+   * Exceeding it never rejects the lead: the row is already committed and only the email is
+   * skipped, so an attacker cannot use this bucket to stop real enquiries arriving.
+   */
+  notify: { limit: 60, windowMinutes: 60 },
 };
 
 /**

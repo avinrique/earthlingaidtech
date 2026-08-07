@@ -32,9 +32,10 @@ Two separately-hosted halves that talk over the public internet.
 ┌────────────────────────────────────────────────┐
 │  Vercel  ·  api.earthlingaidtech.com           │
 │                                                │
-│   api/leads.ts        ← CORS gate (ALLOWED_ORIGINS)
+│   api/leads/index.ts  ← POST (public, CORS gate) + GET (admin)
+│   api/leads/[id].ts   ← PATCH / DELETE (admin)
 │   api/auth/*.ts       ← eat_admin httpOnly cookie
-│   api/export.csv.ts                            │
+│   api/health.ts  ·  api/export.csv.ts             │
 │   public/  (admin dashboard, self-contained)   │
 └──────┬───────────────────────────┬─────────────┘
        │                           │
@@ -59,9 +60,21 @@ call to the API is a cross-origin request. Concretely:
   `Access-Control-Allow-Origin`, the POST never leaves the browser and you get a
   console error with **no server log** — the request genuinely did not happen.
 - The admin dashboard is served from the API origin itself, so its calls are
-  same-origin. But it still must use `credentials: "include"` for the
-  `eat_admin` cookie, and the cookie must be `SameSite=None; Secure` if you ever
-  serve the dashboard from the Pages origin.
+  same-origin and CORS never applies to them. It still passes
+  `credentials: "include"` for the `eat_admin` cookie, which is a no-op
+  same-origin but is the correct thing to state explicitly.
+- **The API never sends `Access-Control-Allow-Credentials`, and
+  `Access-Control-Allow-Methods` lists only `POST, OPTIONS`.** That is
+  deliberate, not an oversight: the only intended cross-origin caller is the
+  anonymous enquiry POST. `earthlingaidtech.com` and `api.earthlingaidtech.com`
+  share a registrable domain, so `SameSite=Strict` already sends `eat_admin`
+  between them — allowing credentials on top of an allow-listed origin would let
+  any script that got onto the marketing site (an XSS, a compromised analytics
+  tag, a hijacked Pages deploy) read the whole lead table and issue `DELETE`s
+  with your session. Withholding the header is what stops that.
+  Corollary: **do not try to serve the dashboard from the Pages origin.** It
+  would need credentialed CORS and `SameSite=None`, which is exactly the posture
+  this design refuses. Keep the dashboard on `api.earthlingaidtech.com`.
 - `ALLOWED_ORIGINS` is therefore a production config value, not a dev
   convenience. Getting it wrong breaks the contact form silently.
 
@@ -125,9 +138,12 @@ npm install
 npm run migrate
 ```
 
-`npm run migrate` executes `scripts/migrate.mjs` against `DATABASE_URL` from
-`.env.local`. It is idempotent (`CREATE TABLE IF NOT EXISTS …`), so re-running it
-is safe and is the normal way to apply a later schema change.
+`npm run migrate` runs `node --env-file-if-exists=.env.local scripts/migrate.mjs`,
+so it picks up `DATABASE_URL` from `.env.local` if that file exists and from the
+ambient environment otherwise. It applies `lib/schema.sql`, which is idempotent
+(`CREATE TABLE IF NOT EXISTS …`), so re-running it is safe and is the normal way
+to apply a later schema change. If neither source provides `DATABASE_URL` the
+script exits with `DATABASE_URL is not set.`
 
 If you'd rather be explicit about which database you're hitting:
 
@@ -145,7 +161,9 @@ psql "$DATABASE_URL_UNPOOLED" -c 'select count(*) from leads;'
 
 You should see the `leads` table with `id`, `created_at`, `updated_at`, `name`,
 `email`, `company`, `phone`, `service`, `budget`, `message`, `source`, `status`,
-`notes`, plus the rate-limit / hashed-IP columns the API uses. `count` = 0.
+`notes`, plus `ip_hash` and `user_agent` (never returned by the API). `count` = 0.
+Rate limiting does **not** live on `leads` — it is a second table, `rate_events`,
+created by the same migration.
 
 No `psql`? `npx postgres-cli` is a hassle — just use the Neon SQL Editor, it's
 two clicks.
@@ -246,8 +264,17 @@ Repeat the whole block with `preview` and `development` in place of
 vercel env ls
 ```
 
-Twelve variables, all present in Production. `SMTP_PASS` should show as
+Eleven variables, all present in Production. `SMTP_PASS` should show as
 *Sensitive* / *Encrypted*.
+
+Those eleven are the complete set the code reads. The only other environment
+variables it touches are `VERCEL`, `VERCEL_ENV` and `VERCEL_GIT_COMMIT_SHA`, all
+injected by the platform — never set them yourself. `VERCEL` is what decides
+whether the session cookie gets `Secure` (set on every deployment, absent under
+local `vercel dev` over plain http); `VERCEL_GIT_COMMIT_SHA` is the `version` in
+`/api/health`. `DATABASE_URL_UNPOOLED` and the
+`PG*` / `POSTGRES_*` aliases from the Neon integration are unused by the API;
+they are only there for `psql` / `pg_dump` from your laptop.
 
 ---
 
@@ -288,11 +315,15 @@ project's stable `…vercel.app` alias. Sanity check before touching DNS:
 
 ```bash
 curl -s https://earthlingaidtech-leads.vercel.app/api/health | jq
-# { "ok": true, "db": true, "version": "1.0.0" }
+# { "ok": true, "db": true, "version": "9f3c1ab" }
 ```
 
+`version` is the first 7 characters of `VERCEL_GIT_COMMIT_SHA` — the deployed
+commit, not the `package.json` version. It reads `"dev"` under `vercel dev`.
+
 If `db:false` here, stop and fix [§2](#2-provision-neon)/[§3](#3-run-the-migration)
-before going further.
+before going further. Note that `/api/health` answers **503** (not 200) whenever
+`db` is false, so `curl -f` and uptime monitors will flag it.
 
 ---
 
@@ -334,7 +365,7 @@ dig +short api.earthlingaidtech.com CNAME
 # cname.vercel-dns.com.
 
 curl -s https://api.earthlingaidtech.com/api/health | jq
-# { "ok": true, "db": true, "version": "1.0.0" }
+# { "ok": true, "db": true, "version": "9f3c1ab" }
 ```
 
 The **Domains** screen in Vercel should show `api.earthlingaidtech.com` with a
@@ -394,7 +425,7 @@ Run these in order against production, right after the frontend deploy.
 
 ```bash
 curl -s https://api.earthlingaidtech.com/api/health | jq
-# { "ok": true, "db": true, "version": "1.0.0" }
+# { "ok": true, "db": true, "version": "9f3c1ab" }
 ```
 
 `db:false` → `DATABASE_URL` is wrong or the migration never ran.
@@ -409,9 +440,12 @@ curl -s -i -X OPTIONS https://api.earthlingaidtech.com/api/leads \
 ```
 
 You need `HTTP/2 204` (or 200) **and**
-`access-control-allow-origin: https://earthlingaidtech.com`. If the header is
-missing or says `*` while credentials are involved, fix `ALLOWED_ORIGINS` and
-redeploy before doing anything else.
+`access-control-allow-origin: https://earthlingaidtech.com`, plus
+`access-control-allow-methods: POST, OPTIONS` and
+`access-control-allow-headers: Content-Type`. There should be **no**
+`access-control-allow-credentials` header — that absence is intentional
+([§1](#1-what-this-is)). If the origin header is missing or says `*`, fix
+`ALLOWED_ORIGINS` and redeploy before doing anything else.
 
 **3. Post a real lead** (with the `Origin` header, as a browser would):
 
@@ -521,9 +555,14 @@ How to read it:
   non-2xx (often a 404 because the path is wrong, or a 405).
 - **"Request header field content-type is not allowed"** →
   `Access-Control-Allow-Headers` doesn't list `content-type`.
-- **"credentials mode is 'include' … 'Access-Control-Allow-Origin' must not be
-  the wildcard"** → you can't use `*` with credentials. Echo back the specific
-  origin and set `Access-Control-Allow-Credentials: true`.
+- **"credentials mode is 'include' … 'Access-Control-Allow-Credentials' is not
+  'true'"** → something is now making a *credentialed* cross-origin call. Nothing
+  in this design should: the enquiry form POSTs anonymously and the dashboard is
+  same-origin. Do **not** "fix" it by adding the header — see the security note
+  in [§1](#1-what-this-is). Find the caller instead.
+- **"Method PATCH is not allowed by Access-Control-Allow-Methods"** → likewise
+  intentional. Only `POST, OPTIONS` is advertised; admin verbs are meant to be
+  unreachable cross-origin.
 
 Key point: **a blocked preflight leaves no trace in Vercel logs** for the POST.
 If the browser shows a CORS error and `vercel logs` shows nothing, that's
@@ -604,19 +643,34 @@ query pays a cold start — typically 500 ms, occasionally 2–4 s.
 
 ### What a 429 means
 
-Two independent limiters return `429 { ok:false, error:"rate_limited" }`:
+Two limiters return `429 { ok:false, error:"rate_limited" }`. A third, `notify`,
+never returns anything to the caller — see below.
 
 - **`POST /api/leads`** — too many submissions from the same hashed IP in the
   window. Real people don't hit it; bots and your own load-testing do. If a real
   client reports it, they're most likely behind a shared corporate NAT.
 - **`POST /api/auth/login`** — too many failed password attempts. This is
   brute-force protection and it is doing its job. Wait out the window; don't
-  raise the limit. If you've locked yourself out and need in immediately, rotate
-  `ADMIN_PASSWORD` and redeploy (a redeploy resets in-memory limiter state).
+  raise the limit.
 
-Rate-limit state lives in the database (keyed on `sha256(IP + IP_SALT)`), so it
-survives across function instances. Changing `IP_SALT` invalidates all existing
-buckets — a blunt but effective reset.
+There is also a third, **global** bucket, `notify` (60 mails/hour, not keyed by
+IP). It caps outbound notification mail so a distributed flood cannot burn the
+sending domain. It never affects the HTTP response: the lead is stored and shows
+in the dashboard either way, only the email is skipped, and you get
+`lead <id> stored; notification skipped — hourly mail budget exhausted` in the
+function logs. If you see that line, open the dashboard — the leads are there.
+
+Rate-limit state lives in the database (the `rate_events` table, keyed on
+`sha256(IP_SALT + IP)`), so it survives across function instances — **a redeploy
+does not clear it.** If you have locked yourself out and need in immediately,
+either wait out the 15-minute window, or clear your own bucket:
+
+```sql
+DELETE FROM rate_events WHERE bucket = 'login';
+```
+
+Changing `IP_SALT` also invalidates every existing bucket — blunter, and it needs
+a redeploy, but it works.
 
 Note: a 429 from Vercel's own edge (not your handler) looks different — it comes
 back as HTML, not JSON. That means you're hitting platform DDoS protection, which

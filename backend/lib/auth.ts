@@ -43,10 +43,26 @@ function parseCookies(header: string | undefined): Record<string, string> {
     if (idx < 0) continue;
     const key = part.slice(0, idx).trim();
     const value = part.slice(idx + 1).trim();
-    if (key) out[key] = decodeURIComponent(value);
+    if (!key) continue;
+    // decodeURIComponent throws URIError on a malformed escape ("%", "%zz"). Unguarded, a one-byte
+    // Cookie header turns every admin request into an unhandled 500 instead of a clean 401.
+    try {
+      out[key] = decodeURIComponent(value);
+    } catch {
+      out[key] = value;
+    }
   }
   return out;
 }
+
+/**
+ * Secure is set on every deployed environment, not just production.
+ * Preview deployments run with the same ADMIN_PASSWORD and SESSION_SECRET (see README), so a
+ * preview session is a real session. Cookies ignore scheme when deciding what to send, so omitting
+ * Secure anywhere reachable from the internet is a needless way to hand one to a network attacker.
+ * It is dropped only for local `vercel dev` over plain http, where process.env.VERCEL is unset.
+ */
+const secureCookie = Boolean(process.env.VERCEL);
 
 export function issueSession(res: VercelResponse): void {
   const expires = Date.now() + TTL_MS;
@@ -61,15 +77,14 @@ export function issueSession(res: VercelResponse): void {
     'SameSite=Strict',
     `Max-Age=${Math.floor(TTL_MS / 1000)}`,
   ];
-  // Secure would make the cookie unusable over plain http on localhost during `vercel dev`.
-  if (env.isProduction) attrs.push('Secure');
+  if (secureCookie) attrs.push('Secure');
 
   res.setHeader('Set-Cookie', attrs.join('; '));
 }
 
 export function clearSession(res: VercelResponse): void {
   const attrs = [`${COOKIE}=`, 'Path=/', 'HttpOnly', 'SameSite=Strict', 'Max-Age=0'];
-  if (env.isProduction) attrs.push('Secure');
+  if (secureCookie) attrs.push('Secure');
   res.setHeader('Set-Cookie', attrs.join('; '));
 }
 

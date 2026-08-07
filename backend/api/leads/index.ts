@@ -9,7 +9,7 @@ import { requireAuth } from '../../lib/auth.js';
 import { isLeadStatus, sql, type Lead } from '../../lib/db.js';
 import { applyCors, clientKey, json, methodNotAllowed, readJsonBody, userAgent } from '../../lib/http.js';
 import { notifyNewLead } from '../../lib/mailer.js';
-import { hitLimit, pruneRateEvents } from '../../lib/ratelimit.js';
+import { GLOBAL, hitLimit, pruneRateEvents } from '../../lib/ratelimit.js';
 import { looksAutomated, validateLead } from '../../lib/validate.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -55,9 +55,18 @@ async function createLead(req: VercelRequest, res: VercelResponse) {
 
   // The lead is safely stored. From here nothing may fail the request: a bounced notification is
   // an inconvenience, a rejected enquiry is a lost customer.
-  const notified = await notifyNewLead(id, value);
-  if (!notified.sent) {
-    console.error(`[leads] lead ${id} stored but notification failed: ${notified.error}`);
+  //
+  // The per-IP limit above does not bound a distributed flood, and every notification is a real
+  // SMTP send from the business mailbox. The global hourly mail budget caps that separately —
+  // when it is exhausted the lead is still stored and still visible in the dashboard, we simply
+  // stop mailing, so the spam run cannot burn the sending domain or bury the real enquiries.
+  if (await hitLimit('notify', GLOBAL)) {
+    console.warn(`[leads] lead ${id} stored; notification skipped — hourly mail budget exhausted`);
+  } else {
+    const notified = await notifyNewLead(id, value);
+    if (!notified.sent) {
+      console.error(`[leads] lead ${id} stored but notification failed: ${notified.error}`);
+    }
   }
 
   void pruneRateEvents();
