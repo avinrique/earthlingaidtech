@@ -1,0 +1,481 @@
+---
+/**
+ * LeadForm — the primary enquiry form.
+ *
+ * Posts JSON to the separate API project (Vercel, api.earthlingaidtech.com);
+ * this site is a static GitHub Pages build, so there is no server here to
+ * accept a native form POST. That has two consequences the markup has to own:
+ *
+ *   1. Without JS the form cannot submit at all → a <noscript> hands over the
+ *      email address instead of showing a dead button.
+ *   2. When the API is down, a lead must still reach us → every failure path
+ *      surfaces the mailto:, because a missed enquiry is the expensive
+ *      outcome here, not an ugly error state.
+ *
+ * Anti-spam is two cheap, JS-free-ish signals the server verifies:
+ * a honeypot input named `website` (hidden from humans, irresistible to bots)
+ * and `t`, the ms timestamp the form was rendered in the browser, so
+ * submissions completed impossibly fast can be rejected.
+ */
+import { Icon } from 'astro-icon/components';
+import { services, site } from '@/data/site';
+
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+
+/* Service options come from the single source of truth, never from markup. */
+const serviceOptions = [...services.map((s) => s.title), 'Something else'];
+
+/* Budget bands in USD — the client list spans India, Nepal and Switzerland,
+   so a single neutral currency beats a locale guess. "Not sure yet" is a real
+   answer, not a blank: most good enquiries genuinely do not know yet. */
+const budgetOptions = [
+  'Under $2,000',
+  '$2,000 – $5,000',
+  '$5,000 – $15,000',
+  '$15,000 – $50,000',
+  '$50,000+',
+  'Not sure yet',
+];
+
+const control =
+  'w-full rounded-xl border border-line bg-surface-2/60 px-4 py-3 text-[0.95rem] text-body transition-colors duration-200 placeholder:text-dim hover:border-line-strong focus:border-accent/60 focus:bg-surface-2 aria-[invalid=true]:border-amber/70';
+const labelCls = 'block text-sm font-medium text-body';
+const errCls = 'mt-1.5 text-sm text-amber';
+---
+
+<div
+  id="enquiry"
+  class:list={[
+    'relative isolate overflow-hidden rounded-3xl border border-accent/25 bg-surface/40 p-6 sm:p-8',
+    className,
+  ]}
+>
+  <div class="glow-accent pointer-events-none absolute -right-24 -top-24 -z-10 size-72 opacity-40"></div>
+
+  <!-- ---------- The form ---------- -->
+  <form id="lead-form" novalidate class="flex flex-col gap-7">
+    <div>
+      <h2 class="text-2xl">Tell us about your project</h2>
+      <p class="mt-2 text-sm text-muted">
+        A few details is enough to start. We read every enquiry ourselves — no bots, no call centre.
+      </p>
+    </div>
+
+    <!-- Your details -->
+    <fieldset class="flex flex-col gap-5 border-0 p-0">
+      <legend class="font-mono text-xs uppercase tracking-[0.18em] text-faint">Your details</legend>
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label class={labelCls} for="lead-name">
+            Name <span class="text-accent" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="lead-name"
+            name="name"
+            type="text"
+            required
+            autocomplete="name"
+            class:list={['mt-2', control]}
+            aria-describedby="lead-err-name"
+          />
+          <p id="lead-err-name" class={errCls} hidden></p>
+        </div>
+
+        <div>
+          <label class={labelCls} for="lead-email">
+            Email <span class="text-accent" aria-hidden="true">*</span>
+          </label>
+          <input
+            id="lead-email"
+            name="email"
+            type="email"
+            required
+            inputmode="email"
+            autocomplete="email"
+            class:list={['mt-2', control]}
+            aria-describedby="lead-err-email"
+          />
+          <p id="lead-err-email" class={errCls} hidden></p>
+        </div>
+
+        <div>
+          <label class={labelCls} for="lead-company">
+            Organization <span class="text-faint">(optional)</span>
+          </label>
+          <input
+            id="lead-company"
+            name="company"
+            type="text"
+            autocomplete="organization"
+            class:list={['mt-2', control]}
+            aria-describedby="lead-err-company"
+          />
+          <p id="lead-err-company" class={errCls} hidden></p>
+        </div>
+
+        <div>
+          <label class={labelCls} for="lead-phone">
+            Phone <span class="text-faint">(optional)</span>
+          </label>
+          <input
+            id="lead-phone"
+            name="phone"
+            type="tel"
+            inputmode="tel"
+            autocomplete="tel"
+            class:list={['mt-2', control]}
+            aria-describedby="lead-err-phone"
+          />
+          <p id="lead-err-phone" class={errCls} hidden></p>
+        </div>
+      </div>
+    </fieldset>
+
+    <!-- The project -->
+    <fieldset class="flex flex-col gap-5 border-0 p-0">
+      <legend class="font-mono text-xs uppercase tracking-[0.18em] text-faint">The project</legend>
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label class={labelCls} for="lead-service">What do you need?</label>
+          <div class="relative mt-2">
+            <select
+              id="lead-service"
+              name="service"
+              class:list={[control, 'appearance-none pr-11']}
+              aria-describedby="lead-err-service"
+            >
+              <option value="">Select an area…</option>
+              {serviceOptions.map((s) => <option value={s}>{s}</option>)}
+            </select>
+            <Icon
+              name="lucide:chevron-down"
+              class="pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-faint"
+              aria-hidden="true"
+            />
+          </div>
+          <p id="lead-err-service" class={errCls} hidden></p>
+        </div>
+
+        <div>
+          <label class={labelCls} for="lead-budget">Budget</label>
+          <div class="relative mt-2">
+            <select
+              id="lead-budget"
+              name="budget"
+              class:list={[control, 'appearance-none pr-11']}
+              aria-describedby="lead-err-budget"
+            >
+              <option value="">Select a range…</option>
+              {budgetOptions.map((b) => <option value={b}>{b}</option>)}
+            </select>
+            <Icon
+              name="lucide:chevron-down"
+              class="pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-faint"
+              aria-hidden="true"
+            />
+          </div>
+          <p id="lead-err-budget" class={errCls} hidden></p>
+        </div>
+      </div>
+
+      <div>
+        <label class={labelCls} for="lead-message">
+          What are you trying to build? <span class="text-accent" aria-hidden="true">*</span>
+        </label>
+        <textarea
+          id="lead-message"
+          name="message"
+          rows="5"
+          required
+          class:list={['mt-2 resize-y', control]}
+          aria-describedby="lead-message-hint lead-err-message"></textarea>
+        <p id="lead-message-hint" class="mt-1.5 text-xs text-faint">
+          The problem, who it is for, and any timeline you are working to.
+        </p>
+        <p id="lead-err-message" class={errCls} hidden></p>
+      </div>
+    </fieldset>
+
+    {/* Honeypot. Off-screen for sighted users, removed from the a11y tree, and
+        out of the tab order — only a bot ever fills this in. */}
+    <div class="sr-only" aria-hidden="true">
+      <label for="lead-website">Website</label>
+      <input id="lead-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+    </div>
+
+    {/* Stamped by the script on load, not at build time — a static build would
+        bake in the deploy timestamp and the server's speed check would be
+        meaningless. */}
+    <input id="lead-t" name="t" type="hidden" value="" />
+
+    <div class="flex flex-col gap-4">
+      <div class="flex flex-wrap items-center gap-4">
+        <button
+          id="lead-submit"
+          type="submit"
+          class="group relative inline-flex h-12 items-center justify-center gap-2 whitespace-nowrap rounded-full bg-accent px-7 font-semibold leading-none text-on-accent shadow-[0_8px_24px_-6px_rgba(74,158,255,0.5)] transition-all duration-300 ease-[var(--ease-out-expo)] hover:-translate-y-0.5 hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent active:translate-y-px disabled:pointer-events-none disabled:opacity-60"
+        >
+          <span id="lead-submit-label">Send enquiry</span>
+          <Icon
+            name="lucide:arrow-right"
+            class="size-[1.05em] shrink-0 transition-transform duration-300 group-hover:translate-x-0.5"
+            aria-hidden="true"
+          />
+        </button>
+        <p class="text-xs text-faint">We reply within one working day.</p>
+      </div>
+
+      {/* Status / failure region. Pre-rendered rather than injected, so the
+          fallback address exists in the DOM even if scripting later breaks. */}
+      <div
+        id="lead-status"
+        role="status"
+        aria-live="polite"
+        class="rounded-xl border border-amber/30 bg-amber/[0.06] p-4 text-sm text-body"
+        hidden
+      >
+        <p id="lead-status-text"></p>
+        <p id="lead-status-mailto" class="mt-2 text-muted" hidden>
+          Please email us directly at
+          <a href={`mailto:${site.email}`} class="break-all font-medium text-accent hover:underline"
+            >{site.email}</a
+          > — it reaches the same inbox.
+        </p>
+      </div>
+    </div>
+
+    <noscript>
+      <p class="rounded-xl border border-line bg-surface-2/60 p-4 text-sm text-muted">
+        This form needs JavaScript to send. Email us at
+        <a href={`mailto:${site.email}`} class="break-all font-medium text-accent hover:underline"
+          >{site.email}</a
+        > and we will pick it up from there.
+      </p>
+    </noscript>
+  </form>
+
+  <!-- ---------- Success state (replaces the form) ---------- -->
+  <div id="lead-success" tabindex="-1" class="flex flex-col items-start gap-4 outline-none" hidden>
+    <div class="grid size-12 place-items-center rounded-xl bg-accent/15 ring-1 ring-inset ring-accent/30">
+      <Icon name="lucide:check" class="size-6 text-accent" aria-hidden="true" />
+    </div>
+    <h2 class="text-2xl">Enquiry received</h2>
+    <p class="max-w-md text-muted">
+      It has landed in our inbox and one of the founders reads it — not a queue. Expect a reply
+      <span class="font-medium text-body">within one working day</span>, with concrete next steps: a
+      short call, a scope sketch, or a straight answer on whether we are the right fit.
+    </p>
+    <p class="text-sm text-faint">
+      Need us sooner, or want to add a document? Reply straight to
+      <a href={`mailto:${site.email}`} class="break-all font-medium text-accent hover:underline"
+        >{site.email}</a
+      >.
+    </p>
+  </div>
+</div>
+
+<script>
+  const form = document.getElementById('lead-form') as HTMLFormElement | null;
+
+  if (form) {
+    /* Public by design: this is an API origin baked into a static bundle, not a
+       secret. See .env.example. */
+    const API_BASE = import.meta.env.PUBLIC_API_BASE ?? 'https://api.earthlingaidtech.com';
+
+    const statusBox = document.getElementById('lead-status') as HTMLElement;
+    const statusText = document.getElementById('lead-status-text') as HTMLElement;
+    const statusMailto = document.getElementById('lead-status-mailto') as HTMLElement;
+    const successBox = document.getElementById('lead-success') as HTMLElement;
+    const submit = document.getElementById('lead-submit') as HTMLButtonElement;
+    const submitLabel = document.getElementById('lead-submit-label') as HTMLElement;
+    const tField = document.getElementById('lead-t') as HTMLInputElement;
+
+    const REQUIRED = ['name', 'email', 'message'] as const;
+    const FIELDS = ['name', 'email', 'company', 'phone', 'service', 'budget', 'message'] as const;
+    type FieldName = (typeof FIELDS)[number];
+
+    /* Deliberately loose. Anything stricter starts rejecting real addresses,
+       and the server (and the actual reply) is the real validator. */
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // The clock the server uses to reject impossibly fast submissions.
+    tField.value = String(Date.now());
+
+    const control = (name: string) =>
+      form.elements.namedItem(name) as
+        | HTMLInputElement
+        | HTMLTextAreaElement
+        | HTMLSelectElement
+        | null;
+    const errorSlot = (name: string) => document.getElementById(`lead-err-${name}`);
+    const value = (name: string) => (control(name)?.value ?? '').trim();
+
+    const showError = (name: string, message: string) => {
+      const slot = errorSlot(name);
+      const input = control(name);
+      if (slot) {
+        slot.textContent = message;
+        slot.hidden = false;
+      }
+      input?.setAttribute('aria-invalid', 'true');
+    };
+
+    const clearErrors = () => {
+      FIELDS.forEach((name) => {
+        const slot = errorSlot(name);
+        if (slot) {
+          slot.textContent = '';
+          slot.hidden = true;
+        }
+        control(name)?.removeAttribute('aria-invalid');
+      });
+    };
+
+    const clearStatus = () => {
+      statusBox.hidden = true;
+      statusText.textContent = '';
+      statusMailto.hidden = true;
+    };
+
+    const setStatus = (message: string, withMailto = false) => {
+      statusText.textContent = message;
+      statusMailto.hidden = !withMailto;
+      statusBox.hidden = false;
+    };
+
+    const focusFirstError = () => {
+      const first = FIELDS.map(control).find((el) => el?.getAttribute('aria-invalid') === 'true');
+      first?.focus();
+      first?.scrollIntoView({ block: 'center', behavior: reduceMotion ? 'auto' : 'smooth' });
+    };
+
+    /** Returns true when the payload is worth sending. */
+    const validate = () => {
+      let ok = true;
+      REQUIRED.forEach((name) => {
+        if (!value(name)) {
+          showError(
+            name,
+            name === 'message' ? 'Tell us what you need — even a sentence.' : 'This field is required.',
+          );
+          ok = false;
+        }
+      });
+      if (value('email') && !EMAIL_RE.test(value('email'))) {
+        showError('email', 'Enter a valid email address so we can reply.');
+        ok = false;
+      }
+      return ok;
+    };
+
+    let sending = false;
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (sending) return; // hard stop on double submit
+      clearErrors();
+      clearStatus();
+
+      if (!validate()) {
+        // Announce as well as focus: the live region carries the summary for
+        // anyone who is not watching the fields turn amber.
+        setStatus('A few details are missing — check the highlighted fields.');
+        focusFirstError();
+        return;
+      }
+
+      sending = true;
+      submit.disabled = true;
+      submitLabel.textContent = 'Sending…';
+
+      // Empty optionals are omitted rather than sent as "" — the column is
+      // nullable and a blank string is not a nicer thing to read in the CRM.
+      const payload: Record<string, string | number> = {
+        name: value('name'),
+        email: value('email'),
+        message: value('message'),
+        website: (document.getElementById('lead-website') as HTMLInputElement).value,
+        t: Number(tField.value) || Date.now(),
+        source: window.location.pathname,
+        page: window.location.href,
+      };
+      (['company', 'phone', 'service', 'budget'] as const).forEach((name) => {
+        if (value(name)) payload[name] = value(name);
+      });
+
+      try {
+        const res = await fetch(`${API_BASE}/api/leads`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json().catch(() => null);
+
+        if (res.ok && data?.ok) {
+          form.hidden = true;
+          successBox.hidden = false;
+          successBox.focus();
+          successBox.scrollIntoView({
+            block: 'center',
+            behavior: reduceMotion ? 'auto' : 'smooth',
+          });
+          return;
+        }
+
+        if (res.status === 400 && data?.fields) {
+          let matched = 0;
+          Object.entries(data.fields as Record<string, string>).forEach(([field, message]) => {
+            if ((FIELDS as readonly string[]).includes(field)) {
+              showError(field as FieldName, String(message));
+              matched += 1;
+            }
+          });
+          if (matched) {
+            setStatus('Please fix the highlighted fields and send again.');
+            focusFirstError();
+          } else {
+            // The server rejected something we do not render a slot for
+            // (honeypot, timing). Never leave the visitor without a route in.
+            setStatus('We could not accept that submission.', true);
+          }
+          return;
+        }
+
+        if (res.status === 429) {
+          setStatus('That is a lot of enquiries from this connection — please try again shortly.', true);
+          return;
+        }
+
+        setStatus('Something went wrong on our side and your enquiry was not sent.', true);
+      } catch {
+        // Offline, DNS, CORS, cold API — indistinguishable from here, and the
+        // visitor does not care which. Give them the address.
+        setStatus('We could not reach the enquiry service just now.', true);
+      } finally {
+        sending = false;
+        submit.disabled = false;
+        submitLabel.textContent = 'Send enquiry';
+      }
+    });
+
+    // Clear a field's error as soon as it is being corrected — leaving red text
+    // under an input someone is actively fixing reads as unresponsive.
+    FIELDS.forEach((name) => {
+      control(name)?.addEventListener('input', () => {
+        const slot = errorSlot(name);
+        if (slot && !slot.hidden) {
+          slot.hidden = true;
+          slot.textContent = '';
+        }
+        control(name)?.removeAttribute('aria-invalid');
+      });
+    });
+  }
+</script>

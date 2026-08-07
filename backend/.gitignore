@@ -1,0 +1,7 @@
+node_modules/
+.vercel/
+
+# `vercel env pull` writes real secrets here — never commit it.
+.env
+.env.*
+!.env.example
