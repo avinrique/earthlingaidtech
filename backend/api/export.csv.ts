@@ -38,7 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const leads = (await sql`
-      select id, created_at, updated_at, name, email, company, phone,
+      select id::int as id, created_at, updated_at, name, email, company, phone,
              service, budget, message, source, status, notes
       from leads
       where (${status}::text is null or status = ${status})

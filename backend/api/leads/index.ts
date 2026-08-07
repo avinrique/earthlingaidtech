@@ -45,7 +45,7 @@ async function createLead(req: VercelRequest, res: VercelResponse) {
       insert into leads (name, email, company, phone, service, budget, message, source, ip_hash, user_agent)
       values (${value.name}, ${value.email}, ${value.company}, ${value.phone}, ${value.service},
               ${value.budget}, ${value.message}, ${value.source}, ${key}, ${userAgent(req)})
-      returning id
+      returning id::int as id
     `) as Array<{ id: number }>;
     id = rows[0]!.id;
   } catch (error) {
@@ -90,7 +90,7 @@ async function listLeads(req: VercelRequest, res: VercelResponse) {
     // Parameterised throughout — `status` and `search` are values, never concatenated SQL. The
     // `is null` guards let one query serve the filtered and unfiltered cases.
     const leads = (await sql`
-      select id, created_at, updated_at, name, email, company, phone,
+      select id::int as id, created_at, updated_at, name, email, company, phone,
              service, budget, message, source, status, notes
       from leads
       where (${status}::text is null or status = ${status})

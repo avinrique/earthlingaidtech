@@ -60,7 +60,7 @@ async function updateLead(req: VercelRequest, res: VercelResponse, id: number) {
       set status = coalesce(${status}::text, status),
           notes  = case when ${notesProvided}::boolean then ${notes}::text else notes end
       where id = ${id}
-      returning id, created_at, updated_at, name, email, company, phone,
+      returning id::int as id, created_at, updated_at, name, email, company, phone,
                 service, budget, message, source, status, notes
     `) as Lead[];
 
@@ -76,7 +76,7 @@ async function updateLead(req: VercelRequest, res: VercelResponse, id: number) {
 
 async function deleteLead(res: VercelResponse, id: number) {
   try {
-    const rows = (await sql`delete from leads where id = ${id} returning id`) as Array<{ id: number }>;
+    const rows = (await sql`delete from leads where id = ${id} returning id::int as id`) as Array<{ id: number }>;
     if (rows.length === 0) return json(res, 404, { ok: false, error: 'not_found' });
     return json(res, 200, { ok: true });
   } catch (error) {

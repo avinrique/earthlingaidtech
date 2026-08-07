@@ -27,6 +27,21 @@ const schema = await readFile(join(here, '..', 'lib', 'schema.sql'), 'utf8');
 
 const sql = neon(url);
 
+/**
+ * Strip leading comment-only lines from a statement.
+ *
+ * Every statement in schema.sql is preceded by a comment, so a naive `startsWith('--')` check
+ * silently drops the statement the comment describes — which is exactly how `create table leads`
+ * went missing on the first run. Peel the comments off instead of judging the whole block by them.
+ */
+function stripLeadingComments(block) {
+  const lines = block.split('\n');
+  while (lines.length && (lines[0].trim() === '' || lines[0].trim().startsWith('--'))) {
+    lines.shift();
+  }
+  return lines.join('\n').trim();
+}
+
 // Keep $$ ... $$ bodies intact: split only on a semicolon that ends a line outside a dollar quote.
 const statements = [];
 let buffer = '';
@@ -36,12 +51,13 @@ for (const line of schema.split('\n')) {
   buffer += line + '\n';
   if (dollars % 2 === 1) inDollar = !inDollar;
   if (!inDollar && /;\s*$/.test(line)) {
-    const stmt = buffer.trim();
-    if (stmt && !stmt.startsWith('--')) statements.push(stmt);
+    const stmt = stripLeadingComments(buffer);
+    if (stmt) statements.push(stmt);
     buffer = '';
   }
 }
-if (buffer.trim()) statements.push(buffer.trim());
+const tail = stripLeadingComments(buffer);
+if (tail) statements.push(tail);
 
 console.log(`Applying ${statements.length} statements…`);
 for (const [i, statement] of statements.entries()) {
