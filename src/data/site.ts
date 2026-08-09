@@ -11,7 +11,7 @@ export const site = {
   url: 'https://earthlingaidtech.com',
   tagline: 'Engineering Intelligence. Empowering Humans.',
   description:
-    'Earthling Aidtech builds custom software — web apps, automation, desktop tools, AI agents, SEO/GEO visibility systems, EdTech platforms, robotics, and hardware products. Prepzer0 runs at SVIT and East Horizon School; 600+ students trained. A product & engineering studio in Bengaluru.',
+    'Earthling Aidtech builds custom software — web apps, automation, desktop tools, AI agents, SEO/GEO visibility systems, EdTech platforms, robotics, and hardware products. Prepzer0 runs at SVIT and East Horizon School; 1,700+ students trained. A product & engineering studio in Bengaluru.',
   email: 'services@earthlingaidtech.com',
   emailAlt: 'earthlingaidtech@gmail.com',
   location: 'Biratnagar, Nepal · Bengaluru, India',
@@ -64,7 +64,7 @@ export const nav: NavLink[] = [
 
 /* ---- Hero stats / proof bar (every number is real, from app.txt) ---- */
 export const stats: { value: string; label: string; accent?: string }[] = [
-  { value: '600+', label: 'Students trained', accent: 'accent' },
+  { value: '1.7k+', label: 'Students trained', accent: 'accent' },
   { value: '6', label: 'Products built', accent: 'teal' },
   { value: '2', label: 'Prepzer0 deployments', accent: 'violet' },
   { value: '13+', label: 'Client partners', accent: 'amber' },
@@ -391,7 +391,7 @@ export type GalleryItem = { src: string; alt: string; span?: 'wide' | 'tall' };
 export const workshops = {
   /* Headline proof — leads on reach & breadth, not venue count. */
   stats: [
-    { value: '600+', label: 'Students trained' },
+    { value: '1.7k+', label: 'Students trained' },
     { value: '7', label: 'Technical tracks' },
     { value: '15+', label: 'Sessions delivered' },
     { value: '100%', label: 'Hands-on, lab-first' },
@@ -454,6 +454,7 @@ export const clients: { name: string; note?: string }[] = [
   { name: 'Halde20', note: 'Restaurant · Switzerland' },
   { name: 'Chillaxmandu', note: 'Lifestyle' },
   { name: 'ThePixelSphere', note: 'Studio' },
+  { name: 'EverChiq', note: 'Fashion · D2C' },
 ];
 
 /* ---- Technology stack (real tools we ship with).
@@ -494,7 +495,7 @@ export const techRun: TechItem[] = [
 /* ---- Why us (every claim grounded in real work) ---- */
 export const whyUs: { icon: string; title: string; body: string }[] = [
   { icon: 'layers', title: 'One team, many disciplines', body: 'AI, robotics, and software under one roof — not three separate vendors stitched together.' },
-  { icon: 'graduation-cap', title: 'We know education', body: '6 workshops at BMSIT and SVIT, 600+ students trained, and Prepzer0 running in real classrooms.' },
+  { icon: 'graduation-cap', title: 'We know education', body: '6 workshops at BMSIT and SVIT, 1,700+ students trained, and Prepzer0 running in real classrooms.' },
   { icon: 'flask-conical', title: 'R&D in the open', body: 'From Vector-style robot eyes to multi-agent systems, we research tomorrow’s problems and ship the results.' },
   { icon: 'rocket', title: 'Built to ship', body: 'Prepzer0 is live. The info robot works. We measure ourselves in production, not slides.' },
   { icon: 'globe', title: 'Local, delivering globally', body: 'Based in Bengaluru, delivering for clients from India to Halde20 in Switzerland.' },
