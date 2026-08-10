@@ -8,7 +8,7 @@
 
 import { sql } from './db.js';
 
-export type Bucket = 'lead' | 'login' | 'notify';
+export type Bucket = 'lead' | 'login' | 'notify' | 'publish';
 
 /** Key for a limit that is global rather than per-client. */
 export const GLOBAL = 'all';
@@ -36,6 +36,21 @@ const RULES: Record<Bucket, Rule> = {
    * skipped, so an attacker cannot use this bucket to stop real enquiries arriving.
    */
   notify: { limit: 60, windowMinutes: 60 },
+  /**
+   * GLOBAL ceiling on site rebuilds, deliberately not keyed by client.
+   *
+   * Publishing fans out into a full GitHub Actions run: checkout, npm install, Astro build, Pages
+   * deploy. It is the most expensive thing this API can cause, it is serialised by the workflow's
+   * `concurrency: pages` group, and it is authenticated — so the threat is not an attacker, it is a
+   * button that looks like it did nothing. An operator who clicks Publish six times because the
+   * page has not visibly changed yet would otherwise queue six identical builds behind each other,
+   * each one delaying the deploy they are waiting for. Keying per-client would let a second tab or
+   * a phone defeat that, hence GLOBAL.
+   *
+   * The window is generous enough that legitimate editing sessions — save some clients, publish,
+   * spot a typo, publish again — never hit it.
+   */
+  publish: { limit: 6, windowMinutes: 30 },
 };
 
 /**

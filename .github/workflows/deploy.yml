@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # Fired by the admin console's Publish button (backend/api/publish.ts) so that content edited in
+  # the CMS is baked into a fresh build. Deliberately the same job as a push: there is one deploy
+  # path for this site, and a second one would drift.
+  repository_dispatch:
+    types: [publish-content]
 
 permissions:
   contents: read

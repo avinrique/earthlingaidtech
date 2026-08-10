@@ -109,16 +109,25 @@ class ApiError extends Error {
  * fetch wrapper. Same-origin, but `credentials: 'include'` is explicit because
  * the eat_admin cookie is the whole auth story.
  * A 401 from any admin call drops the UI back to the login screen.
+ *
+ * `raw` sends a File/Blob as-is under its own content-type: the logo endpoint
+ * takes image bytes as the request body, not a JSON envelope and not multipart,
+ * so there is no boundary parsing to get wrong on either side.
  */
-async function api(path, { method = 'GET', body, allow401 = false } = {}) {
+async function api(path, { method = 'GET', body, raw, allow401 = false } = {}) {
+  let headers;
+  let payload;
+  if (raw) {
+    headers = { 'Content-Type': raw.type || 'application/octet-stream' };
+    payload = raw;
+  } else if (body) {
+    headers = { 'Content-Type': 'application/json' };
+    payload = JSON.stringify(body);
+  }
+
   let res;
   try {
-    res = await fetch(path, {
-      method,
-      credentials: 'include',
-      headers: body ? { 'Content-Type': 'application/json' } : undefined,
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    res = await fetch(path, { method, credentials: 'include', headers, body: payload });
   } catch {
     throw new ApiError('network', 0, null);
   }
@@ -139,6 +148,7 @@ async function api(path, { method = 'GET', body, allow401 = false } = {}) {
 /* ── State ───────────────────────────────────────────────────────────────── */
 
 const state = {
+  view: 'leads',
   status: '',
   q: '',
   offset: 0,
@@ -146,6 +156,7 @@ const state = {
   counts: { new: 0, contacted: 0, qualified: 0, won: 0, lost: 0 },
   leads: [],
   expanded: new Set(),
+  loaded: false,
   loading: false,
   reqId: 0,
 };
@@ -166,6 +177,7 @@ function queryParams({ paged = true } = {}) {
    a reload. Tab / page changes push history; typing in search replaces it. */
 function readHash() {
   const p = new URLSearchParams(location.hash.replace(/^#/, ''));
+  state.view = p.get('view') === 'content' ? 'content' : 'leads';
   const status = p.get('status') || '';
   state.status = STATUS_KEYS.includes(status) ? status : '';
   state.q = p.get('q') || '';
@@ -174,7 +186,12 @@ function readHash() {
 }
 
 function writeHash({ push = false } = {}) {
-  const p = queryParams({ paged: false });
+  const p = new URLSearchParams();
+  // `view` leads the hash so the section is the first thing readable in the URL;
+  // the lead filters ride along even from the content view, so switching back
+  // returns you to the list you were looking at.
+  if (state.view !== 'leads') p.set('view', state.view);
+  for (const [k, v] of queryParams({ paged: false })) p.set(k, v);
   if (state.offset) p.set('offset', String(state.offset));
   const hash = p.toString() ? `#${p}` : location.pathname;
   if (push) history.pushState(null, '', hash);
@@ -226,6 +243,55 @@ const HUMAN_ERROR = {
 };
 const humanise = (err) => HUMAN_ERROR[err && err.code] || 'Something went wrong. Try again.';
 
+/**
+ * Two-step confirm on a single button: the first click arms it, the second acts,
+ * and blur or a four-second timeout disarms it again.
+ *
+ * There is no window.confirm/alert/prompt anywhere in this app. A native modal
+ * blocks the whole page (including the headless run used to screenshot the
+ * console), cannot be styled to match, and cannot be announced the way the rest
+ * of this UI is. `aria-live` on the armed button is what tells a screen reader
+ * that the next press is destructive.
+ */
+function armConfirm(btn, idleLabel, run) {
+  const label = $('.btn__label', btn);
+  let timer = null;
+
+  const disarm = () => {
+    clearTimeout(timer);
+    timer = null;
+    btn.classList.remove('btn--armed');
+    btn.removeAttribute('aria-live');
+    label.textContent = idleLabel;
+  };
+
+  btn.addEventListener('blur', () => { if (timer) disarm(); });
+  btn.addEventListener('click', () => {
+    if (!timer) {
+      btn.classList.add('btn--armed');
+      btn.setAttribute('aria-live', 'assertive');
+      label.textContent = 'Confirm?';
+      timer = setTimeout(disarm, 4000);
+      return;
+    }
+    disarm();
+    run();
+  });
+}
+
+/** Inline, per-field error text. Empty string hides the node entirely. */
+function setInline(node, message) {
+  node.textContent = message || '';
+  node.hidden = !message;
+}
+
+/** Momentary "Saved" tick next to a field that saves on blur. */
+function flash(node) {
+  node.classList.add('is-on');
+  clearTimeout(node._flash);
+  node._flash = setTimeout(() => node.classList.remove('is-on'), 1600);
+}
+
 /* ══ LOGIN ═══════════════════════════════════════════════════════════════ */
 
 const loginForm = $('#login-form');
@@ -274,6 +340,51 @@ const pagerEl = $('#pager');
 const searchEl = $('#search');
 const exportEl = $('#btn-export');
 const totalEl = $('#topbar-total');
+const titleEl = $('#topbar-title');
+
+/* ── Sections ────────────────────────────────────────────────────────────── */
+
+const panelLeads = $('#panel-leads');
+const panelContent = $('#panel-content');
+const navLeadsBtn = $('#nav-leads');
+const navContentBtn = $('#nav-content');
+
+/**
+ * Switch between the two top-level sections.
+ *
+ * Each section fetches lazily and only once. Landing on #view=content must not
+ * pull a page of leads that will never be shown, and coming back to a section
+ * must not refetch what is already on screen — the refresh button exists for
+ * that, and it refreshes whichever section you are looking at.
+ */
+function setView(view, { push = false, silent = false } = {}) {
+  state.view = view === 'content' ? 'content' : 'leads';
+  const isContent = state.view === 'content';
+
+  navLeadsBtn.setAttribute('aria-pressed', String(!isContent));
+  navContentBtn.setAttribute('aria-pressed', String(isContent));
+  panelLeads.hidden = isContent;
+  panelContent.hidden = !isContent;
+  exportEl.hidden = isContent;            // the CSV is a leads-only artefact
+  titleEl.textContent = isContent ? 'Content' : 'Leads';
+  document.title = `${titleEl.textContent} · Earthling Aidtech`;
+  if (!silent) writeHash({ push });
+
+  if (isContent) {
+    renderClientsCount();
+    if (!content.loaded && !content.loading) loadContent();
+  } else {
+    renderTabs();                         // puts the lead count back in the topbar
+    if (!state.loaded && !state.loading) load();
+  }
+}
+
+navLeadsBtn.addEventListener('click', () => {
+  if (state.view !== 'leads') setView('leads', { push: true });
+});
+navContentBtn.addEventListener('click', () => {
+  if (state.view !== 'content') setView('content', { push: true });
+});
 
 /* ── Tabs ────────────────────────────────────────────────────────────────── */
 
@@ -355,6 +466,7 @@ async function load({ skeleton = true } = {}) {
       return load({ skeleton });
     }
 
+    state.loaded = true;
     renderTabs();
     renderList();
     renderPager();
@@ -561,29 +673,11 @@ function renderLead(lead) {
     icon('i-mail', 14), el('span', { class: 'btn__label', text: 'Reply' }),
   ]);
 
-  /* Inline two-step delete. No window.confirm anywhere in this app — a native
-     modal would block the headless automation used to screenshot the console. */
+  /* Inline two-step delete — see armConfirm() for why there is no window.confirm. */
   const delBtn = el('button', { type: 'button', class: 'btn btn--ghost btn--sm btn--danger' }, [
     icon('i-trash', 14), el('span', { class: 'btn__label', text: 'Delete' }),
   ]);
-  let armTimer = null;
-  const disarm = () => {
-    clearTimeout(armTimer);
-    armTimer = null;
-    delBtn.classList.remove('btn--armed');
-    delBtn.removeAttribute('aria-live');
-    $('.btn__label', delBtn).textContent = 'Delete';
-  };
-  delBtn.addEventListener('blur', () => { if (armTimer) disarm(); });
-  delBtn.addEventListener('click', async () => {
-    if (!armTimer) {
-      delBtn.classList.add('btn--armed');
-      delBtn.setAttribute('aria-live', 'assertive');
-      $('.btn__label', delBtn).textContent = 'Confirm?';
-      armTimer = setTimeout(disarm, 4000);
-      return;
-    }
-    disarm();
+  armConfirm(delBtn, 'Delete', async () => {
     delBtn.disabled = true;
     root.classList.add('is-pending');
     try {
@@ -689,7 +783,7 @@ const refreshBtn = $('#btn-refresh');
 refreshBtn.addEventListener('click', async () => {
   refreshBtn.classList.add('is-busy');
   refreshBtn.disabled = true;
-  await load({ skeleton: false });
+  await (state.view === 'content' ? loadContent({ skeleton: false }) : load({ skeleton: false }));
   refreshBtn.classList.remove('is-busy');
   refreshBtn.disabled = false;
 });
@@ -716,17 +810,763 @@ $('#btn-logout').addEventListener('click', async () => {
   catch { /* the cookie is gone either way — fall through to the login screen */ }
   state.leads = [];
   state.expanded.clear();
+  state.loaded = false;
   listEl.replaceChildren();
+  resetContent();
   showLogin();
 });
 
-/* Back / forward through filter history. */
+/* Back / forward through section + filter history. */
 window.addEventListener('popstate', () => {
   if (viewDash.hidden) return;
   readHash();
   searchEl.value = state.q;
-  renderTabs();
-  load();
+  setView(state.view, { silent: true });
+  // Only the leads view keeps filters in the hash, so only it can need a refetch
+  // here; setView already triggers the first load of a section it has never shown.
+  if (state.view === 'leads' && state.loaded) {
+    renderTabs();
+    load();
+  }
+});
+
+/* ══ CONTENT ═════════════════════════════════════════════════════════════════
+
+   Clients and the headline numbers live in the database, but the public site is
+   a STATIC build — it reads a snapshot of this data at build time, never at
+   request time. So every editor below saves the instant you leave the field, and
+   nothing a visitor sees changes until the site is rebuilt. That is the entire
+   reason the publish bar exists and why it sits above the editors instead of
+   under them.
+
+   SECURITY — XSS: client names and notes are operator-entered rather than public,
+   but they are still stored strings replayed into an authenticated page, so they
+   go through el({ text }) / textContent exactly like lead data. Website URLs get
+   an extra scheme check before they are allowed to become an href.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Mirrors the server's own cap. Checking it here too means the obvious mistake —
+   dragging in a 4MB screenshot — is answered instantly and in words, instead of
+   after a pointless upload that returns a bare 413. */
+const LOGO_MAX_BYTES = 256 * 1024;
+const LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+const LOGO_TYPES_HUMAN = 'a PNG, JPG, WebP or SVG';
+
+/* Known settings, in the order they should be edited. Anything the API returns
+   that is not listed here still gets an editor, with a label derived from the key
+   — a new setting must never be invisible just because this file is out of date. */
+const SETTING_FIELDS = [
+  { key: 'students_trained',       label: 'Students trained (stat tile)',    hint: 'Short form for the big number blocks — “1.7k+”.' },
+  { key: 'students_trained_prose', label: 'Students trained (in sentences)', hint: 'Written out for running copy — “1,700+”.' },
+  { key: 'sessions_delivered',     label: 'Sessions delivered',              hint: 'Stat tile — “15+”.' },
+  { key: 'technical_tracks',       label: 'Technical tracks',                hint: 'Stat tile — “7”.' },
+  { key: 'workshops_count',        label: 'Workshops offered',               hint: 'Stat tile — “6”.' },
+];
+const SETTING_BY_KEY = new Map(SETTING_FIELDS.map((f) => [f.key, f]));
+
+/* Field names as the operator sees them, for error sentences. */
+const CLIENT_FIELD_LABEL = { name: 'Name', note: 'Note', url: 'Website' };
+
+const content = {
+  loaded: false,
+  loading: false,
+  reqId: 0,
+  clients: [],
+  settings: {},
+  expanded: new Set(),
+  /* client id -> cache-buster. The logo URL is deliberately cacheable, so after a
+     replace the browser would otherwise keep showing the old bytes. */
+  logoBust: new Map(),
+};
+
+const clientsRegion = $('#clients-region');
+const clientsListEl = $('#clients-list');
+const clientsSkeleton = $('#clients-skeleton');
+const clientsEmpty = $('#clients-empty');
+const clientsFatal = $('#clients-fatal');
+const clientsCountEl = $('#clients-count');
+const settingsListEl = $('#settings-list');
+const publishBtn = $('#btn-publish');
+const publishStateEl = $('#publish-state');
+
+const addForm = $('#client-add');
+const addName = $('#add-name');
+const addNote = $('#add-note');
+const addUrl = $('#add-url');
+const addSubmit = $('#add-submit');
+const addError = $('#add-error');
+
+/* ── Small formatters ────────────────────────────────────────────────────── */
+
+function fmtBytes(n) {
+  if (!Number.isFinite(n)) return 'an unknown size';
+  if (n < 1024) return `${n} bytes`;
+  if (n < 1024 * 1024) return `${Math.round(n / 1024)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+/**
+ * Normalise an operator-typed website to an absolute http(s) URL, or null.
+ *
+ * This is what stops `javascript:alert(1)` from ever reaching an href. It is not
+ * about distrusting the operator so much as refusing to build a sink that only
+ * behaves because of who is typing into it. A bare `example.com` is treated as
+ * https, which is what anyone typing it means.
+ */
+function safeUrl(raw) {
+  const text = String(raw || '').trim();
+  if (!text) return null;
+  const candidate = /^[a-z][a-z0-9+.-]*:/i.test(text) ? text : `https://${text}`;
+  let u;
+  try { u = new URL(candidate); } catch { return null; }
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') return null;
+  if (!u.hostname.includes('.')) return null;
+  return u.href;
+}
+
+const prettyHost = (href) => href.replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+/** snake_case -> "Snake case", for settings this file has not been taught yet. */
+const humaniseKey = (key) => String(key).replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase());
+
+/** "A .pdf file" / "A image/gif file" — used in the logo error sentences. */
+function describeFile(file) {
+  const ext = (String(file.name || '').match(/\.([a-z0-9]+)$/i) || [])[1];
+  if (ext) return `A .${ext.toLowerCase()} file`;
+  if (file.type) return `A ${file.type} file`;
+  return 'That file';
+}
+
+/** Report a failed write. 401 is silent: api() has already dropped us to login. */
+function reportError(err, prefix, inlineEl) {
+  if (!err || err.status === 401) return;
+  const message = `${prefix} — ${humanise(err)}`;
+  if (inlineEl) setInline(inlineEl, message);
+  else toast(message);
+}
+
+/* ── Loading ─────────────────────────────────────────────────────────────── */
+
+function sortClients() {
+  // id is the tie-break so equal sort_orders (hand-seeded rows) still render in
+  // a stable order rather than shuffling between loads.
+  content.clients.sort((a, b) => (a.sort_order - b.sort_order) || (a.id - b.id));
+}
+
+async function loadContent({ skeleton = true } = {}) {
+  const id = ++content.reqId;
+  content.loading = true;
+  clientsRegion.setAttribute('aria-busy', 'true');
+  clientsFatal.hidden = true;
+
+  if (skeleton) {
+    if (!clientsSkeleton.childElementCount) {
+      clientsSkeleton.replaceChildren(...Array.from({ length: 3 }, () => el('div', { class: 'sk-row' })));
+    }
+    clientsSkeleton.hidden = false;
+    clientsListEl.hidden = true;
+    clientsEmpty.hidden = true;
+  }
+
+  try {
+    // Two calls on purpose: the admin route is the only one that returns hidden
+    // clients, and the settings map only exists on the public snapshot route.
+    // `fresh` defeats any CDN copy of that public route — without it the console
+    // can be handed back the value it just overwrote.
+    const [adminRes, publicRes] = await Promise.all([
+      api('/api/content/clients'),
+      api(`/api/content?fresh=${Date.now()}`),
+    ]);
+    if (id !== content.reqId) return;   // a newer load already won
+
+    content.clients = Array.isArray(adminRes.clients) ? adminRes.clients.slice() : [];
+    sortClients();
+    content.settings = (publicRes && publicRes.settings && typeof publicRes.settings === 'object')
+      ? publicRes.settings
+      : {};
+    content.loaded = true;
+    renderClients();
+    renderSettings();
+  } catch (err) {
+    if (id !== content.reqId || err.status === 401) return;
+    content.clients = [];
+    clientsListEl.replaceChildren();
+    clientsListEl.hidden = true;
+    clientsEmpty.hidden = true;
+    clientsFatal.hidden = false;
+    $('#clients-fatal-text').textContent = humanise(err);
+    // Deliberately NOT rendering empty number fields: blank boxes look like the
+    // real values and invite someone to save nothing over something.
+    settingsListEl.replaceChildren(
+      el('p', { class: 'inline-error', text: 'The numbers could not be loaded either. Use “Try again” above.' }),
+    );
+  } finally {
+    if (id === content.reqId) {
+      content.loading = false;
+      content.reqId === id && clientsRegion.setAttribute('aria-busy', 'false');
+      clientsSkeleton.hidden = true;
+    }
+  }
+}
+
+function resetContent() {
+  content.reqId += 1;                    // orphan any in-flight load
+  content.loaded = false;
+  content.loading = false;
+  content.clients = [];
+  content.settings = {};
+  content.expanded.clear();
+  content.logoBust.clear();
+  clientsListEl.replaceChildren();
+  settingsListEl.replaceChildren();
+  clientsEmpty.hidden = true;
+  clientsFatal.hidden = true;
+  setPublishState('No publish started in this session.', null);
+}
+
+/* ── Clients ─────────────────────────────────────────────────────────────── */
+
+function renderClients() {
+  const frag = document.createDocumentFragment();
+  content.clients.forEach((client, i) => frag.append(renderClient(client, i)));
+  clientsListEl.replaceChildren(frag);
+
+  const empty = content.clients.length === 0;
+  clientsListEl.hidden = empty;
+  clientsEmpty.hidden = !empty;
+  clientsFatal.hidden = true;
+  renderClientsCount();
+}
+
+function renderClientsCount() {
+  const total = content.clients.length;
+  const hidden = content.clients.reduce((n, c) => n + (c.active ? 0 : 1), 0);
+  const label = total === 0
+    ? 'no clients'
+    : `${total} ${total === 1 ? 'client' : 'clients'}${hidden ? ` · ${hidden} hidden` : ''}`;
+  clientsCountEl.textContent = label;
+  if (state.view === 'content') totalEl.textContent = label;
+}
+
+/** Thumbnail, or the placeholder glyph when the row has no logo. */
+function logoNode(client) {
+  if (!client.logo) return icon('i-image', 20);
+  const bust = content.logoBust.get(client.id);
+  const img = el('img', {
+    src: `/api/media/client/${encodeURIComponent(client.id)}${bust ? `?v=${bust}` : ''}`,
+    alt: '',
+    loading: 'lazy',
+    decoding: 'async',
+  });
+  // A row can claim a logo the media route cannot serve. Show the placeholder
+  // rather than a broken-image glyph, which looks like the console is broken.
+  img.addEventListener('error', () => img.replaceWith(icon('i-image', 20)), { once: true });
+  return img;
+}
+
+/**
+ * PATCH one client, optimistically.
+ *
+ * `onOptimistic` is called synchronously after the local object is updated and
+ * again after a rollback, so the caller has exactly one place to repaint from
+ * `client` and never has to duplicate the "what does it look like now" logic.
+ */
+async function patchClient(client, patch, onOptimistic) {
+  const prev = {};
+  for (const k of Object.keys(patch)) prev[k] = client[k];
+  Object.assign(client, patch);
+  if (onOptimistic) onOptimistic();
+
+  try {
+    const res = await api(`/api/content/clients/${client.id}`, { method: 'PATCH', body: patch });
+    if (res.client && typeof res.client === 'object') Object.assign(client, res.client);
+    if (onOptimistic) onOptimistic();
+    return { ok: true };
+  } catch (err) {
+    Object.assign(client, prev);
+    if (onOptimistic) onOptimistic();
+    return { ok: false, error: err };
+  }
+}
+
+/**
+ * Reorder with buttons, not drag-and-drop: a drag handle is unreachable from a
+ * keyboard, and this list is a dozen rows at most.
+ *
+ * The whole list is renumbered densely (10, 20, 30…) rather than swapping two
+ * values with each other. Seeded rows routinely share a sort_order, and swapping
+ * two equal numbers is a no-op that silently un-does the move on the next reload.
+ */
+async function moveClient(client, dir) {
+  const list = content.clients;
+  const from = list.indexOf(client);
+  const to = from + dir;
+  if (from < 0 || to < 0 || to >= list.length) return;
+
+  const snapshot = list.slice();
+  const orders = new Map(list.map((c) => [c.id, c.sort_order]));
+
+  list.splice(from, 1);
+  list.splice(to, 0, client);
+
+  const changed = [];
+  list.forEach((c, i) => {
+    const next = (i + 1) * 10;
+    if (c.sort_order !== next) {
+      c.sort_order = next;
+      changed.push(c);
+    }
+  });
+
+  renderClients();
+  refocusMove(client.id, dir);
+
+  try {
+    await Promise.all(changed.map((c) => api(`/api/content/clients/${c.id}`, {
+      method: 'PATCH',
+      body: { sort_order: c.sort_order },
+    })));
+  } catch (err) {
+    content.clients = snapshot;
+    for (const c of content.clients) c.sort_order = orders.get(c.id);
+    renderClients();
+    refocusMove(client.id, dir);
+    reportError(err, 'Order not saved');
+  }
+}
+
+/**
+ * The list is re-rendered on every move, which throws away focus. Put it back on
+ * the button that was just pressed — or on its twin when the row has reached an
+ * end and that button is now disabled — so the keyboard can move a row twice.
+ */
+function refocusMove(id, dir) {
+  const row = clientsListEl.querySelector(`[data-id="${CSS.escape(String(id))}"]`);
+  if (!row) return;
+  const same = row.querySelector(dir < 0 ? '.js-up' : '.js-down');
+  const twin = row.querySelector(dir < 0 ? '.js-down' : '.js-up');
+  const target = same && !same.disabled ? same : twin;
+  if (target && !target.disabled) target.focus();
+}
+
+function renderClient(client, index) {
+  const editId = `client-edit-${client.id}`;
+  const open = content.expanded.has(client.id);
+  const who = client.name || 'this client';
+
+  const root = el('article', {
+    class: `client${open ? ' is-open' : ''}${client.active ? '' : ' is-off'}`,
+    dataset: { id: String(client.id) },
+  });
+
+  /* ── head: identity ── */
+  const thumb = el('div', { class: 'client__thumb' }, [logoNode(client)]);
+  const nameEl = el('p', { class: 'client__name' });
+  const noteEl = el('p', { class: 'client__note' });
+  const siteWrap = el('span', { class: 'client__sitewrap' });
+  const whoEl = el('div', { class: 'client__who' }, [nameEl, noteEl, siteWrap]);
+
+  /* Everything that mirrors `client` into the head lives here, so the optimistic
+     paint, the rollback paint and the initial paint are the same code path. */
+  function syncHead() {
+    nameEl.textContent = client.name || '(unnamed)';
+    noteEl.textContent = client.note || 'No note';
+    const href = safeUrl(client.url);
+    if (href) {
+      siteWrap.replaceChildren(el('a', {
+        class: 'client__site', href, target: '_blank', rel: 'noopener noreferrer',
+      }, [icon('i-link', 12), el('span', { text: prettyHost(href) })]));
+    } else {
+      siteWrap.replaceChildren();
+    }
+    root.classList.toggle('is-off', !client.active);
+    swLabel.textContent = client.active ? 'Live' : 'Hidden';
+    sw.setAttribute('aria-checked', String(Boolean(client.active)));
+  }
+
+  /* ── head: active switch ── */
+  const swLabel = el('span', { text: client.active ? 'Live' : 'Hidden' });
+  const sw = el('button', {
+    type: 'button',
+    class: 'switch client__sw',
+    role: 'switch',
+    'aria-checked': String(Boolean(client.active)),
+    'aria-label': `Show ${who} on the website`,
+  }, [el('span', { class: 'switch__track', 'aria-hidden': 'true' }), swLabel]);
+
+  sw.addEventListener('click', async () => {
+    sw.disabled = true;
+    const { ok, error } = await patchClient(client, { active: !client.active }, syncHead);
+    sw.disabled = false;
+    renderClientsCount();
+    if (ok) toast(`${client.name || 'Client'} is now ${client.active ? 'live' : 'hidden'}.`, 'ok');
+    else reportError(error, 'Visibility not saved');
+  });
+
+  /* ── head: order ── */
+  const upBtn = el('button', {
+    type: 'button', class: 'btn btn--ghost js-up',
+    title: 'Move up', 'aria-label': `Move ${who} up`, disabled: index === 0,
+  }, [icon('i-up', 13)]);
+  const downBtn = el('button', {
+    type: 'button', class: 'btn btn--ghost js-down',
+    title: 'Move down', 'aria-label': `Move ${who} down`,
+    disabled: index === content.clients.length - 1,
+  }, [icon('i-down', 13)]);
+  upBtn.addEventListener('click', () => moveClient(client, -1));
+  downBtn.addEventListener('click', () => moveClient(client, 1));
+
+  /* ── head: edit / delete ── */
+  const editBtn = el('button', {
+    type: 'button', class: 'btn btn--ghost btn--sm',
+    'aria-expanded': String(open), 'aria-controls': editId,
+  }, [icon('i-pencil', 14), el('span', { class: 'btn__label', text: 'Edit' })]);
+
+  const delBtn = el('button', {
+    type: 'button', class: 'btn btn--ghost btn--sm btn--danger', 'aria-label': `Delete ${who}`,
+  }, [icon('i-trash', 14), el('span', { class: 'btn__label', text: 'Delete' })]);
+
+  armConfirm(delBtn, 'Delete', async () => {
+    delBtn.disabled = true;
+    root.classList.add('is-pending');
+    try {
+      await api(`/api/content/clients/${client.id}`, { method: 'DELETE' });
+      content.expanded.delete(client.id);
+      content.logoBust.delete(client.id);
+      content.clients = content.clients.filter((c) => c.id !== client.id);
+      root.classList.add('is-leaving');
+      // Re-render after the leave transition: it also fixes every row's
+      // move-button disabled state and the header count in one pass.
+      setTimeout(renderClients, 200);
+      toast(`Deleted ${client.name || 'client'}.`, 'ok');
+    } catch (err) {
+      delBtn.disabled = false;
+      root.classList.remove('is-pending');
+      reportError(err, 'Delete failed');
+    }
+  });
+
+  const head = el('div', { class: 'client__head' }, [
+    thumb,
+    whoEl,
+    sw,
+    el('div', { class: 'client__acts' }, [
+      el('div', { class: 'client__order' }, [upBtn, downBtn]),
+      editBtn,
+      delBtn,
+    ]),
+  ]);
+
+  /* ── editor ── */
+  const editError = el('p', { class: 'inline-error', role: 'alert', hidden: true });
+  const savedFlag = el('span', { class: 'saved-flag', text: 'Saved' });
+
+  function editField(labelText, key, attrs) {
+    const input = el('input', Object.assign(
+      { class: 'ifield__input', type: 'text', autocomplete: 'off', id: `client-${client.id}-${key}` },
+      attrs,
+    ));
+    input.value = client[key] == null ? '' : String(client[key]);
+
+    // Enter commits by blurring rather than submitting anything — there is no
+    // form here, and leaving the field is already the save gesture.
+    input.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); }
+    });
+    input.addEventListener('blur', () => saveField(input, key));
+
+    const wrap = el('label', { class: 'ifield' }, [
+      el('span', { class: 'ifield__label', text: labelText }),
+      input,
+    ]);
+    return { wrap, input };
+  }
+
+  async function saveField(input, key) {
+    const typed = input.value.trim();
+    const current = client[key] == null ? '' : String(client[key]);
+    if (typed === current) return;
+
+    if (key === 'name' && !typed) {
+      setInline(editError, 'A client needs a name.');
+      input.value = current;
+      return;
+    }
+    if (key === 'url' && typed && !safeUrl(typed)) {
+      setInline(editError, 'That website doesn’t look like a link. Try https://example.com.');
+      input.value = current;
+      return;
+    }
+    setInline(editError, '');
+
+    let next = typed;
+    if (key === 'url') next = typed ? safeUrl(typed) : null;
+    else if (key !== 'name') next = typed || null;
+
+    const { ok, error } = await patchClient(client, { [key]: next }, syncHead);
+    input.value = client[key] == null ? '' : String(client[key]);
+    if (ok) flash(savedFlag);
+    else reportError(error, `“${CLIENT_FIELD_LABEL[key]}” not saved`, editError);
+  }
+
+  const nameField = editField('Name', 'name', { maxlength: '120', required: true });
+  const noteField = editField('Note', 'note', { maxlength: '200' });
+  const urlField = editField('Website', 'url', { maxlength: '300', type: 'url', spellcheck: 'false' });
+
+  /* ── editor: logo ── */
+  const logoMeta = el('p', { class: 'edit__meta' });
+  function setLogoMeta(text, isError) {
+    logoMeta.textContent = text;
+    logoMeta.classList.toggle('is-err', Boolean(isError));
+  }
+  setLogoMeta(client.logo
+    ? 'Logo set · replacing it swaps the image everywhere on the site.'
+    : `No logo yet · ${LOGO_TYPES_HUMAN}, up to ${fmtBytes(LOGO_MAX_BYTES)}.`);
+
+  const fileInput = el('input', {
+    type: 'file',
+    class: 'logo-pick__input',
+    accept: LOGO_TYPES.join(','),
+    'aria-label': `Upload a logo for ${who}`,
+  });
+  const pickBtn = el('label', { class: 'btn btn--ghost btn--sm logo-pick' }, [
+    icon('i-upload', 14),
+    el('span', { class: 'btn__label', text: client.logo ? 'Replace logo' : 'Upload logo' }),
+    fileInput,
+  ]);
+
+  fileInput.addEventListener('change', async () => {
+    const file = fileInput.files && fileInput.files[0];
+    if (!file) return;
+
+    // Size first and always, so the number in any refusal below is one the
+    // operator can see for themselves rather than take on trust.
+    const size = fmtBytes(file.size);
+    if (file.size > LOGO_MAX_BYTES) {
+      setLogoMeta(`That file is ${size}, and the limit is ${fmtBytes(LOGO_MAX_BYTES)}. Export the logo smaller and try again.`, true);
+      fileInput.value = '';
+      return;
+    }
+    if (file.type && !LOGO_TYPES.includes(file.type)) {
+      setLogoMeta(`${describeFile(file)} isn’t a format the site can use. Save it as ${LOGO_TYPES_HUMAN} image and try again.`, true);
+      fileInput.value = '';
+      return;
+    }
+
+    fileInput.disabled = true;
+    setLogoMeta(`Uploading ${file.name} · ${size}…`);
+    try {
+      const res = await api(`/api/content/clients/${client.id}/logo`, { method: 'POST', raw: file });
+      if (res.client && typeof res.client === 'object') Object.assign(client, res.client);
+      // Fallback flag only: nothing here reads the path, the thumbnail is served
+      // from /api/media/client/<id>. The real path arrives with the next load.
+      else client.logo = client.logo || 'uploaded';
+
+      content.logoBust.set(client.id, Date.now());
+      thumb.replaceChildren(logoNode(client));
+      $('.btn__label', pickBtn).textContent = 'Replace logo';
+      setLogoMeta(`Logo updated · ${file.name} · ${size}.`);
+      toast(`Logo updated for ${client.name || 'client'}.`, 'ok');
+    } catch (err) {
+      setLogoMeta(logoErrorText(err, file), true);
+    } finally {
+      fileInput.value = '';
+      fileInput.disabled = false;
+    }
+  });
+
+  const saveBtn = el('button', { type: 'button', class: 'btn btn--accent btn--sm' },
+    [el('span', { class: 'btn__label', text: 'Done' })]);
+  saveBtn.addEventListener('click', () => {
+    // Every field already saved on blur — including the blur caused by this very
+    // click — so this button only has to close the editor.
+    content.expanded.delete(client.id);
+    editBtn.setAttribute('aria-expanded', 'false');
+    root.classList.remove('is-open');
+    body.hidden = true;
+    editBtn.focus();
+  });
+
+  const body = el('div', { class: 'client__edit', id: editId }, [
+    el('div', { class: 'edit__grid' }, [nameField.wrap, noteField.wrap, urlField.wrap]),
+    editError,
+    el('div', { class: 'edit__foot' }, [
+      el('div', { class: 'edit__logo' }, [pickBtn, logoMeta]),
+      el('div', { class: 'edit__logo' }, [savedFlag, saveBtn]),
+    ]),
+  ]);
+  body.hidden = !open;
+
+  editBtn.addEventListener('click', () => {
+    const nowOpen = !content.expanded.has(client.id);
+    if (nowOpen) content.expanded.add(client.id); else content.expanded.delete(client.id);
+    editBtn.setAttribute('aria-expanded', String(nowOpen));
+    root.classList.toggle('is-open', nowOpen);
+    body.hidden = !nowOpen;
+    if (nowOpen) nameField.input.focus();
+  });
+
+  syncHead();
+  root.append(head, body);
+  return root;
+}
+
+/**
+ * Turn an upload failure into a sentence with numbers in it. A raw "413" tells
+ * the operator nothing they can act on; "that file is 512 KB, the limit is
+ * 256 KB" tells them exactly what to do next.
+ */
+function logoErrorText(err, file) {
+  if (!err) return 'Upload failed. Try again.';
+  if (err.status === 401) return 'Your session expired. Sign in again, then re-upload.';
+
+  const limit = Number(err.data && (err.data.limit || err.data.max_bytes)) || LOGO_MAX_BYTES;
+  if (err.status === 413 || err.code === 'too_large') {
+    return `That file is ${fmtBytes(file.size)}, and the limit is ${fmtBytes(limit)}. Export the logo smaller and try again.`;
+  }
+  if (err.status === 415 || err.code === 'unsupported_type' || err.code === 'unsupported_media_type') {
+    return `${describeFile(file)} isn’t a format the site can use. Save it as ${LOGO_TYPES_HUMAN} image and try again.`;
+  }
+  return `Upload failed — ${humanise(err)}`;
+}
+
+/* ── Add a client ────────────────────────────────────────────────────────── */
+
+addForm.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const name = addName.value.trim();
+  const note = addNote.value.trim();
+  const url = addUrl.value.trim();
+
+  if (!name) { setInline(addError, 'A client needs a name.'); addName.focus(); return; }
+  if (url && !safeUrl(url)) {
+    setInline(addError, 'That website doesn’t look like a link. Try https://example.com.');
+    addUrl.focus();
+    return;
+  }
+  setInline(addError, '');
+
+  addSubmit.disabled = true;
+  $('.btn__label', addSubmit).textContent = 'Adding…';
+  try {
+    const res = await api('/api/content/clients', {
+      method: 'POST',
+      body: { name, note: note || null, url: url ? safeUrl(url) : null },
+    });
+    if (res.client && typeof res.client === 'object') {
+      content.clients.push(res.client);
+      sortClients();
+      renderClients();
+    } else {
+      // The API answered ok but told us nothing — reload rather than invent a row.
+      await loadContent({ skeleton: false });
+    }
+    addForm.reset();
+    addName.focus();
+    toast(`Added ${name}.`, 'ok');
+  } catch (err) {
+    if (err.status !== 401) setInline(addError, humanise(err));
+  } finally {
+    addSubmit.disabled = false;
+    $('.btn__label', addSubmit).textContent = 'Add client';
+  }
+});
+
+$('#clients-retry').addEventListener('click', () => loadContent());
+
+/* ── Numbers (settings) ──────────────────────────────────────────────────── */
+
+function renderSettings() {
+  const extras = Object.keys(content.settings)
+    .filter((k) => !SETTING_BY_KEY.has(k))
+    .sort();
+  const frag = document.createDocumentFragment();
+  for (const key of [...SETTING_FIELDS.map((f) => f.key), ...extras]) frag.append(renderSetting(key));
+  settingsListEl.replaceChildren(frag);
+}
+
+function renderSetting(key) {
+  const def = SETTING_BY_KEY.get(key) || { label: humaniseKey(key), hint: '' };
+  const inputId = `set-${key}`;
+  const savedFlag = el('span', { class: 'saved-flag', text: 'Saved' });
+  const errorEl = el('p', { class: 'inline-error', role: 'alert', hidden: true });
+
+  const input = el('input', {
+    class: 'ifield__input', type: 'text', id: inputId, maxlength: '60',
+    autocomplete: 'off', spellcheck: 'false',
+  });
+  input.value = content.settings[key] == null ? '' : String(content.settings[key]);
+
+  input.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); }
+  });
+
+  input.addEventListener('blur', async () => {
+    const next = input.value.trim();
+    const prev = content.settings[key] == null ? '' : String(content.settings[key]);
+    if (next === prev) return;
+    setInline(errorEl, '');
+
+    content.settings[key] = next;                          // optimistic
+    try {
+      const res = await api('/api/content/settings', { method: 'PATCH', body: { [key]: next } });
+      if (res.settings && typeof res.settings === 'object') Object.assign(content.settings, res.settings);
+      input.value = content.settings[key] == null ? '' : String(content.settings[key]);
+      flash(savedFlag);
+    } catch (err) {
+      content.settings[key] = prev;                        // roll back
+      input.value = prev;
+      if (err.status !== 401) setInline(errorEl, `Not saved — ${humanise(err)}`);
+    }
+  });
+
+  return el('div', { class: 'setting' }, [
+    el('div', { class: 'setting__head' }, [
+      el('label', { class: 'ifield__label', for: inputId, text: def.label }),
+      savedFlag,
+    ]),
+    input,
+    def.hint ? el('p', { class: 'setting__hint', text: def.hint }) : null,
+    errorEl,
+  ]);
+}
+
+/* ── Publish ─────────────────────────────────────────────────────────────── */
+
+const clockFmt = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit' });
+
+function setPublishState(text, kind) {
+  publishStateEl.textContent = text;
+  publishStateEl.classList.toggle('is-busy', kind === 'busy');
+  publishStateEl.classList.toggle('is-ok', kind === 'ok');
+  publishStateEl.classList.toggle('is-err', kind === 'err');
+}
+
+publishBtn.addEventListener('click', async () => {
+  publishBtn.disabled = true;
+  $('.btn__label', publishBtn).textContent = 'Publishing…';
+  setPublishState('Asking the site to rebuild…', 'busy');
+
+  try {
+    await api('/api/publish', { method: 'POST' });
+    setPublishState(
+      `Rebuild started at ${clockFmt.format(new Date())}. It usually takes a few minutes; ` +
+      'reload earthlingaidtech.com after that to see the change. You can keep editing meanwhile.',
+      'ok',
+    );
+  } catch (err) {
+    // Nothing was lost either way — the edits were saved as they were made. Say
+    // so, because "publish failed" reads like "your work is gone".
+    setPublishState(
+      err.status === 401
+        ? 'Session expired before the rebuild started. Sign in and press Publish again — your edits are saved.'
+        : `Publish failed at ${clockFmt.format(new Date())} — ${humanise(err)} Your edits are saved; press Publish again.`,
+      'err',
+    );
+  } finally {
+    publishBtn.disabled = false;
+    $('.btn__label', publishBtn).textContent = 'Publish site';
+  }
 });
 
 /* ── Boot ────────────────────────────────────────────────────────────────── */
@@ -737,7 +1577,7 @@ async function enterDashboard() {
   renderTabs();
   show('dash');
   updateExportLink();
-  await load();
+  setView(state.view, { silent: true });   // loads whichever section the hash asked for
 }
 
 async function boot() {

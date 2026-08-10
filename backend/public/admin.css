@@ -531,6 +531,249 @@ button, input, textarea, select { font: inherit; color: inherit; }
 .toast.is-out { opacity: 0; transform: translateY(6px); transition: opacity 0.2s, transform 0.2s; }
 @keyframes toast-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   CONTENT VIEW
+   Deliberately built from the same primitives as the leads view: .btn, .pill,
+   .list, .empty, .fatal and the surface/line tokens are reused as-is, so the
+   two sections read as one console rather than two apps stapled together.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Section switcher (topbar) ───────────────────────────────────────────── */
+.viewnav {
+  display: flex; align-items: center; gap: 0.25rem;
+  padding: 0.22rem;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface);
+}
+.viewnav__btn {
+  padding: 0.34rem 0.85rem;
+  border: 0; border-radius: 8px;
+  background: transparent; color: var(--muted);
+  font-size: 0.8125rem; font-weight: 500; cursor: pointer;
+  transition: background 0.18s var(--ease), color 0.18s var(--ease);
+}
+.viewnav__btn:hover { background: var(--surface-2); color: var(--ink); }
+.viewnav__btn[aria-pressed="true"] { background: var(--surface-3); color: var(--ink); }
+
+/* ── Panels ──────────────────────────────────────────────────────────────── */
+.panel {
+  margin-bottom: 1.25rem;
+  padding: 1.15rem 1.15rem 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+.panel__head {
+  display: flex; align-items: baseline; gap: 0.7rem; flex-wrap: wrap;
+  margin-bottom: 0.9rem;
+}
+.panel__title { font-size: 1rem; }
+.panel__count {
+  font-family: var(--mono); font-size: 0.6875rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--faint);
+}
+.panel__help {
+  margin-bottom: 1rem;
+  color: var(--faint); font-size: 0.8125rem; line-height: 1.65; max-width: 76ch;
+}
+.panel__help b { color: var(--muted); font-weight: 600; }
+
+/* ── Publish bar ─────────────────────────────────────────────────────────── */
+.publish {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 1.25rem; flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+  padding: 1.15rem;
+  border: 1px solid var(--line-strong);
+  border-left: 3px solid var(--accent-deep);
+  border-radius: var(--r-lg);
+  background: linear-gradient(180deg, rgba(74,158,255,0.07), rgba(22,26,32,0.55));
+}
+.publish__copy { min-width: 0; flex: 1 1 30ch; display: flex; flex-direction: column; gap: 0.4rem; }
+.publish__title { font-size: 0.9375rem; }
+.publish__note { color: var(--muted); font-size: 0.8125rem; line-height: 1.65; max-width: 68ch; }
+.publish__state {
+  font-family: var(--mono); font-size: 0.75rem; line-height: 1.6;
+  color: var(--faint); word-break: break-word;
+}
+.publish__state.is-busy { color: var(--accent-bright); }
+.publish__state.is-ok   { color: var(--teal); }
+.publish__state.is-err  { color: #fca5a5; }
+
+/* ── Inline fields (shared by the add form, row editor and settings) ──────── */
+.ifield { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+.ifield__label {
+  font-size: 0.625rem; font-weight: 500; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--dim);
+}
+.ifield__input {
+  width: 100%;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: var(--canvas-deep);
+  color: var(--ink); font-size: 0.875rem;
+  transition: border-color 0.18s var(--ease), box-shadow 0.18s var(--ease);
+}
+.ifield__input::placeholder { color: var(--dim); }
+.ifield__input:focus {
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(74,158,255,0.14);
+}
+
+.inline-error {
+  color: #fca5a5; font-size: 0.78125rem; line-height: 1.5;
+}
+
+/* ── Add-client form ─────────────────────────────────────────────────────── */
+.addform {
+  margin-bottom: 1rem;
+  padding: 0.95rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r);
+  background: var(--canvas-deep);
+}
+.addform__grid {
+  display: grid; gap: 0.7rem;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+.addform__foot {
+  display: flex; align-items: center; justify-content: flex-end; gap: 0.75rem;
+  flex-wrap: wrap; margin-top: 0.75rem;
+}
+.addform__foot .inline-error { margin-right: auto; }
+
+/* ── A client row ────────────────────────────────────────────────────────── */
+.client {
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  background: var(--surface-2);
+  transition: border-color 0.2s var(--ease), opacity 0.2s var(--ease);
+}
+.client:hover { border-color: var(--line-strong); }
+.client.is-open { border-color: var(--line-strong); }
+.client.is-pending { opacity: 0.55; }
+.client.is-leaving { opacity: 0; transform: translateY(-4px); transition: opacity 0.2s, transform 0.2s; }
+/* Inactive rows stay legible — dimming the whole row would hide the very text
+   you need to read to decide whether to switch it back on. */
+.client.is-off .client__thumb,
+.client.is-off .client__who { opacity: 0.55; }
+
+.client__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center; gap: 0.85rem;
+  padding: 0.7rem 0.8rem;
+}
+
+.client__thumb {
+  width: 46px; height: 46px; flex: none;
+  display: grid; place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--canvas-deep);
+  overflow: hidden;
+}
+.client__thumb img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; }
+.client__thumb svg { color: var(--surface-3); }
+
+.client__who { min-width: 0; display: flex; flex-direction: column; gap: 0.1rem; }
+.client__name {
+  color: var(--ink); font-weight: 600; font-size: 0.9375rem; letter-spacing: -0.01em;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.client__note {
+  color: var(--faint); font-size: 0.78125rem;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.client__site {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  color: var(--accent); font-size: 0.75rem; text-decoration: none;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%;
+}
+.client__site:hover { text-decoration: underline; }
+.client__site svg { flex: none; opacity: 0.8; }
+
+.client__acts { display: flex; align-items: center; gap: 0.3rem; }
+.client__order { display: flex; flex-direction: column; gap: 2px; }
+.client__order .btn { padding: 0.15rem 0.35rem; height: 20px; border-radius: 7px; }
+
+/* Active switch. A real <button role="switch">, so it is reachable by Tab and
+   toggled by Space/Enter — a styled div would be neither. */
+.switch {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.25rem 0.5rem 0.25rem 0.3rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent; color: var(--faint);
+  font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; white-space: nowrap; cursor: pointer;
+  transition: color 0.18s var(--ease), border-color 0.18s var(--ease);
+}
+.switch:hover { border-color: var(--line-strong); color: var(--muted); }
+.switch:disabled { opacity: 0.5; cursor: not-allowed; }
+.switch__track {
+  position: relative; width: 30px; height: 17px; flex: none;
+  border-radius: 999px; background: var(--surface-3);
+  transition: background 0.18s var(--ease);
+}
+.switch__track::after {
+  content: ""; position: absolute; top: 2px; left: 2px;
+  width: 13px; height: 13px; border-radius: 999px; background: var(--faint);
+  transition: transform 0.18s var(--ease), background 0.18s var(--ease);
+}
+.switch[aria-checked="true"] { color: var(--teal); border-color: rgba(45,212,191,0.35); }
+.switch[aria-checked="true"] .switch__track { background: rgba(45,212,191,0.3); }
+.switch[aria-checked="true"] .switch__track::after { transform: translateX(13px); background: var(--teal); }
+
+/* ── Row editor ──────────────────────────────────────────────────────────── */
+.client__edit {
+  border-top: 1px solid var(--line);
+  padding: 0.95rem 0.8rem 1rem;
+  display: flex; flex-direction: column; gap: 0.9rem;
+  animation: expand 0.22s var(--ease);
+}
+.edit__grid {
+  display: grid; gap: 0.7rem;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+.edit__foot {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 0.75rem; flex-wrap: wrap;
+  padding-top: 0.8rem; border-top: 1px solid var(--line-faint);
+}
+.edit__logo { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.edit__meta {
+  font-family: var(--mono); font-size: 0.71875rem; color: var(--faint);
+  word-break: break-word;
+}
+.edit__meta.is-err { color: #fca5a5; font-family: var(--font); font-size: 0.78125rem; }
+
+/* File input covers its label so the whole pill is the drop target; the label
+   carries the focus ring because an opacity-0 input cannot show its own. */
+.logo-pick { position: relative; overflow: hidden; }
+.logo-pick:has(.logo-pick__input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.logo-pick__input {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  opacity: 0; cursor: pointer;
+}
+.logo-pick__input:disabled { cursor: not-allowed; }
+
+/* ── Settings (Numbers) ──────────────────────────────────────────────────── */
+.settings {
+  display: grid; gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+.setting { display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; }
+.setting__head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+.setting__hint { color: var(--dim); font-size: 0.71875rem; }
+.setting__saved {
+  font-size: 0.6875rem; color: var(--teal); opacity: 0;
+  transition: opacity 0.2s var(--ease);
+}
+.setting__saved.is-on { opacity: 1; }
+
 /* ── Responsive ──────────────────────────────────────────────────────────── */
 @media (max-width: 880px) {
   .lead__toggle {
@@ -563,6 +806,28 @@ button, input, textarea, select { font: inherit; color: inherit; }
   .rowbar { align-items: stretch; flex-direction: column; }
   .rowbar__acts { justify-content: space-between; }
   .toasts { left: max(1rem, env(safe-area-inset-left)); max-width: none; }
+
+  /* Content view on a phone */
+  .viewnav__btn { padding: 0.34rem 0.7rem; }
+  .panel { padding: 0.9rem 0.8rem 1rem; }
+  .publish { padding: 0.95rem; }
+  .publish .btn { flex: 1 1 100%; }
+  .addform { padding: 0.8rem; }
+  .addform__foot .btn { flex: 1 1 100%; }
+  /* Two rows: identity on top, the controls that act on it underneath. */
+  .client__head {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "thumb who  sw"
+      "acts  acts acts";
+    row-gap: 0.6rem; gap: 0.7rem;
+  }
+  .client__thumb { grid-area: thumb; width: 40px; height: 40px; }
+  .client__who   { grid-area: who; }
+  .client__sw    { grid-area: sw; }
+  .client__acts  { grid-area: acts; justify-content: flex-end; }
+  .edit__foot { align-items: stretch; flex-direction: column; }
+  .edit__foot .btn { width: 100%; }
 }
 
 @media (prefers-reduced-motion: reduce) {

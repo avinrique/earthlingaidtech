@@ -1,7 +1,50 @@
 /**
  * Earthling Aidtech — single source of truth for site content.
  * Copy is derived from the company brief (app.txt). Update here, not in markup.
+ *
+ * Two slices of this file are no longer hand-edited: the client list and the headline numbers.
+ * Those live in the CMS (Neon, edited in the admin console) and arrive here through
+ * `content.json`, which `scripts/sync-content.mjs` refreshes before every build. This module
+ * stays the only import surface for the rest of the site either way — nothing outside this file
+ * imports `content.json`, so the wiring can change again without touching a single page.
  */
+
+import content from './content.json';
+
+/* ---------------------------------------------------------------------------
+ * CMS-backed content
+ *
+ * `content.json` is committed and is what the build actually reads; the sync script only ever
+ * updates it, and never fails the build. Everything below still carries a hard-coded fallback:
+ * the snapshot is data, and data drifts (a key gets renamed mid-migration, a value is blanked in
+ * the console). A missing key must degrade to the last known-good number, never render
+ * `undefined` into a stat tile.
+ * ------------------------------------------------------------------------- */
+
+type ContentClient = {
+  id: number;
+  name: string;
+  note: string | null;
+  url: string | null;
+  logo: string | null;
+  sort_order: number;
+  active: boolean;
+};
+
+const settings = content.settings as Record<string, string | undefined>;
+
+/** Read one editable setting, falling back to the value this site shipped with. */
+function setting(key: string, fallback: string): string {
+  const value = settings[key];
+  return typeof value === 'string' && value.trim() ? value.trim() : fallback;
+}
+
+/** Stat-tile format ("1.7k+") vs. the form that reads correctly inside a sentence ("1,700+"). */
+const studentsTrained = setting('students_trained', '1.7k+');
+const studentsTrainedProse = setting('students_trained_prose', '1,700+');
+const sessionsDelivered = setting('sessions_delivered', '15+');
+const technicalTracks = setting('technical_tracks', '7');
+const workshopsCount = setting('workshops_count', '6');
 
 export const site = {
   name: 'Earthling Aidtech',
@@ -11,7 +54,7 @@ export const site = {
   url: 'https://earthlingaidtech.com',
   tagline: 'Engineering Intelligence. Empowering Humans.',
   description:
-    'Earthling Aidtech builds custom software — web apps, automation, desktop tools, AI agents, SEO/GEO visibility systems, EdTech platforms, robotics, and hardware products. Prepzer0 runs at SVIT and East Horizon School; 1,700+ students trained. A product & engineering studio in Bengaluru.',
+    `Earthling Aidtech builds custom software — web apps, automation, desktop tools, AI agents, SEO/GEO visibility systems, EdTech platforms, robotics, and hardware products. Prepzer0 runs at SVIT and East Horizon School; ${studentsTrainedProse} students trained. A product & engineering studio in Bengaluru.`,
   email: 'services@earthlingaidtech.com',
   emailAlt: 'earthlingaidtech@gmail.com',
   location: 'Biratnagar, Nepal · Bengaluru, India',
@@ -64,7 +107,7 @@ export const nav: NavLink[] = [
 
 /* ---- Hero stats / proof bar (every number is real, from app.txt) ---- */
 export const stats: { value: string; label: string; accent?: string }[] = [
-  { value: '1.7k+', label: 'Students trained', accent: 'accent' },
+  { value: studentsTrained, label: 'Students trained', accent: 'accent' },
   { value: '6', label: 'Products built', accent: 'teal' },
   { value: '2', label: 'Prepzer0 deployments', accent: 'violet' },
   { value: '13+', label: 'Client partners', accent: 'amber' },
@@ -391,9 +434,9 @@ export type GalleryItem = { src: string; alt: string; span?: 'wide' | 'tall' };
 export const workshops = {
   /* Headline proof — leads on reach & breadth, not venue count. */
   stats: [
-    { value: '1.7k+', label: 'Students trained' },
-    { value: '7', label: 'Technical tracks' },
-    { value: '15+', label: 'Sessions delivered' },
+    { value: studentsTrained, label: 'Students trained' },
+    { value: technicalTracks, label: 'Technical tracks' },
+    { value: sessionsDelivered, label: 'Sessions delivered' },
     { value: '100%', label: 'Hands-on, lab-first' },
   ],
   institutions: [
@@ -439,23 +482,25 @@ export const workshops = {
   video: { src: '/video/workshop-reel.mp4', poster: '/video/workshop-reel-poster.jpg' } as null | { src: string; poster?: string },
 } as const;
 
-/* ---- Clients & collaborations (real names; notes only where known) ---- */
-export const clients: { name: string; note?: string }[] = [
-  { name: 'Edmond Fernandes', note: 'Public health' },
-  { name: 'CHD Group', note: 'NGO' },
-  { name: 'EPICH', note: 'Public health' },
-  { name: 'Perenhil', note: 'Healthcare' },
-  { name: 'Credley', note: 'Fintech' },
-  { name: 'Woostaa', note: 'Housing solution' },
-  { name: 'Curota.ai', note: 'AI data annotation' },
-  { name: 'CampusPathway', note: 'Admissions · EdTech' },
-  { name: 'OrynConsulting', note: 'Consulting' },
-  { name: 'SalesSphere360', note: 'Sales' },
-  { name: 'Halde20', note: 'Restaurant · Switzerland' },
-  { name: 'Chillaxmandu', note: 'Lifestyle' },
-  { name: 'ThePixelSphere', note: 'Studio' },
-  { name: 'EverChiq', note: 'Fashion · D2C' },
-];
+/* ---- Clients & collaborations (real names; notes only where known).
+   Edited in the admin console, not here — see the CMS block at the top of this file.
+   `logo` is a path inside the built site (the sync script downloads the bytes into
+   public/images/clients/), so the marquee never hot-links the API for an image. ---- */
+export type Client = { name: string; note?: string; logo?: string; url?: string };
+
+export const clients: Client[] = (content.clients as ContentClient[])
+  // Deactivating a client in the console hides it without losing the row (and its logo).
+  .filter((c) => c.active)
+  // `sort_order` is the operator's chosen order; `id` only breaks ties so the row never shuffles
+  // between builds on equal values.
+  .sort((a, b) => a.sort_order - b.sort_order || a.id - b.id)
+  .map((c) => ({
+    name: c.name,
+    // The JSON carries explicit nulls; the rest of the site checks for absence.
+    note: c.note ?? undefined,
+    logo: c.logo ?? undefined,
+    url: c.url ?? undefined,
+  }));
 
 /* ---- Technology stack (real tools we ship with).
    Two marquee rows; icon = simple-icons name (astro-icon `simple-icons:<id>`). ---- */
@@ -495,7 +540,7 @@ export const techRun: TechItem[] = [
 /* ---- Why us (every claim grounded in real work) ---- */
 export const whyUs: { icon: string; title: string; body: string }[] = [
   { icon: 'layers', title: 'One team, many disciplines', body: 'AI, robotics, and software under one roof — not three separate vendors stitched together.' },
-  { icon: 'graduation-cap', title: 'We know education', body: '6 workshops at BMSIT and SVIT, 1,700+ students trained, and Prepzer0 running in real classrooms.' },
+  { icon: 'graduation-cap', title: 'We know education', body: `${workshopsCount} workshops at BMSIT and SVIT, ${studentsTrainedProse} students trained, and Prepzer0 running in real classrooms.` },
   { icon: 'flask-conical', title: 'R&D in the open', body: 'From Vector-style robot eyes to multi-agent systems, we research tomorrow’s problems and ship the results.' },
   { icon: 'rocket', title: 'Built to ship', body: 'Prepzer0 is live. The info robot works. We measure ourselves in production, not slides.' },
   { icon: 'globe', title: 'Local, delivering globally', body: 'Based in Bengaluru, delivering for clients from India to Halde20 in Switzerland.' },

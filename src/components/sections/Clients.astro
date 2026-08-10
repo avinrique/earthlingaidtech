@@ -1,8 +1,53 @@
 ---
+import path from 'node:path';
+import sharp from 'sharp';
 import { clients } from '@/data/site';
 // The marquee needs two identical halves so `translateX(-50%)` loops seamlessly.
 // Rendering them as two groups (rather than one flat doubled array) lets the
 // second be aria-hidden — otherwise every client name is announced twice.
+//
+// Clients with an uploaded logo render the logo INSTEAD of the wordmark, not next
+// to it: the same name set twice, once as art and once as type, reads like a bug.
+// That decision is why the logos carry `alt={c.name}` rather than `alt=""` — the
+// image is the only place the client's name appears, so it has to be announced.
+// (In the aria-hidden clone the alt is moot, but keeping it identical keeps the two
+// halves byte-identical in width, which is what makes the loop seamless.)
+
+const LOGO_HEIGHT = 28; // px — one optical height for every logo, so a mixed row looks set, not pasted.
+
+/**
+ * Measure a logo at build time so the <img> can carry explicit width/height.
+ *
+ * Logos live in `public/` (the sync script writes them there), which means Astro's asset
+ * pipeline never sees them and cannot hand us intrinsic dimensions. Without them the browser
+ * reserves no space and the whole marquee reflows as each file lands — visible jitter on a row
+ * that is already moving. sharp is already a dependency (scripts/gen-images.mjs), and this runs
+ * once per build, not per request.
+ *
+ * Returns null when the file is missing or unreadable; the caller then falls back to the
+ * wordmark, which is a perfectly good rendering and keeps a stale content.json from breaking a build.
+ *
+ * Paths resolve from `process.cwd()`, not from `import.meta.url`: this frontmatter is bundled
+ * before it runs, so `import.meta.url` points at a chunk in Astro's build output, not at this
+ * source file. Astro always runs from the project root, which is where `public/` lives.
+ */
+async function measure(logo: string): Promise<{ width: number; height: number } | null> {
+  try {
+    const file = path.join(process.cwd(), 'public', logo.replace(/^\/+/, ''));
+    const { width, height } = await sharp(file).metadata();
+    if (!width || !height) return null;
+    return { width: Math.round((width / height) * LOGO_HEIGHT), height: LOGO_HEIGHT };
+  } catch (err) {
+    // Loud, not silent: a logo that quietly downgrades to a wordmark on every build is a bug
+    // nobody would notice from the rendered page.
+    console.warn(`[clients] could not measure logo "${logo}": ${(err as Error).message}`);
+    return null;
+  }
+}
+
+const items = await Promise.all(
+  clients.map(async (c) => ({ ...c, box: c.logo ? await measure(c.logo) : null })),
+);
 ---
 
 <section class="border-y border-line bg-canvas-deep/50 py-14">
@@ -19,14 +64,50 @@ import { clients } from '@/data/site';
           class="flex shrink-0 list-none items-center gap-12 pr-12"
           aria-hidden={isClone ? 'true' : undefined}
         >
-          {clients.map((c) => (
-            <li class="flex shrink-0 items-baseline gap-2">
-              <span class="font-display text-xl font-semibold tracking-tight text-faint transition-colors duration-300 hover:text-ink">
-                {c.name}
-              </span>
-              {c.note && <span class="font-mono text-[0.6rem] uppercase tracking-wider text-dim">{c.note}</span>}
-            </li>
-          ))}
+          {items.map((c) => {
+            const hasLogo = Boolean(c.logo && c.box);
+            // A linked client becomes an <a>; an unlinked one stays a <span> so the
+            // markup and the flex layout are identical either way.
+            const Tag = c.url ? 'a' : 'span';
+            // The clone is aria-hidden, and a focusable element inside aria-hidden content is an
+            // accessibility violation — tab order would stop on a link screen readers cannot
+            // describe. Take the clone's links out of the tab order.
+            const tabindex = isClone && c.url ? '-1' : undefined;
+            return (
+              <li class="group/client flex shrink-0 items-center">
+                <Tag
+                  href={c.url}
+                  target={c.url ? '_blank' : undefined}
+                  rel={c.url ? 'noopener noreferrer' : undefined}
+                  tabindex={tabindex}
+                  class:list={[
+                    'flex gap-2 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-accent/60',
+                    // Wordmark + note sit on a shared baseline (as they always have);
+                    // a logo + note look wrong that way, so those centre instead.
+                    hasLogo ? 'items-center' : 'items-baseline',
+                  ]}
+                >
+                  {hasLogo ? (
+                    <img
+                      src={c.logo}
+                      alt={c.name}
+                      width={c.box!.width}
+                      height={c.box!.height}
+                      loading="lazy"
+                      decoding="async"
+                      style={`height:${LOGO_HEIGHT}px;width:auto`}
+                      class="block shrink-0 opacity-60 grayscale transition duration-300 group-hover/client:opacity-100 group-hover/client:grayscale-0"
+                    />
+                  ) : (
+                    <span class="font-display text-xl font-semibold tracking-tight text-faint transition-colors duration-300 group-hover/client:text-ink">
+                      {c.name}
+                    </span>
+                  )}
+                  {c.note && <span class="font-mono text-[0.6rem] uppercase tracking-wider text-dim">{c.note}</span>}
+                </Tag>
+              </li>
+            );
+          })}
         </ul>
       ))}
     </div>

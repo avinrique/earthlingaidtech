@@ -56,3 +56,67 @@ drop trigger if exists leads_set_updated_at on leads;
 create trigger leads_set_updated_at
   before update on leads
   for each row execute function set_updated_at();
+
+-- ---------------------------------------------------------------------------
+-- Editable site content.
+--
+-- The marketing site is a static Astro build, so nothing here is read at request time. A prebuild
+-- step pulls /api/content and writes it into the repo; if that fetch fails the committed copy is
+-- used. These tables are therefore the *source* of content, never a runtime dependency of the
+-- site being up.
+-- ---------------------------------------------------------------------------
+
+-- Client logos live in Postgres as bytea rather than in an object store on purpose: there are a
+-- dozen-odd marks, each well under 100KB, and they are read once per site build — not per
+-- visitor. Adding S3/Blob would mean a second backing service, a second set of credentials and a
+-- second failure mode for the sake of ~1MB of data. The CHECK below keeps that assumption true:
+-- an oversized upload is rejected by the database itself, not merely by the API, so no route can
+-- ever bloat a row past the limit.
+create table if not exists content_clients (
+  id              bigserial   primary key,
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now(),
+
+  name            text        not null,
+  note            text,
+  url             text,
+
+  logo_bytes      bytea,
+  logo_mime       text,
+  logo_updated_at timestamptz,
+
+  -- Display order on the site. Ties fall back to id, so a fresh row without an explicit order
+  -- still lands somewhere deterministic.
+  sort_order      int         not null default 0,
+
+  -- Soft delete / staging: hidden from the public payload but still editable in the console.
+  active          boolean     not null default true,
+
+  constraint content_clients_logo_size check (
+    logo_bytes is null or octet_length(logo_bytes) <= 262144
+  )
+);
+
+-- The public payload's exact access pattern: active rows, in display order.
+create index if not exists content_clients_active_order_idx
+  on content_clients (active, sort_order);
+
+drop trigger if exists content_clients_set_updated_at on content_clients;
+create trigger content_clients_set_updated_at
+  before update on content_clients
+  for each row execute function set_updated_at();
+
+-- Headline numbers and other short strings that change often enough to be worth editing without a
+-- code change. Deliberately untyped key/value text: the values are display strings ("1.7k+"),
+-- not numbers to compute with, and a flat map means adding a key is a seed line rather than a
+-- migration.
+create table if not exists content_settings (
+  key        text        primary key,
+  value      text        not null,
+  updated_at timestamptz not null default now()
+);
+
+drop trigger if exists content_settings_set_updated_at on content_settings;
+create trigger content_settings_set_updated_at
+  before update on content_settings
+  for each row execute function set_updated_at();

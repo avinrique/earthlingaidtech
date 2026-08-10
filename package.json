@@ -7,8 +7,10 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
+    "prebuild": "node scripts/sync-content.mjs",
     "build": "astro build",
     "preview": "astro preview",
+    "sync-content": "node scripts/sync-content.mjs",
     "astro": "astro"
   },
   "dependencies": {

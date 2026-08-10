@@ -9,6 +9,7 @@
   },
   "scripts": {
     "migrate": "node --env-file-if-exists=.env.local scripts/migrate.mjs",
+    "seed": "node --env-file-if-exists=.env.local scripts/seed-content.mjs",
     "dev": "vercel dev",
     "deploy": "vercel deploy --prod",
     "typecheck": "tsc --noEmit"

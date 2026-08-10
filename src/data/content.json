@@ -1,0 +1,137 @@
+{
+  "clients": [
+    {
+      "id": 1,
+      "name": "Edmond Fernandes",
+      "note": "Public health",
+      "url": null,
+      "logo": null,
+      "sort_order": 0,
+      "active": true
+    },
+    {
+      "id": 2,
+      "name": "CHD Group",
+      "note": "NGO",
+      "url": null,
+      "logo": null,
+      "sort_order": 1,
+      "active": true
+    },
+    {
+      "id": 3,
+      "name": "EPICH",
+      "note": "Public health",
+      "url": null,
+      "logo": null,
+      "sort_order": 2,
+      "active": true
+    },
+    {
+      "id": 4,
+      "name": "Perenhil",
+      "note": "Healthcare",
+      "url": null,
+      "logo": null,
+      "sort_order": 3,
+      "active": true
+    },
+    {
+      "id": 5,
+      "name": "Credley",
+      "note": "Fintech",
+      "url": null,
+      "logo": null,
+      "sort_order": 4,
+      "active": true
+    },
+    {
+      "id": 6,
+      "name": "Woostaa",
+      "note": "Housing solution",
+      "url": null,
+      "logo": null,
+      "sort_order": 5,
+      "active": true
+    },
+    {
+      "id": 7,
+      "name": "Curota.ai",
+      "note": "AI data annotation",
+      "url": null,
+      "logo": null,
+      "sort_order": 6,
+      "active": true
+    },
+    {
+      "id": 8,
+      "name": "CampusPathway",
+      "note": "Admissions · EdTech",
+      "url": null,
+      "logo": null,
+      "sort_order": 7,
+      "active": true
+    },
+    {
+      "id": 9,
+      "name": "OrynConsulting",
+      "note": "Consulting",
+      "url": null,
+      "logo": null,
+      "sort_order": 8,
+      "active": true
+    },
+    {
+      "id": 10,
+      "name": "SalesSphere360",
+      "note": "Sales",
+      "url": null,
+      "logo": null,
+      "sort_order": 9,
+      "active": true
+    },
+    {
+      "id": 11,
+      "name": "Halde20",
+      "note": "Restaurant · Switzerland",
+      "url": null,
+      "logo": null,
+      "sort_order": 10,
+      "active": true
+    },
+    {
+      "id": 12,
+      "name": "Chillaxmandu",
+      "note": "Lifestyle",
+      "url": null,
+      "logo": null,
+      "sort_order": 11,
+      "active": true
+    },
+    {
+      "id": 13,
+      "name": "ThePixelSphere",
+      "note": "Studio",
+      "url": null,
+      "logo": null,
+      "sort_order": 12,
+      "active": true
+    },
+    {
+      "id": 14,
+      "name": "EverChiq",
+      "note": "Fashion · D2C",
+      "url": "https://everchiq.com/",
+      "logo": "/images/clients/everchiq.png",
+      "sort_order": 13,
+      "active": true
+    }
+  ],
+  "settings": {
+    "sessions_delivered": "15+",
+    "students_trained": "1.7k+",
+    "students_trained_prose": "1,700+",
+    "technical_tracks": "7",
+    "workshops_count": "6"
+  }
+}

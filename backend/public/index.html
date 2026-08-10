@@ -6,7 +6,7 @@
 <meta name="color-scheme" content="dark" />
 <meta name="robots" content="noindex, nofollow" />
 <meta name="referrer" content="same-origin" />
-<title>Leads · Earthling Aidtech</title>
+<title>Console · Earthling Aidtech</title>
 <link rel="stylesheet" href="/admin.css" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-160 -160 320 320'%3E%3Cg stroke='%230D0D0D' stroke-width='10' stroke-linejoin='round'%3E%3Cpolygon points='0,-148 128,-74 0,0 -128,-74' fill='%232E2E2E'/%3E%3Cpolygon points='128,-74 128,74 0,148 0,0' fill='%231C1C1C'/%3E%3Cpolygon points='-128,-74 0,0 0,148 -128,74' fill='%23111111'/%3E%3Cpolygon points='0,-56 48,-28 0,0 -48,-28' fill='%237FBEFF'/%3E%3Cpolygon points='48,-28 48,28 0,56 0,0' fill='%234A9EFF'/%3E%3Cpolygon points='-48,-28 0,0 0,56 -48,28' fill='%232E7BD6'/%3E%3C/g%3E%3C/svg%3E" />
 </head>
@@ -54,6 +54,31 @@
   <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
     <rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" />
   </symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 5v14" /><path d="M5 12h14" />
+  </symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 20h9" /><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+  </symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 20V8" /><path d="m7 13 5-5 5 5" /><path d="M4 4h16" />
+  </symbol>
+  <symbol id="i-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m21 15-5-5L5 21" />
+  </symbol>
+  <symbol id="i-up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 19V5" /><path d="m5 12 7-7 7 7" />
+  </symbol>
+  <symbol id="i-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 5v14" /><path d="m19 12-7 7-7-7" />
+  </symbol>
+  <symbol id="i-publish" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M22 2 11 13" /><path d="M22 2 15 22l-4-9-9-4Z" />
+  </symbol>
+  <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7" />
+    <path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7" />
+  </symbol>
 </svg>
 
 <div class="grid-bg" aria-hidden="true"></div>
@@ -72,7 +97,7 @@
       <svg width="48" height="48" aria-hidden="true"><use href="#i-cube" /></svg>
       <div>
         <p class="login__word">Earthling <span>Aidtech</span></p>
-        <p class="login__sub">Lead console</p>
+        <p class="login__sub">Admin console</p>
       </div>
     </div>
 
@@ -102,10 +127,18 @@
       <div class="topbar__brand">
         <svg width="30" height="30" aria-hidden="true"><use href="#i-cube" /></svg>
         <div class="topbar__titles">
-          <h1 class="topbar__title">Leads</h1>
+          <h1 id="topbar-title" class="topbar__title">Leads</h1>
           <p id="topbar-total" class="topbar__count">—</p>
         </div>
       </div>
+
+      <!-- Top-level sections. Real buttons with aria-pressed, mirroring the .tabs pattern
+           used for lead filters so the whole console has one selection idiom. -->
+      <nav id="viewnav" class="viewnav" aria-label="Console sections">
+        <button id="nav-leads" class="viewnav__btn" type="button" aria-pressed="true">Leads</button>
+        <button id="nav-content" class="viewnav__btn" type="button" aria-pressed="false">Content</button>
+      </nav>
+
       <div class="topbar__actions">
         <button id="btn-refresh" class="btn btn--ghost btn--icon" type="button" title="Refresh" aria-label="Refresh leads">
           <svg width="17" height="17" aria-hidden="true"><use href="#i-refresh" /></svg>
@@ -123,6 +156,9 @@
   </header>
 
   <main class="shell">
+
+  <!-- ══ LEADS ══ -->
+  <div id="panel-leads">
     <div class="toolbar">
       <div id="tabs" class="tabs" role="group" aria-label="Filter leads by status"></div>
       <div class="search">
@@ -151,6 +187,96 @@
       <p id="pg-range" class="pager__range"></p>
       <button id="pg-next" class="btn btn--ghost btn--sm" type="button"><span class="btn__label">Older →</span></button>
     </nav>
+  </div>
+
+  <!-- ══ CONTENT ══ -->
+  <div id="panel-content" hidden>
+
+    <!-- Publish leads the view on purpose. "I edited it but the site still shows the old
+         number" is the single most likely confusion here, so the explanation sits above the
+         editors rather than buried under them. -->
+    <section class="publish" aria-labelledby="publish-h">
+      <div class="publish__copy">
+        <h2 id="publish-h" class="publish__title">Saving vs. publishing</h2>
+        <p class="publish__note">
+          Everything below saves the moment you change it. The public site is a static build,
+          so visitors keep seeing the previous version until it is rebuilt. Press Publish when
+          you have finished editing — earthlingaidtech.com catches up a few minutes later.
+        </p>
+        <p id="publish-state" class="publish__state" role="status" aria-live="polite">
+          No publish started in this session.
+        </p>
+      </div>
+      <button id="btn-publish" class="btn btn--accent" type="button">
+        <svg width="16" height="16" aria-hidden="true"><use href="#i-publish" /></svg>
+        <span class="btn__label">Publish site</span>
+      </button>
+    </section>
+
+    <!-- ── Clients ── -->
+    <section class="panel" aria-labelledby="clients-h">
+      <div class="panel__head">
+        <h2 id="clients-h" class="panel__title">Clients</h2>
+        <p id="clients-count" class="panel__count">—</p>
+      </div>
+
+      <form id="client-add" class="addform" novalidate>
+        <div class="addform__grid">
+          <label class="ifield">
+            <span class="ifield__label">Name</span>
+            <input id="add-name" class="ifield__input" type="text" maxlength="120"
+                   autocomplete="off" placeholder="Everchiq" required />
+          </label>
+          <label class="ifield">
+            <span class="ifield__label">Note</span>
+            <input id="add-note" class="ifield__input" type="text" maxlength="200"
+                   autocomplete="off" placeholder="What we built for them" />
+          </label>
+          <label class="ifield">
+            <span class="ifield__label">Website</span>
+            <input id="add-url" class="ifield__input" type="url" maxlength="300"
+                   autocomplete="off" spellcheck="false" placeholder="https://example.com" />
+          </label>
+        </div>
+        <div class="addform__foot">
+          <p id="add-error" class="inline-error" role="alert" hidden></p>
+          <button id="add-submit" class="btn btn--accent btn--sm" type="submit">
+            <svg width="15" height="15" aria-hidden="true"><use href="#i-plus" /></svg>
+            <span class="btn__label">Add client</span>
+          </button>
+        </div>
+      </form>
+
+      <div id="clients-region" aria-busy="false">
+        <div id="clients-skeleton" class="skeleton" hidden aria-hidden="true"></div>
+        <div id="clients-list" class="list"></div>
+        <div id="clients-empty" class="empty" hidden>
+          <svg width="34" height="34" aria-hidden="true"><use href="#i-image" /></svg>
+          <p class="empty__title">No clients yet</p>
+          <p class="empty__note">Add the first one above. They appear on the site in this order.</p>
+        </div>
+        <div id="clients-fatal" class="fatal" hidden>
+          <p id="clients-fatal-text" class="fatal__text">Couldn’t load clients.</p>
+          <button id="clients-retry" class="btn btn--ghost" type="button"><span class="btn__label">Try again</span></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Numbers ── -->
+    <section class="panel" aria-labelledby="numbers-h">
+      <div class="panel__head">
+        <h2 id="numbers-h" class="panel__title">Numbers</h2>
+      </div>
+      <p class="panel__help">
+        Two formats on purpose. The <b>stat tile</b> version is short, because it sits alone in a
+        big number block — “1.7k+”. The <b>in sentences</b> version is written out, because it has
+        to read as English inside a line of copy — “1,700+ students trained”. When a number
+        changes, change both.
+      </p>
+      <div id="settings-list" class="settings" aria-busy="false"></div>
+    </section>
+  </div>
+
   </main>
 </div>
 
