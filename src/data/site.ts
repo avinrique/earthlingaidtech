@@ -162,7 +162,7 @@ export const services: Service[] = [
     title: 'Education Technology',
     tag: 'EdTech',
     summary:
-      'Exam, assessment, and learning platforms built for real institutions — secure delivery, AI-assisted grading, and reporting. It is what powers Prepzer0 and Curio.',
+      'Exam, assessment, and learning platforms built for real institutions — secure delivery, AI-assisted grading, and reporting. It is what powers Prepzer0 and Twiddle Labs.',
     points: [
       'Secure, scalable examination workflows',
       'AI-assisted monitoring & evaluation',
@@ -266,16 +266,17 @@ export const products: Product[] = [
   },
   {
     id: 'curio',
-    slug: 'curio',
-    name: 'Curio',
+    slug: 'twiddle-labs',
+    name: 'Twiddle Labs',
     kicker: 'Interactive Visual Learning Platform',
     icon: 'orbit',
     accent: 'teal',
-    status: 'Product · Pre-launch',
+    status: 'Product · Live',
+    url: 'https://www.twiddlelabs.com',
     summary:
       'Big ideas, made visible — 13 cinematic, interactive courses with 193+ animated scenes across physics, chemistry, code, and more. 11 live today.',
     description:
-      'Curio turns hard subjects into cinematic, hands-on courses. Every concept is animated and built up step by step — then handed to the learner to poke at until it clicks. Thirteen courses span physics, chemistry, programming, biology, electronics, networking, cloud, and algebra, each with its own visual identity and a friendly guide character. Eleven are live and previewable today.',
+      'Twiddle Labs turns hard subjects into cinematic, hands-on courses. Every concept is animated and built up step by step — then handed to the learner to poke at until it clicks. Thirteen courses span physics, chemistry, programming, biology, electronics, networking, cloud, and algebra, each with its own visual identity and a friendly guide character. Eleven are live and previewable today.',
     features: [
       { title: '13 courses, 193+ animated scenes', body: 'From orbital mechanics to TCP/IP to the Calvin cycle — five-act courses where nothing is a wall of text.' },
       { title: 'Watch it, then break it', body: 'Concepts come alive as animation first, then become interactive: drag sliders, flip switches, break circuits until it clicks.' },
@@ -363,7 +364,7 @@ export const products: Product[] = [
   },
 ];
 
-/* ---- Curio course catalog (mirrors curio repo src/lib/courses.ts) ---- */
+/* ---- Twiddle Labs course catalog (product was called Curio; mirrors its courses.ts) ---- */
 export type CurioCourse = {
   slug: string;
   title: string;

@@ -2,7 +2,7 @@
  * Drive a requestAnimationFrame loop only while its element is on screen.
  *
  * rAF already stops for a backgrounded *tab*, but not for a canvas the user
- * has simply scrolled past — the Curio page runs four physics simulations, and
+ * has simply scrolled past — the Twiddle Labs page runs four physics simulations, and
  * without this they all keep integrating and repainting forever, which on a
  * phone reads as heat and a flat battery.
  */
