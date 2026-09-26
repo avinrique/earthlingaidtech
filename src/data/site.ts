@@ -268,20 +268,20 @@ export const products: Product[] = [
     id: 'curio',
     slug: 'twiddle-labs',
     name: 'Twiddle Labs',
-    kicker: 'Interactive Visual Learning Platform',
+    kicker: 'Interactive Courses for Colleges',
     icon: 'orbit',
     accent: 'teal',
     status: 'Product · Live',
     url: 'https://www.twiddlelabs.com',
     summary:
-      'Big ideas, made visible — 13 cinematic, interactive courses with 193+ animated scenes across physics, chemistry, code, and more. 11 live today.',
+      'A college module’s lecture slides, rebuilt as an interactive course — every idea becomes a small working model students can drag, type into and test. 18 courses and 291 scenes so far, 15 live.',
     description:
-      'Twiddle Labs turns hard subjects into cinematic, hands-on courses. Every concept is animated and built up step by step — then handed to the learner to poke at until it clicks. Thirteen courses span physics, chemistry, programming, biology, electronics, networking, cloud, and algebra, each with its own visual identity and a friendly guide character. Eleven are live and previewable today.',
+      'Twiddle Labs turns the slides a college teaches a module from into an interactive course. Every idea becomes a small working model: the student drags, types or clicks, and the idea responds — same syllabus, same order, same facts they are examined on. Faculty review every scene before students see it, and the course is just a link that opens in the browser. Alongside courses built from real college modules (Foundations of AI, 6th-semester Cyber Security, Software Engineering), there are our own courses across physics, chemistry, biology, calculus, algebra, electronics, networking, cloud, automata theory and programming.',
     features: [
-      { title: '13 courses, 193+ animated scenes', body: 'From orbital mechanics to TCP/IP to the Calvin cycle — five-act courses where nothing is a wall of text.' },
-      { title: 'Watch it, then break it', body: 'Concepts come alive as animation first, then become interactive: drag sliders, flip switches, break circuits until it clicks.' },
-      { title: 'A guide for every course', body: 'Nova, Sparky, Py, Gene and friends — a named character per course reacts as each idea lands, giving every subject its own personality.' },
-      { title: 'One simple price', body: 'Buy a course once and keep it, or take the All-Access pass — lifetime access with every future release included.' },
+      { title: 'Built from your module', body: 'Send the slides, the syllabus and the order you teach it in. We build it scene by scene in that order — even diagram-only slides are transcribed, so nothing on the syllabus goes missing.' },
+      { title: 'Every idea gets something to move', body: 'Each scene says plainly what the idea is, shows it working as an animation the student controls, gives a real example, then hands them something to try.' },
+      { title: 'Reviewed before students see it', body: 'You get a link and go through every scene. Anything inaccurate or out of order is changed before it reaches the class.' },
+      { title: 'Nothing to install', body: 'A course is a web link. It works in class on the projector and the night before an exam for revision.' },
     ],
   },
   {
@@ -364,7 +364,7 @@ export const products: Product[] = [
   },
 ];
 
-/* ---- Twiddle Labs course catalog (product was called Curio; mirrors its courses.ts) ---- */
+/* ---- Twiddle Labs course catalog (product was called Curio; mirrors twiddlelab src/lib/courses.ts) ---- */
 export type CurioCourse = {
   slug: string;
   title: string;
@@ -377,22 +377,29 @@ export type CurioCourse = {
   level: string;
   liveUrl: string | null;
   topics: string[];
+  /** For courses built from a college's own teaching material: the module it came from. */
+  source?: string;
 };
 
 export const curioCourses: CurioCourse[] = [
-  { slug: 'cosmos', title: 'Cosmos', subject: 'Physics', guide: 'Nova', accent: '#4EA8FF', accent2: '#A78BFA', emoji: '🪐', scenes: 16, level: 'Beginner', liveUrl: null, topics: ['Newton’s laws', 'Gravity', 'Orbits', 'Kepler'] },
-  { slug: 'volta', title: 'Volta', subject: 'Electronics', guide: 'Sparky', accent: '#38E0D0', accent2: '#36D399', emoji: '⚡', scenes: 13, level: 'Beginner', liveUrl: 'https://volta-blush.vercel.app', topics: ['Voltage & current', 'Components', 'Circuits', 'Logic gates'] },
-  { slug: 'prism', title: 'Prism', subject: 'Light & Optics', guide: 'Ray', accent: '#FFD15C', accent2: '#38E0D0', emoji: '🔆', scenes: 13, level: 'Beginner', liveUrl: 'https://prism-delta-gules.vercel.app', topics: ['Reflection', 'Refraction', 'Lenses & the eye', 'Colour'] },
-  { slug: 'elementa', title: 'Elementa', subject: 'Chemistry', guide: 'Ato', accent: '#A78BFA', accent2: '#38E0D0', emoji: '⚛️', scenes: 13, level: 'Beginner', liveUrl: 'https://elementa-six.vercel.app', topics: ['Atoms', 'Electron shells', 'Periodic table', 'Bonding'] },
-  { slug: 'pyvisual', title: 'PyVisual', subject: 'Python', guide: 'Py', accent: '#4EA8FF', accent2: '#FFD15C', emoji: '🐍', scenes: 13, level: 'Beginner', liveUrl: 'https://pyvisual.vercel.app', topics: ['Variables & types', 'Booleans & logic', 'Loops', 'Lists & functions'] },
-  { slug: 'helix', title: 'Helix', subject: 'Genetics', guide: 'Gene', accent: '#A78BFA', accent2: '#38E0D0', emoji: '🧬', scenes: 13, level: 'Beginner', liveUrl: 'https://helix-navy.vercel.app', topics: ['Double helix', 'Replication', 'DNA→RNA→protein', 'Inheritance'] },
-  { slug: 'chlora', title: 'Chlora', subject: 'Biology', guide: 'Sprout', accent: '#36D399', accent2: '#FFD15C', emoji: '🌱', scenes: 13, level: 'Beginner', liveUrl: 'https://chlora-opal.vercel.app', topics: ['Leaves & chloroplasts', 'Light reactions', 'Calvin cycle', 'Carbon cycle'] },
-  { slug: 'reacta', title: 'Reacta', subject: 'Chemistry II', guide: 'Mol', accent: '#FF8A4C', accent2: '#FFB347', emoji: '⚗️', scenes: 13, level: 'Intermediate', liveUrl: 'https://reacta-tau.vercel.app', topics: ['Stoichiometry', 'Energy', 'Equilibrium', 'Acids & redox'] },
-  { slug: 'pulse', title: 'Pulse', subject: 'Human Body', guide: 'Pip', accent: '#FF5C5C', accent2: '#FFB347', emoji: '🫀', scenes: 13, level: 'Beginner', liveUrl: 'https://pulse-delta-olive.vercel.app', topics: ['Cells & systems', 'Heart & blood', 'Lungs & breathing', 'Nerves & immunity'] },
-  { slug: 'nimbus', title: 'Nimbus', subject: 'Cloud Computing', guide: 'Nimbus', accent: '#4EA8FF', accent2: '#38E0D0', emoji: '☁️', scenes: 13, level: 'Intermediate', liveUrl: 'https://nimbus-sable.vercel.app', topics: ['Data centers', 'VMs & containers', 'Scaling & CDN', 'Serverless'] },
-  { slug: 'relay', title: 'Relay', subject: 'Networking', guide: 'Packet', accent: '#38E0D0', accent2: '#4EA8FF', emoji: '🌐', scenes: 13, level: 'Intermediate', liveUrl: 'https://relay-alpha-five.vercel.app', topics: ['Packets', 'IP & DNS', 'Routing & TCP', 'HTTPS & the web'] },
+  { slug: 'cogito', title: 'Cogito', subject: 'Foundations of AI', guide: 'Syl', accent: '#A78BFA', accent2: '#38E0D0', emoji: '🤖', scenes: 23, level: 'First year', liveUrl: 'https://cogito-sandy-three.vercel.app', topics: ['What is AI?', 'Turing test', 'Eight foundations', 'History of AI'], source: 'Introduction to AI, Module 1 (slides 5–34)' },
+  { slug: 'bastion', title: 'Bastion', subject: 'Cyber Security', guide: 'Patch', accent: '#36D399', accent2: '#FF5C9A', emoji: '🛡️', scenes: 36, level: '6th semester', liveUrl: 'https://bastion-lime-psi.vercel.app', topics: ['Attack surface', 'Attack vectors', 'Malware & ransomware', 'Anomaly detection'], source: 'Cyber Security, Module 1 (37 slides)' },
+  { slug: 'forge', title: 'Forge', subject: 'Software Engineering', guide: 'Bolt', accent: '#4FD8E8', accent2: '#FFD264', emoji: '🛠️', scenes: 15, level: 'Undergraduate', liveUrl: null, topics: ['Generic vs bespoke', 'Quality attributes', 'Process activities', 'ACM/IEEE ethics'], source: 'Software Engineering, Chapter 1 (12 slides)' },
   { slug: 'axiom', title: 'Axiom', subject: 'Algebra', guide: 'Xan', accent: '#4EA8FF', accent2: '#FFD15C', emoji: '✖️', scenes: 13, level: 'Beginner', liveUrl: 'https://axiom-vert-phi.vercel.app', topics: ['Variables & equations', 'Functions & graphs', 'Slope & systems', 'Quadratics'] },
+  { slug: 'automa', title: 'Automa', subject: 'Automata Theory', guide: 'Tok', accent: '#38E0D0', accent2: '#FFD15C', emoji: '🔁', scenes: 11, level: 'Beginner', liveUrl: 'https://automa-red.vercel.app', topics: ['Reading a sequence', 'States as memory', 'Determinism & completeness', 'Building for a language'] },
+  { slug: 'chlora', title: 'Chlora', subject: 'Biology', guide: 'Sprout', accent: '#36D399', accent2: '#FFD15C', emoji: '🌱', scenes: 13, level: 'Beginner', liveUrl: 'https://chlora-opal.vercel.app', topics: ['Leaves & chloroplasts', 'Light reactions', 'Calvin cycle', 'Carbon cycle'] },
+  { slug: 'flux', title: 'Flux', subject: 'Calculus', guide: 'Delta', accent: '#7CF59A', accent2: '#34E6D6', emoji: '📈', scenes: 13, level: 'Beginner', liveUrl: 'https://flux-alpha-woad.vercel.app', topics: ['Limits', 'Derivatives', 'Riemann sums & integrals', 'Fundamental Theorem'] },
+  { slug: 'elementa', title: 'Elementa', subject: 'Chemistry', guide: 'Ato', accent: '#A78BFA', accent2: '#38E0D0', emoji: '⚛️', scenes: 13, level: 'Beginner', liveUrl: 'https://elementa-six.vercel.app', topics: ['Atoms', 'Electron shells', 'Periodic table', 'Bonding'] },
+  { slug: 'reacta', title: 'Reacta', subject: 'Chemistry II', guide: 'Mol', accent: '#FF8A4C', accent2: '#FFB347', emoji: '⚗️', scenes: 13, level: 'Intermediate', liveUrl: 'https://reacta-tau.vercel.app', topics: ['Stoichiometry', 'Energy', 'Equilibrium', 'Acids & redox'] },
+  { slug: 'nimbus', title: 'Nimbus', subject: 'Cloud Computing', guide: 'Nimbus', accent: '#4EA8FF', accent2: '#38E0D0', emoji: '☁️', scenes: 13, level: 'Intermediate', liveUrl: 'https://nimbus-sable.vercel.app', topics: ['Data centers', 'VMs & containers', 'Scaling & CDN', 'Serverless'] },
+  { slug: 'volta', title: 'Volta', subject: 'Electronics', guide: 'Sparky', accent: '#38E0D0', accent2: '#36D399', emoji: '⚡', scenes: 13, level: 'Beginner', liveUrl: 'https://volta-blush.vercel.app', topics: ['Voltage & current', 'Components', 'Circuits', 'Logic gates'] },
+  { slug: 'helix', title: 'Helix', subject: 'Genetics', guide: 'Gene', accent: '#A78BFA', accent2: '#38E0D0', emoji: '🧬', scenes: 13, level: 'Beginner', liveUrl: 'https://helix-navy.vercel.app', topics: ['Double helix', 'Replication', 'DNA→RNA→protein', 'Inheritance'] },
+  { slug: 'pulse', title: 'Pulse', subject: 'Human Body', guide: 'Pip', accent: '#FF5C5C', accent2: '#FFB347', emoji: '🫀', scenes: 13, level: 'Beginner', liveUrl: 'https://pulse-delta-olive.vercel.app', topics: ['Cells & systems', 'Heart & blood', 'Lungs & breathing', 'Nerves & immunity'] },
+  { slug: 'prism', title: 'Prism', subject: 'Light & Optics', guide: 'Ray', accent: '#FFD15C', accent2: '#38E0D0', emoji: '🔆', scenes: 13, level: 'Beginner', liveUrl: 'https://prism-delta-gules.vercel.app', topics: ['Reflection', 'Refraction', 'Lenses & the eye', 'Colour'] },
+  { slug: 'relay', title: 'Relay', subject: 'Networking', guide: 'Packet', accent: '#38E0D0', accent2: '#4EA8FF', emoji: '🌐', scenes: 13, level: 'Intermediate', liveUrl: 'https://relay-alpha-five.vercel.app', topics: ['Packets', 'IP & DNS', 'Routing & TCP', 'HTTPS & the web'] },
+  { slug: 'pyvisual', title: 'PyVisual', subject: 'Python', guide: 'Py', accent: '#4EA8FF', accent2: '#FFD15C', emoji: '🐍', scenes: 13, level: 'Beginner', liveUrl: 'https://pyvisual.vercel.app', topics: ['Variables & types', 'Booleans & logic', 'Loops', 'Lists & functions'] },
   { slug: 'cvisual', title: 'CVisual', subject: 'C Programming', guide: 'Bit', accent: '#36D399', accent2: '#FFD15C', emoji: '💻', scenes: 34, level: 'Beginner', liveUrl: null, topics: ['I/O & types', 'Booleans', 'Conditionals', 'Loops'] },
+  { slug: 'cosmos', title: 'Cosmos', subject: 'Physics', guide: 'Nova', accent: '#4EA8FF', accent2: '#A78BFA', emoji: '🪐', scenes: 16, level: 'Beginner', liveUrl: null, topics: ['Newton’s laws', 'Gravity', 'Orbits', 'Kepler'] },
 ];
 
 /* ---- "How we work" / approach ---- */

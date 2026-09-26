@@ -56,8 +56,8 @@ const demos = [
         <Eyebrow tone="violet" class="reveal">The catalog</Eyebrow>
         <h2 class="reveal mt-5 text-section" data-delay="1">{curioCourses.length} courses. {totalScenes}+ animated scenes.</h2>
         <p class="reveal mt-4 text-muted" data-delay="2">
-          Each course is a five-act story with its own guide character — {live.length} are live right
-          now, free to preview.
+          Every course is open to try — {live.length} are live right now. The ones built from a college
+          module follow that module slide by slide.
         </p>
       </div>
       <dl class="reveal flex gap-8" data-delay="2">
@@ -98,6 +98,7 @@ const demos = [
             <h3 class="text-xl">{c.title}</h3>
             <span class="text-sm font-medium" style={`color:${c.accent}`}>{c.subject}</span>
           </div>
+          {c.source && <p class="mt-1.5 text-xs text-faint">Built from: {c.source}</p>}
           <p class="mt-1 text-xs text-faint">Guided by {c.guide} · {c.scenes} scenes · {c.level}</p>
 
           <div class="mt-4 flex flex-wrap gap-1.5">
