@@ -192,7 +192,7 @@ export const services: Service[] = [
     title: 'Robotics & Hardware Products',
     tag: 'Hardware × AI',
     summary:
-      'Embedded systems and AI working together in the physical world — from our tablet-faced info robot to PrintFlow, a self-service print kiosk driven entirely from WhatsApp.',
+      'Embedded systems and AI working together in the physical world — from our tablet-faced info robot to PrintnFlow, a self-service printing kiosk already running on a college campus.',
     points: [
       'Robotics & intelligent machines',
       'Product-grade kiosks & vending systems',
@@ -213,6 +213,10 @@ export type Product = {
   icon: string;
   /** Brand mark (public path, dark-background variant) — shown instead of the icon. */
   logo?: string;
+  /** Full logo lockup (mark + wordmark) for dark backgrounds — replaces the icon + name on the product page. */
+  logoFull?: { src: string; width: number; height: number };
+  /** Transparent illustration shown beside the product-page header on wide screens. */
+  heroArt?: { src: string; width: number; height: number; alt: string };
   accent: 'accent' | 'teal' | 'violet' | 'amber';
   status: string;
   summary: string;
@@ -298,21 +302,37 @@ export const products: Product[] = [
   },
   {
     id: 'printflow',
-    slug: 'printflow',
-    name: 'PrintFlow',
-    kicker: 'Self-Service Print Kiosk · WhatsApp Ordering',
+    slug: 'printnflow',
+    name: 'PrintnFlow',
+    kicker: 'Self-Service Printing Kiosk for Colleges',
     icon: 'printer',
+    logo: '/images/brands/printnflow-mark.png',
+    logoFull: { src: '/images/brands/printnflow-logo-dark.webp', width: 464, height: 420 },
+    heroArt: { src: '/images/brands/printnflow-kiosk.webp', width: 700, height: 904, alt: 'Illustration of the PrintnFlow kiosk: scan to print, under a minute, UPI with no cash, no staff needed' },
     accent: 'violet',
-    status: 'Pilot · Hardware',
+    status: 'Pilot · Live at BMSIT&M',
+    url: 'https://printnflow.co.in',
     summary:
-      'A vending machine for printing — send a document on WhatsApp, pick options in chat, and release the job at the kiosk with a 4-digit code.',
+      'The printing counter that never closes — students scan the kiosk’s QR code, upload from their phone, pay by UPI and collect their printout in about a minute. 1,000+ pages printed at BMSIT&M.',
     description:
-      'PrintFlow turns a print shop or campus corner into a self-service print vending machine, with WhatsApp as the entire interface. Customers send a document to the PrintFlow number, a conversational bot walks them through copies, colour, paper size, sides, and page ranges, and the job waits in a secure cloud queue. At the kiosk, a 4-digit on-screen code releases their prints — documents ordered from anywhere only print when the right person is standing at the machine.',
+      'PrintnFlow is a self-service printing kiosk built for colleges. A student scans the QR code on the kiosk screen, uploads the document from their phone, picks copies and options, pays digitally and collects the printout — about a minute, with no queue, no cash and no staff involved. Between print jobs the screen doubles as a campus display for announcements and events. Our first kiosk has been running on the ground floor of the Sir M. V. Block at BMSIT&M, where it has printed 1,000+ pages for real students — and students and faculty have asked for more blocks.',
     features: [
-      { title: 'Order from WhatsApp', body: 'No app, no signup — a guided chat flow that accepts 9 file formats including PDF, Office documents, and images.' },
-      { title: 'Full print control in chat', body: 'Copies, B&W or colour, A4/A3/Letter, single or double-sided, and page ranges like "1-3,7,10-12" — with the exact price quoted before you confirm.' },
-      { title: 'Code-verified pickup', body: 'Jobs are held in a secure queue until the customer relays the kiosk’s 4-digit code — then everything they queued prints in one go.' },
-      { title: 'Cloud-backed kiosk', body: 'A cloud print service dispatches to the physical kiosk printer, with live pricing and job tracking by ID straight from the chat.' },
+      { title: 'Scan, upload, pay, collect', body: 'Scan the QR on the kiosk, choose the PDF on your phone, pick copies and print options, pay by UPI and collect. The screen guides every step, and documents are released only at the kiosk for the student who sent them.' },
+      { title: 'Honest, monitored printing', body: 'Progress is shown page by page, and paper-out or a jam appears on screen immediately instead of failing silently. Every order is recorded, with usage and uptime visible to the administration.' },
+      { title: 'Runs on its own', body: 'A colour laser printer that prints up to 1,000 pages at one refill, at a running cost of about 45–60 paise a page. The college owns the kiosk, sets its own per-page rates and keeps the printing revenue.' },
+      { title: 'Proven, then scaled', body: '1,000+ pages printed by students at BMSIT&M. Colleges can start with one kiosk at a busy spot, review real usage and feedback, then extend to more blocks, the library and hostels on one platform.' },
+    ],
+    highlights: ['BMS Institute of Technology & Management (BMSIT&M)'],
+    chips: ['1,000+ pages printed', '~1 min scan to print', 'UPI · no cash', 'No staff needed'],
+    image: {
+      src: '/images/products/printnflow/kiosk-students.jpg',
+      alt: 'Four students next to the PrintnFlow kiosk at BMSIT&M, one holding a freshly printed document',
+      width: 820,
+      height: 606,
+    },
+    gallery: [
+      { src: '/images/products/printnflow/kiosk-scan.jpg', alt: 'A student scanning the QR code on the PrintnFlow kiosk screen with their phone', width: 760, height: 670 },
+      { src: '/images/products/printnflow/kiosk-screen.jpg', alt: 'Students gathered at the PrintnFlow kiosk screen, scanning to print', width: 600, height: 459 },
     ],
   },
   {

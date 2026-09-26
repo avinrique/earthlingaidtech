@@ -14,7 +14,7 @@ const { heading = true } = Astro.props;
 // everything else sits in an even row of compact cards below, so no card is
 // stretched to match a taller neighbour.
 const showcased = products.filter((p) => !p.lowKey);
-const featured = showcased.filter((p) => p.image).slice(0, 2);
+const featured = showcased.filter((p) => p.image).slice(0, 3);
 const rest = showcased.filter((p) => !featured.includes(p));
 
 // Full class strings so Tailwind can see them.
@@ -37,7 +37,7 @@ const tone: Record<Product['accent'], { text: string; pill: string; tile: string
     )}
 
     <!-- Featured: equal-weight cards, screenshot first -->
-    <div class:list={['grid gap-5 lg:grid-cols-2', heading ? 'mt-14' : 'mt-2']}>
+    <div class:list={['grid gap-5', featured.length >= 3 ? 'md:grid-cols-2 xl:grid-cols-3' : 'lg:grid-cols-2', heading ? 'mt-14' : 'mt-2']}>
       {featured.map((p, i) => {
         const t = tone[p.accent];
         return (
@@ -52,7 +52,7 @@ const tone: Record<Product['accent'], { text: string; pill: string; tile: string
                 alt={p.image!.alt}
                 formats={['avif', 'webp']}
                 widths={[480, 720, 960, 1280]}
-                sizes="(min-width: 1024px) 600px, 100vw"
+                sizes="(min-width: 1280px) 400px, (min-width: 768px) 50vw, 100vw"
                 loading="lazy"
                 decoding="async"
                 class="size-full object-cover object-top transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:scale-[1.03]"
