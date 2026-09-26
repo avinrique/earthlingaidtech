@@ -92,7 +92,9 @@ const productSchema = [
       <div class="mt-8 flex flex-col items-start gap-6">
         <div class="reveal flex items-center gap-4">
           <div class:list={['grid size-16 place-items-center rounded-2xl ring-1 ring-inset', a.bg, a.ring]}>
-            <Icon name={`lucide:${product.icon}`} class:list={['size-8', a.text]} aria-hidden="true" />
+            {product.logo
+              ? <img src={product.logo} alt="" width="40" height="40" class="size-10" />
+              : <Icon name={`lucide:${product.icon}`} class:list={['size-8', a.text]} aria-hidden="true" />}
           </div>
           <span class:list={['rounded-full border px-3 py-1 font-mono text-[0.65rem] uppercase tracking-[0.14em]', a.border, a.bg, a.text]}>
             {product.status}

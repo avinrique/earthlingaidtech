@@ -3,20 +3,26 @@ import { Icon } from 'astro-icon/components';
 import { Picture } from 'astro:assets';
 import SectionHeading from '../SectionHeading.astro';
 import { asset } from '@/lib/images';
-import { products } from '@/data/site';
+import { products, type Product } from '@/data/site';
 
 interface Props {
   heading?: boolean;
 }
 const { heading = true } = Astro.props;
 
+// Products with a real screenshot get the big featured cards (two side by side);
+// everything else sits in an even row of compact cards below, so no card is
+// stretched to match a taller neighbour.
 const showcased = products.filter((p) => !p.lowKey);
-const [flagship, ...rest] = showcased;
-const accentText: Record<string, string> = {
-  accent: 'text-accent',
-  teal: 'text-teal',
-  violet: 'text-violet',
-  amber: 'text-amber',
+const featured = showcased.filter((p) => p.image).slice(0, 2);
+const rest = showcased.filter((p) => !featured.includes(p));
+
+// Full class strings so Tailwind can see them.
+const tone: Record<Product['accent'], { text: string; pill: string; tile: string; hover: string }> = {
+  accent: { text: 'text-accent', pill: 'border-accent/30 bg-accent/10 text-accent', tile: 'bg-accent/10 ring-accent/30', hover: 'hover:border-accent/40' },
+  teal: { text: 'text-teal', pill: 'border-teal/30 bg-teal/10 text-teal', tile: 'bg-teal/10 ring-teal/30', hover: 'hover:border-teal/40' },
+  violet: { text: 'text-violet', pill: 'border-violet/30 bg-violet/10 text-violet', tile: 'bg-violet/10 ring-violet/30', hover: 'hover:border-violet/40' },
+  amber: { text: 'text-amber', pill: 'border-amber/30 bg-amber/10 text-amber', tile: 'bg-amber/10 ring-amber/30', hover: 'hover:border-amber/40' },
 };
 ---
 
@@ -26,81 +32,97 @@ const accentText: Record<string, string> = {
       <SectionHeading
         eyebrow="Products"
         title="Things we've <span class='text-accent'>shipped</span>"
-        subtitle="A product company at heart — exam platforms live in classrooms, a learning platform on the way, and hardware on the bench."
+        subtitle="A product company at heart — an exam platform live in classrooms, interactive courses for colleges, and hardware on the bench."
       />
     )}
 
-    <div class:list={['grid gap-4 lg:grid-cols-2', heading ? 'mt-14' : 'mt-2']}>
-      <!-- Flagship -->
-      <a
-        href={`/products/${flagship.slug}/`}
-        class="reveal group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-line bg-surface/40 p-8 transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 lg:row-span-2 lg:p-10"
-      >
-        <div class="glow-accent pointer-events-none absolute -right-20 -top-20 size-72 opacity-50 transition-opacity duration-300 group-hover:opacity-80"></div>
-        <div class="relative">
-          <div class="flex items-center justify-between">
-            <div class="grid size-14 place-items-center rounded-2xl bg-accent/10 ring-1 ring-inset ring-accent/30">
-              <Icon name={`lucide:${flagship.icon}`} class="size-7 text-accent" aria-hidden="true" />
-            </div>
-            <span class="rounded-full border border-accent/30 bg-accent/10 px-3 py-1 font-mono text-[0.65rem] uppercase tracking-[0.14em] text-accent">
-              {flagship.status}
-            </span>
-          </div>
-
-          <h3 class="mt-7 font-display text-3xl font-semibold text-ink lg:text-4xl">{flagship.name}</h3>
-          <p class="mt-1 text-sm font-medium text-accent">{flagship.kicker}</p>
-          <p class="mt-4 max-w-md text-base leading-relaxed text-muted">{flagship.description}</p>
-        </div>
-
-        <div class="relative mt-8">
-          {flagship.image && (
-            <div class="overflow-hidden rounded-xl border border-line shadow-card">
+    <!-- Featured: equal-weight cards, screenshot first -->
+    <div class:list={['grid gap-5 lg:grid-cols-2', heading ? 'mt-14' : 'mt-2']}>
+      {featured.map((p, i) => {
+        const t = tone[p.accent];
+        return (
+          <a
+            href={`/products/${p.slug}/`}
+            class:list={['reveal group relative flex flex-col overflow-hidden rounded-3xl border border-line bg-surface/40 transition-all duration-300 hover:-translate-y-1', t.hover]}
+            data-delay={String(i + 1)}
+          >
+            <div class="relative aspect-[16/9] overflow-hidden border-b border-line bg-white/[0.02]">
               <Picture
-                src={asset(flagship.image.src)}
-                alt={flagship.image.alt}
+                src={asset(p.image!.src)}
+                alt={p.image!.alt}
                 formats={['avif', 'webp']}
-                widths={[400, 640, 900]}
-                sizes="(min-width: 1024px) 480px, (min-width: 640px) 90vw, 100vw"
+                widths={[480, 720, 960, 1280]}
+                sizes="(min-width: 1024px) 600px, 100vw"
                 loading="lazy"
                 decoding="async"
-                class="h-auto w-full object-cover transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:scale-[1.03]"
+                class="size-full object-cover object-top transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:scale-[1.03]"
               />
             </div>
-          )}
-          <p class="mt-6 font-mono text-xs uppercase tracking-[0.16em] text-faint">Deployed at</p>
-          <div class="mt-3 flex flex-wrap gap-2">
-            {flagship.highlights?.map((h) => (
-              <span class="rounded-lg border border-line bg-white/[0.02] px-3 py-1.5 text-sm text-body">{h}</span>
-            ))}
-          </div>
-          <span class="mt-7 inline-flex items-center gap-2 font-medium text-accent">
-            Explore {flagship.name}
-            <Icon name="lucide:arrow-right" class="size-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
-          </span>
-        </div>
-      </a>
 
-      <!-- Other products -->
-      {rest.map((p) => (
-        <a
-          href={`/products/${p.slug}/`}
-          class="reveal group relative flex flex-col overflow-hidden rounded-3xl border border-line bg-surface/40 p-8 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
-        >
-          <div class="flex items-center justify-between">
-            <div class="grid size-12 place-items-center rounded-xl bg-white/[0.03] ring-1 ring-inset ring-line-strong">
-              <Icon name={`lucide:${p.icon}`} class:list={['size-6', accentText[p.accent]]} aria-hidden="true" />
+            <div class="flex flex-1 flex-col p-7 lg:p-8">
+              <div class="flex items-center gap-3.5">
+                <div class:list={['grid size-12 shrink-0 place-items-center rounded-xl ring-1 ring-inset', p.logo ? 'bg-white/[0.03] ring-line-strong' : t.tile]}>
+                  {p.logo
+                    ? <img src={p.logo} alt="" width="30" height="30" class="size-[30px]" />
+                    : <Icon name={`lucide:${p.icon}`} class:list={['size-6', t.text]} aria-hidden="true" />}
+                </div>
+                <span class:list={['rounded-full border px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.14em]', t.pill]}>
+                  {p.status}
+                </span>
+              </div>
+              <h3 class="mt-5 font-display text-2xl font-semibold leading-tight text-ink lg:text-[1.7rem]">{p.name}</h3>
+              <p class:list={['mt-1 text-sm font-medium', t.text]}>{p.kicker}</p>
+
+              <p class="mt-5 text-[0.98rem] leading-relaxed text-muted">{p.summary}</p>
+
+              {(p.chips ?? p.highlights ?? []).length > 0 && (
+                <div class="mt-5 flex flex-wrap gap-2">
+                  {(p.chips ?? p.highlights ?? []).map((h) => (
+                    <span class="rounded-lg border border-line bg-white/[0.02] px-2.5 py-1 text-xs text-body">{h}</span>
+                  ))}
+                </div>
+              )}
+
+              <span class:list={['mt-auto inline-flex items-center gap-2 pt-7 font-medium', t.text]}>
+                Explore {p.name}
+                <Icon name="lucide:arrow-right" class="size-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+              </span>
             </div>
-            <span class="font-mono text-[0.65rem] uppercase tracking-[0.14em] text-faint">{p.status}</span>
-          </div>
-          <h3 class="mt-5 text-xl">{p.name}</h3>
-          <p class:list={['mt-1 text-sm font-medium', accentText[p.accent]]}>{p.kicker}</p>
-          <p class="mt-3 text-[0.95rem] leading-relaxed text-muted">{p.summary}</p>
-          <span class="mt-5 inline-flex items-center gap-2 text-sm font-medium text-body transition-colors group-hover:text-ink">
-            Learn more
-            <Icon name="lucide:arrow-right" class="size-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
-          </span>
-        </a>
-      ))}
+          </a>
+        );
+      })}
     </div>
+
+    <!-- Everything else: one even row -->
+    {rest.length > 0 && (
+      <div class:list={['mt-5 grid gap-5 sm:grid-cols-2', rest.length >= 3 ? 'lg:grid-cols-3' : '']}>
+        {rest.map((p, i) => {
+          const t = tone[p.accent];
+          return (
+            <a
+              href={`/products/${p.slug}/`}
+              class="reveal group flex flex-col rounded-3xl border border-line bg-surface/40 p-7 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
+              data-delay={String((i % 3) + 1)}
+            >
+              <div class="flex items-center justify-between gap-3">
+                <div class:list={['grid size-11 place-items-center rounded-xl ring-1 ring-inset', p.logo ? 'bg-white/[0.03] ring-line-strong' : t.tile]}>
+                  {p.logo
+                    ? <img src={p.logo} alt="" width="26" height="26" class="size-[26px]" />
+                    : <Icon name={`lucide:${p.icon}`} class:list={['size-5', t.text]} aria-hidden="true" />}
+                </div>
+                <span class="font-mono text-[0.6rem] uppercase tracking-[0.14em] text-faint">{p.status}</span>
+              </div>
+              <h3 class="mt-5 text-lg">{p.name}</h3>
+              <p class:list={['mt-0.5 text-sm font-medium', t.text]}>{p.kicker}</p>
+              <p class="mt-3 text-[0.93rem] leading-relaxed text-muted">{p.summary}</p>
+              <span class="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-medium text-body transition-colors group-hover:text-ink">
+                Learn more
+                <Icon name="lucide:arrow-right" class="size-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+              </span>
+            </a>
+          );
+        })}
+      </div>
+    )}
   </div>
 </section>

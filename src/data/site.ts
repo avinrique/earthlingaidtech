@@ -211,12 +211,16 @@ export type Product = {
   name: string;
   kicker: string;
   icon: string;
+  /** Brand mark (public path, dark-background variant) — shown instead of the icon. */
+  logo?: string;
   accent: 'accent' | 'teal' | 'violet' | 'amber';
   status: string;
   summary: string;
   description: string;
   features: { title: string; body: string }[];
   highlights?: string[];
+  /** Short facts shown as chips on the homepage card (falls back to highlights). */
+  chips?: string[];
   /** Live product URL, when one exists. */
   url?: string;
   /** Primary screenshot / hero shot. */
@@ -270,6 +274,14 @@ export const products: Product[] = [
     name: 'Twiddle Labs',
     kicker: 'Interactive Courses for Colleges',
     icon: 'orbit',
+    logo: '/images/brands/twiddle-labs-mark.svg',
+    chips: ['18 courses', '291 animated scenes', '15 live', 'Built from college modules'],
+    image: {
+      src: '/images/products/twiddle-labs/site-home.jpg',
+      alt: 'The Twiddle Labs homepage: "Your module’s slides, rebuilt as things students can move", beside a live circuit scene from the Volta course',
+      width: 1600,
+      height: 801,
+    },
     accent: 'teal',
     status: 'Product · Live',
     url: 'https://www.twiddlelabs.com',
