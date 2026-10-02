@@ -125,6 +125,24 @@
       "logo": "/images/clients/everchiq.png",
       "sort_order": 13,
       "active": true
+    },
+    {
+      "id": 15,
+      "name": "Topline Services",
+      "note": "Appliance repair · Bengaluru",
+      "url": "https://toplineservices.co.in/",
+      "logo": null,
+      "sort_order": 14,
+      "active": true
+    },
+    {
+      "id": 16,
+      "name": "CM Car Care",
+      "note": "Car service · Bengaluru",
+      "url": null,
+      "logo": null,
+      "sort_order": 15,
+      "active": true
     }
   ],
   "settings": {

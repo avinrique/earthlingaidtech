@@ -71,6 +71,7 @@ export const site = {
     },
   ],
   social: {
+    linkedin: 'https://www.linkedin.com/company/earthling-aid-tech/',
     github: 'https://github.com/avinrique',
   },
 } as const;
@@ -110,7 +111,7 @@ export const stats: { value: string; label: string; accent?: string }[] = [
   { value: studentsTrained, label: 'Students trained', accent: 'accent' },
   { value: '6', label: 'Products built', accent: 'teal' },
   { value: '2', label: 'Prepzer0 deployments', accent: 'violet' },
-  { value: '13+', label: 'Client partners', accent: 'amber' },
+  { value: '15+', label: 'Client partners', accent: 'amber' },
 ];
 
 /* ---- Capabilities / services ---- */

@@ -78,6 +78,9 @@ const year = new Date().getFullYear(); // stamped at build time, not hardcoded
       <p>© {year} {site.legalName}. All rights reserved.</p>
       <div class="flex items-center gap-5">
         <a href={`mailto:${site.email}`} class="block py-1.5 transition-colors hover:text-ink">{site.email}</a>
+        <a href={site.social.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn (opens in a new tab)" class="-m-2 grid size-11 place-items-center rounded-full transition-colors hover:bg-white/5 hover:text-ink">
+          <Icon name="lucide:linkedin" class="size-5" aria-hidden="true" />
+        </a>
         <a href={site.social.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub (opens in a new tab)" class="-m-2 grid size-11 place-items-center rounded-full transition-colors hover:bg-white/5 hover:text-ink">
           <Icon name="lucide:github" class="size-5" aria-hidden="true" />
         </a>
