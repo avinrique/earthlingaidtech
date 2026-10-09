@@ -15,6 +15,12 @@
  *   [data-steps]          process steps whose rules fill in sequence as you scroll
  *   [data-parallax]       image that drifts inside its frame
  *   [data-hero]           hero copy lifts away / brand mark leans as you scroll and point
+ *   [data-scrub]          statement text whose words light up as it scrolls through
+ *   [data-clip]           photo that wipes open and settles as it enters
+ *   [data-zoom]           hero screenshot that grows to full size as it scrolls up
+ *   [data-drift]          oversized outlined word that slides sideways with scroll
+ *   [data-nav]            desktop nav: a pill glides to the hovered link
+ *   (cursor light)        a soft glow trails the pointer across the page (fine pointers)
  */
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -34,9 +40,15 @@ export function initMotion() {
   stack();
   steps();
   parallax();
+  scrubText();
+  clipReveal();
+  zoomIn();
+  drift();
   if (finePointer) {
     tilt();
     magnetic();
+    navPill();
+    cursorLight();
   }
   // Fonts and lazy images change layout after first measure.
   document.fonts?.ready.then(() => ScrollTrigger.refresh());
@@ -58,10 +70,12 @@ function splitHeadings() {
     // The safety timeout in Base.astro may already have revealed it on a slow connection;
     // animating it now would make visible text vanish and replay.
     if (el.hasAttribute('data-split-ready')) return;
-    const isHero = el.dataset.split === 'hero';
+    const mode = el.dataset.split; // 'hero' (3D letters) · 'chars' (letters rise) · default words
+    const isHero = mode === 'hero';
+    const byChar = isHero || mode === 'chars';
 
     SplitText.create(el, {
-      type: isHero ? 'lines,words,chars' : 'lines,words',
+      type: byChar ? 'lines,words,chars' : 'lines,words',
       mask: 'lines',
       linesClass: 'split-line',
       wordsClass: 'split-word',
@@ -73,7 +87,7 @@ function splitHeadings() {
         // the gradient, sized and offset to the wrapper, so it still reads as one sweep.
         el.querySelectorAll<HTMLElement>('.text-gradient').forEach((g) => {
           const box = g.getBoundingClientRect();
-          g.querySelectorAll<HTMLElement>(isHero ? '.split-char' : '.split-word').forEach((p) => {
+          g.querySelectorAll<HTMLElement>(byChar ? '.split-char' : '.split-word').forEach((p) => {
             const r = p.getBoundingClientRect();
             p.classList.add('text-gradient');
             p.style.backgroundSize = `${box.width}px ${box.height}px`;
@@ -93,6 +107,15 @@ function splitHeadings() {
             ease: 'expo.out',
             stagger: 0.02,
             delay: 0.1,
+          });
+        }
+        if (byChar) {
+          return gsap.from(self.chars, {
+            yPercent: 110,
+            duration: 1.1,
+            ease: 'expo.out',
+            stagger: 0.03,
+            scrollTrigger: { trigger: el, start: 'top 95%', once: true },
           });
         }
         return gsap.from(self.words, {
@@ -301,5 +324,120 @@ function magnetic() {
       y((e.clientY - (r.top + r.height / 2)) * 0.38);
     });
     el.addEventListener('pointerleave', () => { x(0); y(0); });
+  });
+}
+
+/* ---- Statement text: every word starts dim and lights up as the passage scrolls through the
+   middle of the screen — reading pace set by the reader's own scroll. ---- */
+function scrubText() {
+  document.querySelectorAll<HTMLElement>('[data-scrub]').forEach((el) => {
+    SplitText.create(el, {
+      type: 'words',
+      wordsClass: 'scrub-word',
+      autoSplit: true,
+      onSplit(self) {
+        return gsap.fromTo(
+          self.words,
+          { opacity: 0.16 },
+          {
+            opacity: 1,
+            ease: 'none',
+            stagger: 0.12,
+            scrollTrigger: { trigger: el, start: 'top 82%', end: 'bottom 48%', scrub: 0.5 },
+          },
+        );
+      },
+    });
+  });
+}
+
+/* ---- Photos wipe open from a rounded inset while the image inside settles from a zoom. Uses
+   clip-path only on the frame, so it never fights the frame's own `.reveal` transform. ---- */
+function clipReveal() {
+  document.querySelectorAll<HTMLElement>('[data-clip]').forEach((frame) => {
+    const img = frame.querySelector('img');
+    const tl = gsap.timeline({ scrollTrigger: { trigger: frame, start: 'top 92%', once: true } });
+    tl.fromTo(
+      frame,
+      { clipPath: 'inset(14% 10% 14% 10% round 24px)' },
+      { clipPath: 'inset(0% 0% 0% 0% round 0px)', duration: 1.25, ease: 'expo.out', clearProps: 'clipPath' },
+    );
+    if (img) tl.fromTo(img, { scale: 1.3 }, { scale: 1, duration: 1.6, ease: 'expo.out', clearProps: 'scale' }, 0);
+  });
+}
+
+/* ---- Hero screenshot grows from a framed card to full width as it scrolls up the page. ---- */
+function zoomIn() {
+  document.querySelectorAll<HTMLElement>('[data-zoom]').forEach((el) => {
+    gsap.fromTo(
+      el,
+      { scale: 0.86, rotateX: 12, transformPerspective: 1400, transformOrigin: '50% 100%' },
+      { scale: 1, rotateX: 0, ease: 'none', scrollTrigger: { trigger: el, start: 'top bottom', end: 'top 25%', scrub: true } },
+    );
+  });
+}
+
+/* ---- Oversized outlined words slide sideways as their section scrolls by. ---- */
+function drift() {
+  document.querySelectorAll<HTMLElement>('[data-drift]').forEach((el) => {
+    const section = el.closest('section') ?? el;
+    gsap.fromTo(
+      el,
+      { xPercent: 0 },
+      { xPercent: -22, ease: 'none', scrollTrigger: { trigger: section, start: 'top top', end: 'bottom top', scrub: true } },
+    );
+  });
+}
+
+/* ---- Desktop nav: one pill glides between links on hover and rests under the current page. ---- */
+function navPill() {
+  const nav = document.querySelector<HTMLElement>('[data-nav]');
+  if (!nav) return;
+  const links = [...nav.querySelectorAll<HTMLElement>('a')];
+  if (!links.length) return;
+  const pill = document.createElement('span');
+  pill.className = 'nav-pill';
+  pill.setAttribute('aria-hidden', 'true');
+  nav.prepend(pill);
+  const current = links.find((l) => l.getAttribute('aria-current') === 'page') ?? null;
+
+  const moveTo = (link: HTMLElement | null, instant = false) => {
+    if (!link) {
+      gsap.to(pill, { opacity: 0, duration: 0.25 });
+      return;
+    }
+    const vars = { x: link.offsetLeft, width: link.offsetWidth, opacity: 1 };
+    if (instant) gsap.set(pill, vars);
+    else gsap.to(pill, { ...vars, duration: 0.45, ease: 'expo.out' });
+  };
+  moveTo(current, true);
+  links.forEach((l) => l.addEventListener('pointerenter', () => moveTo(l)));
+  nav.addEventListener('pointerleave', () => moveTo(current));
+  window.addEventListener('resize', () => moveTo(current, true));
+}
+
+/* ---- A soft light that trails the pointer, painted under the content. One fixed element moved
+   with transforms only, so it never triggers layout or repaints the page. ---- */
+function cursorLight() {
+  const light = document.createElement('div');
+  light.className = 'cursor-light';
+  light.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(light);
+  const x = gsap.quickTo(light, 'x', { duration: 0.9, ease: 'power3.out' });
+  const y = gsap.quickTo(light, 'y', { duration: 0.9, ease: 'power3.out' });
+  let shown = false;
+  window.addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse') return;
+    x(e.clientX);
+    y(e.clientY);
+    if (!shown) {
+      shown = true;
+      gsap.set(light, { x: e.clientX, y: e.clientY });
+      gsap.to(light, { opacity: 1, duration: 0.6 });
+    }
+  }, { passive: true });
+  document.documentElement.addEventListener('pointerleave', () => {
+    shown = false;
+    gsap.to(light, { opacity: 0, duration: 0.6 });
   });
 }

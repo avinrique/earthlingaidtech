@@ -67,6 +67,7 @@ const accentMap: Record<string, { text: string; ring: string }> = {
     eyebrow="Workshops & training"
     title="We bring the lab <span class='text-gradient'>to your campus</span>"
     subtitle="Industry-grade, hands-on workshops led by working engineers — not slideware. From Agentic AI to Ethical Hacking, students leave having actually built and broken real systems."
+    ghost="Workshops"
   />
 
   <!-- Stats -->
@@ -78,7 +79,7 @@ const accentMap: Record<string, { text: string; ring: string }> = {
         {stats.map((s, i) => (
           <div class="reveal flex flex-col rounded-2xl border border-line bg-surface/30 p-6 text-center md:p-7" data-delay={String((i % 4) + 1)}>
             <dt class="order-2 mt-2 text-sm text-faint">{s.label}</dt>
-            <dd class="order-1 font-display text-4xl font-semibold text-ink md:text-5xl">{s.value}</dd>
+            <dd class="order-1 font-display text-4xl font-semibold tabular-nums text-ink md:text-5xl" data-count>{s.value}</dd>
           </div>
         ))}
       </dl>
@@ -91,7 +92,7 @@ const accentMap: Record<string, { text: string; ring: string }> = {
       <div class="flex flex-wrap items-end justify-between gap-6">
         <div class="max-w-2xl">
           <Eyebrow tone="teal" class="reveal">On the ground</Eyebrow>
-          <h2 class="reveal mt-5 text-section" data-delay="1">Moments from our sessions</h2>
+          <h2 class="mt-5 text-section" data-split>Moments from our sessions</h2>
           <p class="reveal mt-4 text-muted" data-delay="2">
             Packed labs, full rooms, and students shipping real things by the end of the day. A
             glimpse of the energy we bring to every campus we walk into.
@@ -104,7 +105,7 @@ const accentMap: Record<string, { text: string; ring: string }> = {
           {gallery.map((g, i) => (
             <figure
               class:list={[
-                'reveal group relative overflow-hidden rounded-2xl border border-line bg-surface/40',
+                'group relative overflow-hidden rounded-2xl border border-line bg-surface/40',
                 // Spans only from lg, where the grid is 4 columns. In the 2-column
                 // phone/tablet layout a `col-span-2` item cannot fit beside an
                 // active `row-span-2` one, so the packer pushes it down a row and
@@ -112,7 +113,7 @@ const accentMap: Record<string, { text: string; ring: string }> = {
                 g.span === 'wide' && 'lg:col-span-2',
                 g.span === 'tall' && 'lg:row-span-2',
               ]}
-              data-delay={String((i % 4) + 1)}
+              data-clip
             >
               <Picture
                 src={asset(g.src)}
@@ -173,7 +174,7 @@ const accentMap: Record<string, { text: string; ring: string }> = {
     <div class="container-app">
       <div class="max-w-2xl">
         <Eyebrow tone="violet" class="reveal">What we teach</Eyebrow>
-        <h2 class="reveal mt-5 text-section" data-delay="1">Seven tracks, one standard: build it yourself</h2>
+        <h2 class="mt-5 text-section" data-split>Seven tracks, one standard: build it yourself</h2>
         <p class="reveal mt-4 text-muted" data-delay="2">
           Every track is a guided lab. Students don't just watch — they configure, code, deploy, and
           troubleshoot real systems with us in the room.
@@ -186,7 +187,9 @@ const accentMap: Record<string, { text: string; ring: string }> = {
           return (
             <div
               class="reveal group relative overflow-hidden rounded-2xl border border-line bg-surface/30 p-6 transition-all duration-300 hover:border-line-strong"
+              style={`--tilt-tone: var(--color-${t.accent})`}
               data-delay={String((i % 3) + 1)}
+              data-tilt
             >
               <div class:list={[
                 'grid size-11 place-items-center rounded-xl bg-white/[0.03] ring-1 ring-inset ring-line-strong transition-colors',
@@ -208,7 +211,7 @@ const accentMap: Record<string, { text: string; ring: string }> = {
     <div class="container-app">
       <div class="max-w-2xl">
         <Eyebrow class="reveal">Who runs the room</Eyebrow>
-        <h2 class="reveal mt-5 text-section" data-delay="1">Led by engineers who ship</h2>
+        <h2 class="mt-5 text-section" data-split>Led by engineers who ship</h2>
         <p class="reveal mt-4 text-muted" data-delay="2">
           Sessions are headlined by our lead instructors and backed by a full multidisciplinary team
           — so labs stay hands-on and no student gets left behind.
@@ -217,7 +220,7 @@ const accentMap: Record<string, { text: string; ring: string }> = {
 
       <div class="mt-12 grid gap-5 lg:grid-cols-2">
         {speakers.map((sp, i) => (
-          <div class="reveal flex flex-col gap-5 rounded-3xl border border-line bg-surface/30 p-7 sm:flex-row md:p-8" data-delay={String((i % 2) + 1)}>
+          <div class="reveal relative flex flex-col gap-5 rounded-3xl border border-line bg-surface/30 p-7 sm:flex-row md:p-8" data-delay={String((i % 2) + 1)} data-tilt="4">
             <div class="grid size-16 shrink-0 place-items-center rounded-2xl bg-white/[0.03] font-display text-2xl font-semibold text-accent ring-1 ring-inset ring-line-strong">
               {sp.name.split(' ').map((n) => n[0]).slice(0, 2).join('')}
             </div>
@@ -272,7 +275,7 @@ const accentMap: Record<string, { text: string; ring: string }> = {
             we'll bring the labs, the team, and the energy.
           </p>
           <div class="mt-8 flex flex-wrap justify-center gap-3">
-            <Button href="/contact/" variant="primary" size="lg" iconRight="arrow-right">Request a workshop</Button>
+            <Button href="/contact/" variant="primary" size="lg" iconRight="arrow-right" data-magnetic>Request a workshop</Button>
             <Button href="/services/" variant="secondary" size="lg">See what we build</Button>
           </div>
         </div>

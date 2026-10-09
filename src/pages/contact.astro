@@ -20,6 +20,7 @@ const mailto = `mailto:${site.email}?subject=${subject}&body=${body}`;
     eyebrow="Contact"
     title="Let's build <span class='text-gradient'>intelligent systems</span> that matter"
     subtitle="Tell us about your institution, organization, or product. We'll get back to you with a practical, execution-focused plan."
+    ghost="Let's talk"
   />
 
   <section class="py-16 md:py-24">
@@ -31,7 +32,7 @@ const mailto = `mailto:${site.email}?subject=${subject}&body=${body}`;
       <aside class="flex flex-col gap-4">
         <a
           href={mailto}
-          class="reveal group flex flex-col rounded-2xl border border-line bg-surface/30 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
+          class="reveal group relative flex flex-col rounded-2xl border border-line bg-surface/30 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong" data-tilt="5"
           data-delay="1"
         >
           <Icon name="lucide:mail" class="size-6 text-accent" aria-hidden="true" />
@@ -50,7 +51,7 @@ const mailto = `mailto:${site.email}?subject=${subject}&body=${body}`;
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
           <a
             href={`mailto:${site.emailAlt}`}
-            class="reveal group flex flex-col rounded-2xl border border-line bg-surface/30 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
+            class="reveal group relative flex flex-col rounded-2xl border border-line bg-surface/30 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong" data-tilt="5"
             data-delay="2"
           >
             <Icon name="lucide:inbox" class="size-6 text-teal" aria-hidden="true" />

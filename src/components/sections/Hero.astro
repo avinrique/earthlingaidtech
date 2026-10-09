@@ -2,17 +2,18 @@
 import Eyebrow from '../Eyebrow.astro';
 import CubeModel from '../CubeModel.astro';
 import Button from '../Button.astro';
+import WaveField from '../WaveField.astro';
 import { stats } from '@/data/site';
 ---
 
-<section class="relative isolate overflow-hidden lg:flex lg:min-h-[100svh] lg:items-center" data-hero>
+<section class="relative isolate overflow-hidden lg:flex lg:min-h-[100svh] lg:items-center" data-hero data-wave-area>
   <!-- Decorative background -->
   <div class="pointer-events-none absolute inset-0 -z-10">
     <div class="bg-grid absolute inset-0 opacity-[0.5] [mask-image:radial-gradient(ellipse_80%_60%_at_50%_0%,black,transparent_75%)]"></div>
     <div class="glow-accent absolute -top-40 left-1/2 size-[820px] max-w-[160vw] -translate-x-1/2 opacity-60"></div>
     <div class="absolute -top-24 right-[8%] size-[420px] max-w-[90vw] rounded-full opacity-40 blur-3xl" style="background:radial-gradient(closest-side,rgba(45,212,191,0.18),transparent)"></div>
     <!-- 3D particle field (scripts/hero-wave.ts); stays transparent wherever WebGL is skipped -->
-    <canvas class="hero-wave absolute inset-x-0 bottom-0 h-[72%] w-full" data-wave aria-hidden="true"></canvas>
+    <WaveField class="absolute inset-x-0 bottom-0 h-[72%] w-full" />
     <div class="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-line-strong to-transparent"></div>
   </div>
 
@@ -73,14 +74,6 @@ import { stats } from '@/data/site';
 </section>
 
 <style>
-  .hero-wave {
-    opacity: 0;
-    transition: opacity 1.4s ease;
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 38%, #000 82%, transparent 100%);
-            mask-image: linear-gradient(to bottom, transparent 0%, #000 38%, #000 82%, transparent 100%);
-  }
-  .hero-wave[data-ready] { opacity: 1; }
-
   .scroll-cue::after {
     content: '';
     position: absolute;
@@ -93,26 +86,3 @@ import { stats } from '@/data/site';
     100% { transform: translateY(100%); }
   }
 </style>
-
-<script>
-  /**
-   * Gate for the particle wave. It is cheap (one draw call, no three.js), so unlike the WebGL
-   * cube it also runs on phones — just not for reduced motion, data saver, or weak devices.
-   */
-  const canvas = document.querySelector<HTMLCanvasElement>('[data-wave]');
-  const area = document.querySelector<HTMLElement>('[data-hero]');
-  if (canvas && area) {
-    type NetInfo = { saveData?: boolean; effectiveType?: string };
-    const conn = (navigator as Navigator & { connection?: NetInfo }).connection;
-    const capable =
-      !window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
-      !conn?.saveData &&
-      !/(^|-)2g$/.test(conn?.effectiveType ?? '') &&
-      (navigator.hardwareConcurrency ?? 4) >= 4;
-    if (capable) {
-      import('@/scripts/hero-wave')
-        .then((m) => m.initWave(canvas, area))
-        .catch(() => { /* the CSS glow already carries the hero */ });
-    }
-  }
-</script>

@@ -13,26 +13,27 @@ import { companyProof, leadership, site } from '@/data/site';
     eyebrow="About us"
     title="At the convergence of <span class='text-gradient'>engineering &amp; intelligence</span>"
     subtitle={`${site.shortName} builds intelligent systems across EdTech, agentic AI, robotics, embedded systems, and software engineering — for institutions, organizations, and enterprises.`}
+    ghost="About us"
   />
 
   <!-- Story -->
   <section class="py-20 md:py-28">
     <div class="container-app grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16">
       <div class="lg:sticky lg:top-28 lg:self-start">
-        <h2 class="reveal text-section">Who we are</h2>
+        <h2 class="text-section" data-split>Who we are</h2>
       </div>
-      <div class="flex max-w-[65ch] flex-col gap-6 text-lg leading-relaxed text-muted">
-        <p class="reveal">
+      <div class="flex max-w-[65ch] flex-col gap-6 text-xl leading-relaxed text-body md:text-2xl md:leading-snug">
+        <p data-scrub>
           {site.shortName} operates at the convergence of advanced engineering and applied
           intelligence. Our work spans scalable EdTech platforms, autonomous AI systems, intelligent
           hardware, and custom-built software solutions.
         </p>
-        <p class="reveal" data-delay="1">
+        <p data-scrub>
           We function both as a <span class="text-body">product company</span> and a
           <span class="text-body">technology partner</span> — delivering solutions that are
           practical, future-ready, and execution-focused.
         </p>
-        <p class="reveal" data-delay="2">
+        <p data-scrub>
           Alongside product development and client delivery, we actively engage in research and
           development to explore emerging technologies and push the boundaries of intelligent
           systems.
@@ -50,8 +51,9 @@ import { companyProof, leadership, site } from '@/data/site';
         <div class="mt-8 grid gap-4 sm:grid-cols-2">
           {leadership.map((person, i) => (
             <article
-              class="rounded-2xl border border-line bg-canvas/35 p-5"
+              class="relative rounded-2xl border border-line bg-canvas/35 p-5"
               data-delay={i + 1}
+              data-tilt="6"
             >
               <h3 class="text-xl">{person.name}</h3>
               <p class="mt-1 font-mono text-xs uppercase tracking-[0.18em] text-accent-bright">
@@ -88,7 +90,7 @@ import { companyProof, leadership, site } from '@/data/site';
       <div class="reveal relative overflow-hidden rounded-3xl border border-line bg-surface/40 p-8 text-center md:p-14">
         <div class="glow-accent pointer-events-none absolute left-1/2 top-0 size-80 -translate-x-1/2 opacity-50"></div>
         <Eyebrow center as="p">Our vision</Eyebrow>
-        <p class="relative mt-6 font-display text-2xl font-medium leading-snug text-ink md:text-3xl">
+        <p class="relative mt-6 font-display text-2xl font-medium leading-snug text-ink md:text-4xl" data-scrub>
           To responsibly design intelligent systems that enhance human capability, modernize
           education, and advance the integration of AI into both digital and physical environments.
         </p>

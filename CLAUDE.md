@@ -44,9 +44,14 @@ node scripts/gen-images.mjs   # regenerate public/og.png + icon-apple.png
   attribute: `data-split` (heading words rise; `="hero"` = per-letter 3D), `data-count` (number
   counts up), `data-tilt` (pointer tilt + glare; set `--tilt-tone`), `data-magnetic`,
   `data-kinetic` (velocity-driven type rows), `data-stack-item` (homepage sticky product deck),
-  `data-steps`, `data-parallax`. Section headings use `data-split` instead of `.reveal`.
-- Hero background: `src/scripts/hero-wave.ts` — raw-WebGL 3D particle wave (no three.js, ~2 kB),
-  runs on phones too; gated in `Hero.astro`.
+  `data-steps`, `data-parallax`, `data-scrub` (words light up with scroll), `data-clip` (photo
+  wipe-in), `data-zoom` (screenshot straightens on scroll), `data-drift` (sliding outline word),
+  `data-nav` (header hover pill). Also a pointer light (`.cursor-light`) and cross-page View
+  Transitions (global.css). Section headings use `data-split` instead of `.reveal`.
+- `PageHeader` takes `ghost="Word"` for the drifting outline word, and a slot under the subtitle.
+- Particle wave: `src/scripts/hero-wave.ts` — raw-WebGL 3D wave (no three.js, ~2 kB), runs on
+  phones too. Drop it in anywhere with `<WaveField class="absolute …" />` (gating lives there);
+  used by the home hero, every PageHeader, product pages and the 404.
 - Brand mark: `src/components/CubeLogo.astro` (three nested isometric cubes; inner cube blue).
 - Header (`components/Header.astro`) has a working mobile menu + scroll-aware chrome.
 

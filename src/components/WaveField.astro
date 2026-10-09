@@ -1,0 +1,52 @@
+---
+/**
+ * WaveField — the 3D particle wave (scripts/hero-wave.ts) as a drop-in background layer.
+ *
+ * Place it inside a positioned element; the nearest `[data-wave-area]` ancestor (else the
+ * parent) is what the pointer swell listens to. The canvas stays transparent wherever the wave
+ * is skipped (reduced motion, data saver, weak devices, no WebGL), so the CSS glow behind it
+ * carries the section on its own.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className = '' } = Astro.props;
+---
+
+<canvas class:list={['wave-field', className]} data-wave aria-hidden="true"></canvas>
+
+<style>
+  .wave-field {
+    opacity: 0;
+    transition: opacity 1.4s ease;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 38%, #000 82%, transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 0%, #000 38%, #000 82%, transparent 100%);
+  }
+  .wave-field[data-ready] { opacity: 1; }
+</style>
+
+<script>
+  /**
+   * Gate for the particle wave. It is cheap (one draw call, no three.js), so unlike the WebGL
+   * cube it also runs on phones — just not for reduced motion, data saver, or weak devices.
+   */
+  type NetInfo = { saveData?: boolean; effectiveType?: string };
+  const conn = (navigator as Navigator & { connection?: NetInfo }).connection;
+  const capable =
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
+    !conn?.saveData &&
+    !/(^|-)2g$/.test(conn?.effectiveType ?? '') &&
+    (navigator.hardwareConcurrency ?? 4) >= 4;
+
+  const canvases = document.querySelectorAll<HTMLCanvasElement>('[data-wave]');
+  if (capable && canvases.length) {
+    import('@/scripts/hero-wave')
+      .then((m) => {
+        canvases.forEach((canvas) => {
+          const area = canvas.closest<HTMLElement>('[data-wave-area]') ?? canvas.parentElement ?? canvas;
+          m.initWave(canvas, area);
+        });
+      })
+      .catch(() => { /* the CSS glow already carries the section */ });
+  }
+</script>

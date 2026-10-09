@@ -2,6 +2,7 @@
 import Base from '@/layouts/Base.astro';
 import Button from '@/components/Button.astro';
 import CurioShowcase from '@/components/CurioShowcase.astro';
+import WaveField from '@/components/WaveField.astro';
 import { Icon } from 'astro-icon/components';
 import { Picture, getImage } from 'astro:assets';
 import { asset } from '@/lib/images';
@@ -77,10 +78,14 @@ const productSchema = [
   schema={productSchema}
 >
   <!-- Hero -->
-  <section class="relative isolate overflow-hidden border-b border-line">
+  <section class="relative isolate overflow-hidden border-b border-line" data-hero data-wave-area>
     <div class="pointer-events-none absolute inset-0 -z-10">
       <div class="bg-grid absolute inset-0 opacity-40 [mask-image:radial-gradient(ellipse_70%_70%_at_50%_0%,black,transparent_70%)]"></div>
       <div class="absolute -top-40 left-1/2 size-[680px] -translate-x-1/2 rounded-full opacity-60 blur-[100px]" style={`background:radial-gradient(closest-side,${a.glow},transparent)`}></div>
+      <!-- Wave on the empty right half only, fading out toward the copy -->
+      <div class="absolute top-[6%] right-0 hidden h-[640px] w-[58%] lg:block [mask-image:linear-gradient(to_right,transparent,black_45%)]">
+        <WaveField class="absolute inset-0 size-full" />
+      </div>
     </div>
 
     <div class="container-app relative pt-32 pb-16 md:pt-40 md:pb-24">
@@ -131,7 +136,7 @@ const productSchema = [
               </span>
             </div>
 
-            <h1 class="reveal font-display text-page font-semibold text-ink" data-delay="1">
+            <h1 class="font-display text-page font-semibold text-ink" data-split="chars">
               {product.name}
             </h1>
           </>
@@ -144,7 +149,7 @@ const productSchema = [
             <Button href={product.url} size="lg" iconRight="external-link">Visit live</Button>
           ) : (
             <>
-              <Button href="/contact/" size="lg" iconRight="arrow-right">Request a demo</Button>
+              <Button href="/contact/" size="lg" iconRight="arrow-right" data-magnetic>Request a demo</Button>
               {product.url && (
                 <Button href={product.url} variant="secondary" size="lg" iconRight="external-link">Visit live</Button>
               )}
@@ -154,7 +159,7 @@ const productSchema = [
         </div>
 
         {product.image && (
-          <figure class="reveal mt-10 w-full max-w-4xl overflow-hidden rounded-2xl border border-line shadow-pop" data-delay="4">
+          <figure class="mt-10 w-full max-w-4xl overflow-hidden rounded-2xl border border-line shadow-pop" data-zoom>
             <Picture
               src={asset(product.image.src)}
               alt={product.image.alt}
@@ -177,15 +182,20 @@ const productSchema = [
   <!-- Features -->
   <section class="py-20 md:py-28">
     <div class="container-app">
-      <h2 class="reveal text-section">Key capabilities</h2>
+      <h2 class="text-section" data-split>Key capabilities</h2>
       <div class="mt-10 grid gap-4 sm:grid-cols-2">
         {product.features.map((f, i) => (
           <div
-            class="reveal group rounded-2xl border border-line bg-surface/30 p-7 transition-all duration-300 hover:border-line-strong"
+            class="reveal group relative rounded-2xl border border-line bg-surface/30 p-7 transition-all duration-300 hover:border-line-strong"
+            style={`--tilt-tone: var(--color-${product.accent})`}
             data-delay={String((i % 2) + 1)}
+            data-tilt="5"
           >
-            <div class:list={['mb-4 size-9 rounded-lg ring-1 ring-inset grid place-items-center', a.bg, a.ring]}>
-              <Icon name="lucide:check" class:list={['size-5', a.text]} aria-hidden="true" />
+            <div class="mb-4 flex items-center justify-between">
+              <div class:list={['size-9 rounded-lg ring-1 ring-inset grid place-items-center', a.bg, a.ring]}>
+                <Icon name="lucide:check" class:list={['size-5', a.text]} aria-hidden="true" />
+              </div>
+              <span class="text-outline font-display text-4xl font-semibold leading-none" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
             </div>
             <h3 class="text-lg">{f.title}</h3>
             <p class="mt-2 text-[0.95rem] leading-relaxed text-muted">{f.body}</p>
@@ -210,7 +220,7 @@ const productSchema = [
   {(product.gallery || product.video) && (
     <section class="border-t border-line py-20 md:py-28">
       <div class="container-app">
-        <h2 class="reveal text-section">{product.name} in the field</h2>
+        <h2 class="text-section" data-split>{product.name} in the field</h2>
         <p class="reveal mt-3 max-w-xl text-muted" data-delay="1">
           Real rooms, real users — not mockups.
         </p>
@@ -234,10 +244,10 @@ const productSchema = [
           {product.gallery?.map((g, i) => (
             <figure
               class:list={[
-                'reveal group overflow-hidden rounded-2xl border border-line bg-surface/40',
+                'group overflow-hidden rounded-2xl border border-line bg-surface/40',
                 !product.video && i === 0 && 'lg:col-span-2',
               ]}
-              data-delay={String((i % 3) + 1)}
+              data-clip
             >
               <Picture
                 src={asset(g.src)}
@@ -264,7 +274,9 @@ const productSchema = [
         {others.map((p) => (
           <a
             href={`/products/${p.slug}/`}
-            class="reveal group flex min-w-0 items-center gap-4 rounded-2xl border border-line bg-surface/30 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
+            class="reveal group relative flex min-w-0 items-center gap-4 rounded-2xl border border-line bg-surface/30 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
+            style={`--tilt-tone: var(--color-${p.accent})`}
+            data-tilt
           >
             <div class="grid size-12 shrink-0 place-items-center rounded-xl bg-white/[0.03] ring-1 ring-inset ring-line-strong">
               <Icon name={`lucide:${p.icon}`} class:list={['size-6', accent[p.accent].text]} aria-hidden="true" />

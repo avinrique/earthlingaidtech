@@ -3,19 +3,21 @@ import Eyebrow from '@/components/Eyebrow.astro';
 import Base from '@/layouts/Base.astro';
 import Button from '@/components/Button.astro';
 import CubeLogo from '@/components/CubeLogo.astro';
+import WaveField from '@/components/WaveField.astro';
 ---
 
 <Base title="Page not found" noindex>
-  <section class="relative isolate flex min-h-[70vh] items-center overflow-hidden">
+  <section class="relative isolate flex min-h-[85vh] items-center overflow-hidden" data-wave-area>
     <div class="pointer-events-none absolute inset-0 -z-10">
       <div class="bg-grid absolute inset-0 opacity-40 [mask-image:radial-gradient(ellipse_60%_60%_at_50%_40%,black,transparent_70%)]"></div>
       <div class="glow-accent absolute left-1/2 top-1/3 size-[520px] -translate-x-1/2 opacity-50"></div>
+      <WaveField class="absolute inset-x-0 bottom-0 h-[70%] w-full" />
     </div>
 
     <div class="container-app flex flex-col items-center text-center">
       <CubeLogo size={72} animated decorative />
       <Eyebrow class="mt-8" as="p">Error 404</Eyebrow>
-      <h1 class="mt-4 font-display text-page font-semibold text-ink">Lost in the system</h1>
+      <h1 class="mt-4 font-display text-page font-semibold text-ink" data-split="hero">Lost in the system</h1>
       <p class="mt-4 max-w-md text-lg text-muted">
         The page you're looking for doesn't exist or has moved. Let's get you back on track.
       </p>

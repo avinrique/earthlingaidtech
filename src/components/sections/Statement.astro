@@ -1,0 +1,19 @@
+---
+import Eyebrow from '../Eyebrow.astro';
+import { statement } from '@/data/site';
+---
+
+<section class="relative overflow-hidden py-24 md:py-36">
+  <div class="pointer-events-none absolute inset-0 -z-10">
+    <div class="glow-accent absolute top-1/2 left-1/2 size-[760px] max-w-[160vw] -translate-x-1/2 -translate-y-1/2 opacity-25"></div>
+  </div>
+  <div class="container-app">
+    <Eyebrow class="reveal">{statement.eyebrow}</Eyebrow>
+    <p
+      class="mt-8 max-w-[22ch] font-display text-[clamp(2rem,1.1rem+3.6vw,4.25rem)] font-semibold leading-[1.08] tracking-[-0.025em] text-ink sm:max-w-[26ch]"
+      data-scrub
+    >
+      {statement.text}
+    </p>
+  </div>
+</section>

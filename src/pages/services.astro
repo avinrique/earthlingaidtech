@@ -6,12 +6,13 @@ import TechStack from '@/components/sections/TechStack.astro';
 import { Icon } from 'astro-icon/components';
 import { services } from '@/data/site';
 
-const accent: Record<string, { text: string; ring: string; dot: string; glow: string }> = {
-  accent: { text: 'text-accent', ring: 'ring-accent/30', dot: 'bg-accent', glow: 'rgba(74,158,255,0.18)' },
-  teal: { text: 'text-teal', ring: 'ring-teal/30', dot: 'bg-teal', glow: 'rgba(45,212,191,0.18)' },
-  violet: { text: 'text-violet', ring: 'ring-violet/30', dot: 'bg-violet', glow: 'rgba(167,139,250,0.18)' },
-  amber: { text: 'text-amber', ring: 'ring-amber/30', dot: 'bg-amber', glow: 'rgba(251,191,36,0.18)' },
+const accent: Record<string, { text: string; ring: string; dot: string; glow: string; chip: string }> = {
+  accent: { text: 'text-accent', ring: 'ring-accent/30', dot: 'bg-accent', glow: 'rgba(74,158,255,0.28)', chip: 'hover:border-accent/50 hover:text-accent' },
+  teal: { text: 'text-teal', ring: 'ring-teal/30', dot: 'bg-teal', glow: 'rgba(45,212,191,0.26)', chip: 'hover:border-teal/50 hover:text-teal' },
+  violet: { text: 'text-violet', ring: 'ring-violet/30', dot: 'bg-violet', glow: 'rgba(167,139,250,0.26)', chip: 'hover:border-violet/50 hover:text-violet' },
+  amber: { text: 'text-amber', ring: 'ring-amber/30', dot: 'bg-amber', glow: 'rgba(251,191,36,0.24)', chip: 'hover:border-amber/50 hover:text-amber' },
 };
+const pad = (n: number) => String(n).padStart(2, '0');
 ---
 
 <Base
@@ -22,32 +23,65 @@ const accent: Record<string, { text: string; ring: string; dot: string; glow: st
     eyebrow="Capabilities"
     title="What we <span class='text-gradient'>build</span>"
     subtitle="High-quality digital and physical systems engineered for performance, security, and scale — delivered as products and as a technology partner."
-  />
+    ghost="Services"
+  >
+    <nav class="reveal mt-4 flex flex-wrap gap-2" data-delay="3" aria-label="Jump to a service">
+      {services.map((s) => (
+        <a
+          href={`#${s.id}`}
+          class:list={['rounded-full border border-line bg-white/[0.02] px-3.5 py-2 text-sm text-muted backdrop-blur-sm transition-colors duration-300', accent[s.accent].chip]}
+        >
+          {s.title}
+        </a>
+      ))}
+    </nav>
+  </PageHeader>
 
   <div class="container-app divide-y divide-line">
     {services.map((s, i) => {
       const a = accent[s.accent];
+      const flip = i % 2 === 1;
       return (
-        <section id={s.id} class="scroll-mt-28 py-16 md:py-24">
-          <div class="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
-            <div class={i % 2 === 1 ? 'lg:order-2' : ''}>
-              <div class="reveal flex items-center gap-4">
-                <div class:list={['grid size-14 place-items-center rounded-2xl bg-white/[0.03] ring-1 ring-inset', a.ring]}>
-                  <Icon name={`lucide:${s.icon}`} class:list={['size-7', a.text]} aria-hidden="true" />
-                </div>
-                <span class:list={['font-mono text-xs uppercase tracking-[0.18em]', a.text]}>{s.tag}</span>
+        <section id={s.id} class="scroll-mt-28 py-20 md:py-28">
+          <div class="grid items-center gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:gap-16">
+            <div class={flip ? 'lg:order-2' : ''}>
+              <div class="flex items-end gap-5">
+                <span class="text-outline font-display text-[clamp(4.5rem,8vw,7.5rem)] font-semibold leading-[0.85] tracking-[-0.05em]" aria-hidden="true">{pad(i + 1)}</span>
+                <span class:list={['reveal mb-2 font-mono text-xs uppercase tracking-[0.18em]', a.text]}>{s.tag}</span>
               </div>
-              <h2 class="reveal mt-6 text-section" data-delay="1">{s.title}</h2>
+              <h2 class="mt-6 text-section" data-split>{s.title}</h2>
               <p class="reveal mt-4 max-w-md text-lg leading-relaxed text-muted" data-delay="2">{s.summary}</p>
             </div>
 
-            <div class={i % 2 === 1 ? 'lg:order-1' : ''}>
-              <ul class="reveal grid gap-3 sm:grid-cols-2" data-delay="1">
-                {s.points.map((p) => (
+            <div class={flip ? 'lg:order-1' : ''}>
+              <!-- Visual panel: the service's mark in orbit -->
+              <div
+                class="reveal relative grid aspect-[16/8] place-items-center overflow-hidden rounded-3xl border border-line bg-surface/40"
+                style={`--tilt-tone: var(--color-${s.accent})`}
+                data-tilt="4"
+              >
+                <div class="bg-grid pointer-events-none absolute inset-0 opacity-60 [mask-image:radial-gradient(ellipse_60%_70%_at_50%_50%,black,transparent)]"></div>
+                <div class="pointer-events-none absolute size-[70%] rounded-full blur-3xl" style={`background:radial-gradient(closest-side,${a.glow},transparent)`}></div>
+                <div class="pointer-events-none absolute aspect-square h-[78%] animate-[spin_38s_linear_infinite] rounded-full border border-dashed border-line-strong" aria-hidden="true">
+                  <span class:list={['absolute -top-1 left-1/2 size-2 -translate-x-1/2 rounded-full shadow-[0_0_12px_currentColor]', a.dot, a.text]}></span>
+                </div>
+                <div class="pointer-events-none absolute aspect-square h-[52%] animate-[spin_24s_linear_infinite_reverse] rounded-full border border-line" aria-hidden="true">
+                  <span class="absolute top-1/2 -right-1 size-1.5 -translate-y-1/2 rounded-full bg-ink/70"></span>
+                </div>
+                <div class:list={['relative grid size-20 place-items-center rounded-2xl bg-canvas/70 ring-1 ring-inset backdrop-blur md:size-24', a.ring]}>
+                  <Icon name={`lucide:${s.icon}`} class:list={['size-10 md:size-12', a.text]} aria-hidden="true" />
+                </div>
+              </div>
+
+              <ul class="mt-4 grid gap-3 sm:grid-cols-2">
+                {s.points.map((p, j) => (
                   <li
-                    class="flex items-start gap-3 rounded-2xl border border-line bg-surface/30 p-5 transition-colors duration-300 hover:border-line-strong"
+                    class="reveal relative flex items-start gap-3 rounded-2xl border border-line bg-surface/30 p-5 transition-colors duration-300 hover:border-line-strong"
+                    style={`--tilt-tone: var(--color-${s.accent})`}
+                    data-delay={String((j % 2) + 1)}
+                    data-tilt="6"
                   >
-                    <span class:list={['mt-1.5 size-2 shrink-0 rounded-full', a.dot]}></span>
+                    <span class:list={['mt-0.5 font-mono text-xs', a.text]}>{pad(j + 1)}</span>
                     <span class="text-[0.95rem] leading-relaxed text-body">{p}</span>
                   </li>
                 ))}

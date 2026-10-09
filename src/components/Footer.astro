@@ -23,6 +23,7 @@ const year = new Date().getFullYear(); // stamped at build time, not hardcoded
       <a
         href="/contact/"
         class="group inline-flex shrink-0 items-center gap-2 rounded-full bg-accent px-6 py-3.5 font-semibold text-on-accent transition-all duration-300 hover:bg-accent-hover hover:-translate-y-0.5"
+        data-magnetic
       >
         Get in touch
         <Icon name="lucide:arrow-right" class="size-5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
@@ -85,6 +86,13 @@ const year = new Date().getFullYear(); // stamped at build time, not hardcoded
           <Icon name="lucide:github" class="size-5" aria-hidden="true" />
         </a>
       </div>
+    </div>
+  </div>
+
+  <!-- Oversized wordmark, letters rise in (decorative; the brand is named in real text above) -->
+  <div class="relative select-none overflow-hidden" aria-hidden="true">
+    <div class="-mb-[0.14em] whitespace-nowrap text-center font-display text-[clamp(3.5rem,16vw,15rem)] font-semibold uppercase leading-[0.82] tracking-[-0.05em] text-ink/[0.06]" data-split="chars">
+      Earthling
     </div>
   </div>
 </footer>

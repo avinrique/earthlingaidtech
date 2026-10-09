@@ -114,6 +114,13 @@ export const stats: { value: string; label: string; accent?: string }[] = [
   { value: '15+', label: 'Client partners', accent: 'amber' },
 ];
 
+/* ---- Homepage statement (words light up on scroll). Every claim is real: Prepzer0 in
+   classrooms, PrintnFlow on campus, client work from Bengaluru to Halde20 in Switzerland. ---- */
+export const statement = {
+  eyebrow: 'Why we exist',
+  text: 'We don’t ship slide decks. We ship software that runs in classrooms, on college campuses and inside real businesses — engineered in Bengaluru, used from India to Switzerland.',
+};
+
 /* ---- Kinetic type band on the homepage (decorative; every claim is made in real copy too) ---- */
 export const kineticRows: { dir: 1 | -1; words: string[] }[] = [
   { dir: 1, words: ['Software', 'Agentic AI', 'EdTech', 'Robotics', 'SEO & GEO', 'Hardware'] },

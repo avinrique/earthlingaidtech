@@ -1,28 +1,41 @@
 ---
 import Eyebrow from './Eyebrow.astro';
+import WaveField from './WaveField.astro';
 interface Props {
   eyebrow: string;
   title: string;
   subtitle?: string;
   align?: 'left' | 'center';
+  /** Oversized outlined word drifting behind the title (decorative). */
+  ghost?: string;
 }
-const { eyebrow, title, subtitle, align = 'left' } = Astro.props;
+const { eyebrow, title, subtitle, align = 'left', ghost } = Astro.props;
 const alignCls = align === 'center' ? 'items-center text-center mx-auto' : 'items-start';
 ---
 
-<section class="relative isolate overflow-hidden border-b border-line">
+<section class="relative isolate overflow-hidden border-b border-line" data-hero data-wave-area>
   <div class="pointer-events-none absolute inset-0 -z-10">
     <div class="bg-grid absolute inset-0 opacity-40 [mask-image:radial-gradient(ellipse_70%_70%_at_50%_0%,black,transparent_70%)]"></div>
     <div class="glow-accent absolute -top-40 left-1/2 size-[680px] -translate-x-1/2 opacity-50"></div>
+    <WaveField class="absolute inset-x-0 bottom-0 h-[58%] w-full" />
   </div>
 
-  <div class="container-app pt-32 pb-14 md:pt-40 md:pb-20">
-    <div class:list={['flex max-w-3xl flex-col gap-5', alignCls]}>
+  {ghost && (
+    <div class="pointer-events-none absolute inset-x-0 -bottom-[2%] -z-10 select-none overflow-hidden" aria-hidden="true">
+      <div class="text-outline whitespace-nowrap pl-[6vw] font-display text-[clamp(5rem,17vw,15rem)] font-semibold uppercase leading-[0.8] tracking-[-0.04em] opacity-40" data-drift>
+        {ghost}
+      </div>
+    </div>
+  )}
+
+  <div class="container-app pt-32 pb-16 md:pt-44 md:pb-28">
+    <div class:list={['flex max-w-3xl flex-col gap-5', alignCls]} data-hero-copy>
       <Eyebrow class="reveal">{eyebrow}</Eyebrow>
       <h1 class="font-display text-page font-semibold text-ink" data-split set:html={title} />
       {subtitle && (
         <p class="reveal max-w-2xl text-lg leading-relaxed text-muted" data-delay="2">{subtitle}</p>
       )}
+      <slot />
     </div>
   </div>
 </section>
