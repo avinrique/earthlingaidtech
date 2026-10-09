@@ -1,0 +1,37 @@
+---
+/**
+ * KineticBand — two rows of oversized type that drift in opposite directions and surge / skew
+ * with scroll velocity (scripts/motion.ts → `kinetic`). Purely decorative: everything it says
+ * is stated in real copy elsewhere on the page, so the whole band is hidden from assistive tech.
+ * Without the motion layer it is a static, clipped pair of rows.
+ */
+import { kineticRows as rows } from '@/data/site';
+---
+
+<section class="relative overflow-hidden border-y border-line bg-canvas-deep/40 py-10 md:py-14" aria-hidden="true">
+  <div class="pointer-events-none absolute inset-0 [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
+    <div class="glow-accent absolute top-1/2 left-1/2 size-[640px] max-w-[140vw] -translate-x-1/2 -translate-y-1/2 opacity-25"></div>
+  </div>
+
+  <div class="relative flex select-none flex-col gap-1 md:gap-3 [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
+    {rows.map((row, r) => (
+      <div class="flex w-max" data-kinetic={String(row.dir)}>
+        {[0, 1].map(() => (
+          <div class:list={[
+            'flex shrink-0 items-center gap-[0.3em] pr-[0.3em] font-display font-semibold uppercase leading-[1.08] tracking-[-0.03em]',
+            r === 0 ? 'text-[clamp(3rem,9vw,8.5rem)]' : 'text-[clamp(2.25rem,6vw,5.5rem)]',
+          ]}>
+            {row.words.map((w, i) => (
+              <Fragment>
+                <span class:list={['whitespace-nowrap', (i + r) % 2 ? 'text-outline' : 'text-ink/90']}>{w}</span>
+                <svg viewBox="0 0 24 24" class:list={['size-[0.32em] shrink-0', r === 0 ? 'text-accent' : 'text-teal']} fill="currentColor">
+                  <path d="M12 0c.6 6.4 5.6 11.4 12 12-6.4.6-11.4 5.6-12 12-.6-6.4-5.6-11.4-12-12C6.4 11.4 11.4 6.4 12 0z" />
+                </svg>
+              </Fragment>
+            ))}
+          </div>
+        ))}
+      </div>
+    ))}
+  </div>
+</section>

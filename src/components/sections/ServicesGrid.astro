@@ -39,7 +39,9 @@ const accentMap: Record<string, { text: string; ring: string; glow: string; dot:
               // as deliberate hierarchy rather than an orphan.
               i === 0 && 'sm:col-span-2 sm:p-8',
             ]}
+            style={`--tilt-tone: var(--color-${s.accent})`}
             data-delay={String((i % 2) + 1)}
+            data-tilt={i === 0 ? '3' : '6'}
           >
             <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-line-strong to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
 

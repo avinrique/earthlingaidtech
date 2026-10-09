@@ -2,15 +2,17 @@
 import Eyebrow from '../Eyebrow.astro';
 import CubeModel from '../CubeModel.astro';
 import Button from '../Button.astro';
-import { stats, site } from '@/data/site';
+import { stats } from '@/data/site';
 ---
 
-<section class="relative isolate overflow-hidden">
+<section class="relative isolate overflow-hidden lg:flex lg:min-h-[100svh] lg:items-center" data-hero>
   <!-- Decorative background -->
   <div class="pointer-events-none absolute inset-0 -z-10">
     <div class="bg-grid absolute inset-0 opacity-[0.5] [mask-image:radial-gradient(ellipse_80%_60%_at_50%_0%,black,transparent_75%)]"></div>
     <div class="glow-accent absolute -top-40 left-1/2 size-[820px] max-w-[160vw] -translate-x-1/2 opacity-60"></div>
     <div class="absolute -top-24 right-[8%] size-[420px] max-w-[90vw] rounded-full opacity-40 blur-3xl" style="background:radial-gradient(closest-side,rgba(45,212,191,0.18),transparent)"></div>
+    <!-- 3D particle field (scripts/hero-wave.ts); stays transparent wherever WebGL is skipped -->
+    <canvas class="hero-wave absolute inset-x-0 bottom-0 h-[72%] w-full" data-wave aria-hidden="true"></canvas>
     <div class="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-line-strong to-transparent"></div>
   </div>
 
@@ -20,12 +22,12 @@ import { stats, site } from '@/data/site';
       mobile → copy / cube / stats      lg → [copy , cube]
                                               [stats,  ↑  ]
   -->
-  <div class="container-app grid items-center gap-10 pt-32 pb-20 md:gap-12 md:pt-40 md:pb-28 lg:grid-cols-[1.05fr_0.95fr]">
+  <div class="container-app grid items-center gap-10 pt-32 pb-20 md:gap-12 md:pt-40 md:pb-28 lg:grid-cols-[1.05fr_0.95fr] lg:pb-32">
     <!-- Copy -->
-    <div class="flex flex-col items-start">
+    <div class="flex flex-col items-start" data-hero-copy>
       <Eyebrow class="reveal">Product &amp; engineering studio · Bengaluru</Eyebrow>
 
-      <h1 class="reveal mt-6 text-balance font-display text-[length:var(--text-hero)] font-semibold leading-[1.03] tracking-[-0.025em] text-ink" data-delay="1">
+      <h1 class="mt-6 text-balance font-display text-[length:var(--text-hero)] font-semibold leading-[1.03] tracking-[-0.025em] text-ink" data-split="hero">
         We build the tech<br class="hidden sm:block" />
         people actually <span class="text-gradient">use.</span>
       </h1>
@@ -37,8 +39,8 @@ import { stats, site } from '@/data/site';
       </p>
 
       <div class="reveal mt-9 flex w-full flex-col gap-3 xs:w-auto xs:flex-row xs:flex-wrap xs:items-center" data-delay="3">
-        <Button href="/products/" size="lg" iconRight="arrow-right">Explore our work</Button>
-        <Button href="/contact/" size="lg" variant="secondary">Start a project</Button>
+        <Button href="/products/" size="lg" iconRight="arrow-right" data-magnetic>Explore our work</Button>
+        <Button href="/contact/" size="lg" variant="secondary" data-magnetic>Start a project</Button>
       </div>
     </div>
 
@@ -47,7 +49,9 @@ import { stats, site } from '@/data/site';
       class="reveal relative mx-auto w-full max-w-[15rem] sm:max-w-xs md:max-w-md lg:row-span-2 lg:max-w-none"
       data-delay="2"
     >
-      <CubeModel />
+      <div data-hero-mark>
+        <CubeModel />
+      </div>
     </div>
 
     <!-- Stat proof bar -->
@@ -55,9 +59,60 @@ import { stats, site } from '@/data/site';
       {stats.map((s) => (
         <div class="flex flex-col gap-1">
           <dt class="order-2 text-xs text-faint">{s.label}</dt>
-          <dd class="order-1 font-display text-2xl font-semibold text-ink">{s.value}</dd>
+          <dd class="order-1 font-display text-2xl font-semibold tabular-nums text-ink" data-count>{s.value}</dd>
         </div>
       ))}
     </dl>
   </div>
+
+  <!-- Scroll cue -->
+  <div class="pointer-events-none absolute bottom-7 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-2 lg:flex" aria-hidden="true">
+    <span class="font-mono text-[0.6rem] uppercase tracking-[0.3em] text-dim">Scroll</span>
+    <span class="scroll-cue relative block h-10 w-px overflow-hidden bg-line"></span>
+  </div>
 </section>
+
+<style>
+  .hero-wave {
+    opacity: 0;
+    transition: opacity 1.4s ease;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 38%, #000 82%, transparent 100%);
+            mask-image: linear-gradient(to bottom, transparent 0%, #000 38%, #000 82%, transparent 100%);
+  }
+  .hero-wave[data-ready] { opacity: 1; }
+
+  .scroll-cue::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent, var(--color-accent));
+    animation: scroll-cue 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  }
+  @keyframes scroll-cue {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+  }
+</style>
+
+<script>
+  /**
+   * Gate for the particle wave. It is cheap (one draw call, no three.js), so unlike the WebGL
+   * cube it also runs on phones — just not for reduced motion, data saver, or weak devices.
+   */
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-wave]');
+  const area = document.querySelector<HTMLElement>('[data-hero]');
+  if (canvas && area) {
+    type NetInfo = { saveData?: boolean; effectiveType?: string };
+    const conn = (navigator as Navigator & { connection?: NetInfo }).connection;
+    const capable =
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
+      !conn?.saveData &&
+      !/(^|-)2g$/.test(conn?.effectiveType ?? '') &&
+      (navigator.hardwareConcurrency ?? 4) >= 4;
+    if (capable) {
+      import('@/scripts/hero-wave')
+        .then((m) => m.initWave(canvas, area))
+        .catch(() => { /* the CSS glow already carries the hero */ });
+    }
+  }
+</script>

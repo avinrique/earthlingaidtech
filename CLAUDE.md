@@ -39,6 +39,14 @@ node scripts/gen-images.mjs   # regenerate public/og.png + icon-apple.png
 - Scroll-in animation: add class `reveal` (and optional `data-delay="1..5"`); an
   IntersectionObserver in `Base.astro` reveals it. Always degrade under `prefers-reduced-motion`.
 - Accent colors per domain: blue (`accent`) default, plus `teal`, `violet`, `amber` for variety.
+- Motion layer: `src/scripts/motion.ts` (GSAP + ScrollTrigger + SplitText, Lenis smooth scroll
+  on desktop) is lazy-loaded by `Base.astro` and never for reduced motion. Effects are opt-in by
+  attribute: `data-split` (heading words rise; `="hero"` = per-letter 3D), `data-count` (number
+  counts up), `data-tilt` (pointer tilt + glare; set `--tilt-tone`), `data-magnetic`,
+  `data-kinetic` (velocity-driven type rows), `data-stack-item` (homepage sticky product deck),
+  `data-steps`, `data-parallax`. Section headings use `data-split` instead of `.reveal`.
+- Hero background: `src/scripts/hero-wave.ts` — raw-WebGL 3D particle wave (no three.js, ~2 kB),
+  runs on phones too; gated in `Hero.astro`.
 - Brand mark: `src/components/CubeLogo.astro` (three nested isometric cubes; inner cube blue).
 - Header (`components/Header.astro`) has a working mobile menu + scroll-aware chrome.
 

@@ -114,6 +114,12 @@ export const stats: { value: string; label: string; accent?: string }[] = [
   { value: '15+', label: 'Client partners', accent: 'amber' },
 ];
 
+/* ---- Kinetic type band on the homepage (decorative; every claim is made in real copy too) ---- */
+export const kineticRows: { dir: 1 | -1; words: string[] }[] = [
+  { dir: 1, words: ['Software', 'Agentic AI', 'EdTech', 'Robotics', 'SEO & GEO', 'Hardware'] },
+  { dir: -1, words: ['Built in Bengaluru', 'Shipped to production', `${studentsTrainedProse} students trained`, 'Live on 3 campuses'] },
+];
+
 /* ---- Capabilities / services ---- */
 export type Service = {
   id: string;

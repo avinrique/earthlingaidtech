@@ -36,7 +36,7 @@ import { workshops } from '@/data/site';
         </div>
 
         <div class="grid gap-3 sm:grid-cols-[1fr_0.7fr]">
-          <div class="overflow-hidden rounded-2xl border border-line bg-canvas">
+          <div class="overflow-hidden rounded-2xl border border-line bg-canvas" data-parallax-frame>
             <Picture
               src={asset('/images/workshops/ws-7.jpg')}
               alt="Earthling Aidtech workshop session with students in a computer lab"
@@ -46,13 +46,14 @@ import { workshops } from '@/data/site';
               loading="lazy"
               decoding="async"
               class="aspect-[4/3] h-full w-full object-cover"
+              data-parallax
             />
           </div>
           <dl class="grid grid-cols-2 gap-3 sm:grid-cols-1">
             {workshops.stats.map((s) => (
               <div class="flex flex-col justify-center rounded-2xl border border-line bg-canvas/50 p-4">
                 <dt class="order-2 text-xs text-faint">{s.label}</dt>
-                <dd class="order-1 font-display text-2xl font-semibold text-ink">{s.value}</dd>
+                <dd class="order-1 font-display text-2xl font-semibold tabular-nums text-ink" data-count>{s.value}</dd>
               </div>
             ))}
           </dl>

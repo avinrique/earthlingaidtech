@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Where the homepage product cards stack (sticky): wide AND tall enough that a pinned card
+   never runs off the bottom of the screen. Mirrors the matchMedia in scripts/motion.ts. */
+@custom-variant stack (@media (min-width: 64rem) and (min-height: 45rem));
+
 /* ==========================================================================
    Earthling Aidtech — Design tokens (Tailwind v4 @theme)
    "Refined dark AI-lab": near-black canvas, electric-blue accent,
@@ -341,4 +345,105 @@
   .js .reveal[data-delay="3"] { transition-delay: 0.24s; }
   .js .reveal[data-delay="4"] { transition-delay: 0.32s; }
   .js .reveal[data-delay="5"] { transition-delay: 0.4s; }
+}
+
+/* ==========================================================================
+   Motion layer (scripts/motion.ts). Every rule here degrades to a static page.
+   ========================================================================== */
+
+/* Split headings stay hidden until their words are ready to rise in. Base.astro reveals them
+   as plain text for reduced motion, a failed chunk, or a slow one (2.5s). */
+.js [data-split]:not([data-split-ready]) {
+  opacity: 0;
+}
+/* Room for descenders inside each line's clipping mask, without moving the layout. */
+.split-line {
+  padding-bottom: 0.1em;
+  margin-bottom: -0.1em;
+}
+
+/* Lenis (desktop smooth scrolling) */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* Reading-progress hairline. Pure CSS (scroll-driven animation); browsers without scroll
+   timelines simply don't show it. */
+.scroll-progress {
+  display: none;
+}
+@supports (animation-timeline: scroll()) {
+  .scroll-progress {
+    display: block;
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 60;
+    height: 2px;
+    pointer-events: none;
+    transform-origin: 0 50%;
+    background: linear-gradient(90deg, var(--color-accent), var(--color-teal));
+    box-shadow: 0 0 12px rgba(74, 158, 255, 0.6);
+    animation: scroll-progress linear both;
+    animation-timeline: scroll(root);
+  }
+}
+@keyframes scroll-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-progress { display: none !important; }
+}
+
+/* Tilt cards: a soft glare and a lit border that follow the pointer (--mx / --my are set by
+   motion.ts). Fine pointers only, so a tap on a phone never leaves a stuck highlight. */
+@media (hover: hover) and (pointer: fine) {
+  [data-tilt] {
+    isolation: isolate;
+  }
+  [data-tilt]::before,
+  [data-tilt]::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s var(--ease-out-expo);
+  }
+  [data-tilt]::after {
+    background: radial-gradient(520px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 255, 255, 0.06), transparent 42%);
+  }
+  [data-tilt]::before {
+    padding: 1px;
+    background: radial-gradient(
+      380px circle at var(--mx, 50%) var(--my, 50%),
+      color-mix(in oklab, var(--tilt-tone, var(--color-accent)) 80%, transparent),
+      transparent 65%
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+  [data-tilt]:hover::before,
+  [data-tilt]:hover::after {
+    opacity: 1;
+  }
+}
+
+/* Outlined display type for the kinetic band */
+@utility text-outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(244, 247, 251, 0.3);
 }

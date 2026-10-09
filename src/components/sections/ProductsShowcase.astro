@@ -7,8 +7,10 @@ import { products, type Product } from '@/data/site';
 
 interface Props {
   heading?: boolean;
+  /** Homepage: featured products become a sticky stack that recedes as you scroll. */
+  stack?: boolean;
 }
-const { heading = true } = Astro.props;
+const { heading = true, stack = false } = Astro.props;
 
 // Products with a real screenshot get the big featured cards (two side by side);
 // everything else sits in an even row of compact cards below, so no card is
@@ -36,7 +38,76 @@ const tone: Record<Product['accent'], { text: string; pill: string; tile: string
       />
     )}
 
-    <!-- Featured: equal-weight cards, screenshot first -->
+    <!-- Featured. Homepage: a sticky stack (the `stack:` variant in global.css) — each card pins a
+         little lower than the last, and motion.ts recedes the one underneath. Elsewhere: a grid. -->
+    {stack ? (
+      <div class:list={['flex flex-col gap-5 stack:gap-0', heading ? 'mt-14' : 'mt-2']} data-stack>
+        {featured.map((p, i) => {
+          const t = tone[p.accent];
+          return (
+            <div
+              class="reveal stack:sticky stack:mb-[16vh] stack:last:mb-0"
+              style={`top: calc(var(--header-h) + 1.75rem + ${i * 1.15}rem)`}
+              data-stack-item
+            >
+              <a
+                href={`/products/${p.slug}/`}
+                class:list={['group relative flex flex-col overflow-hidden rounded-3xl border border-line bg-surface shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)] transition-colors duration-300 stack:grid stack:h-[min(72vh,600px)] stack:grid-cols-[1.1fr_1fr]', t.hover]}
+                data-stack-card
+              >
+                <div class="relative aspect-[16/9] overflow-hidden border-b border-line bg-white/[0.02] stack:aspect-auto stack:h-full stack:border-r stack:border-b-0">
+                  <Picture
+                    src={asset(p.image!.src)}
+                    alt={p.image!.alt}
+                    formats={['avif', 'webp']}
+                    widths={[480, 720, 960, 1280]}
+                    sizes="(min-width: 1024px) 640px, 100vw"
+                    loading="lazy"
+                    decoding="async"
+                    class="size-full object-cover object-left-top transition-transform duration-700 ease-[var(--ease-out-expo)] group-hover:scale-[1.04]"
+                  />
+                  <span class="absolute top-5 left-5 rounded-full border border-white/10 bg-canvas/70 px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-body backdrop-blur-md">
+                    {String(i + 1).padStart(2, '0')} / {String(featured.length).padStart(2, '0')}
+                  </span>
+                </div>
+
+                <div class="flex flex-1 flex-col p-7 lg:p-10">
+                  <div class="flex items-center gap-3.5">
+                    <div class:list={['grid size-12 shrink-0 place-items-center rounded-xl ring-1 ring-inset', p.logo ? 'bg-white/[0.03] ring-line-strong' : t.tile]}>
+                      {p.logo
+                        ? <img src={p.logo} alt="" width="30" height="30" class="size-[30px]" />
+                        : <Icon name={`lucide:${p.icon}`} class:list={['size-6', t.text]} aria-hidden="true" />}
+                    </div>
+                    <span class:list={['rounded-full border px-3 py-1 font-mono text-[0.62rem] uppercase tracking-[0.14em]', t.pill]}>
+                      {p.status}
+                    </span>
+                  </div>
+                  <h3 class="mt-6 font-display text-3xl font-semibold leading-tight text-ink lg:text-[2.4rem]">{p.name}</h3>
+                  <p class:list={['mt-1.5 text-sm font-medium', t.text]}>{p.kicker}</p>
+
+                  <p class="mt-5 text-[1rem] leading-relaxed text-muted">{p.summary}</p>
+
+                  {(p.chips ?? p.highlights ?? []).length > 0 && (
+                    <div class="mt-6 flex flex-wrap gap-2">
+                      {(p.chips ?? p.highlights ?? []).map((h) => (
+                        <span class="rounded-lg border border-line bg-white/[0.02] px-2.5 py-1 text-xs text-body">{h}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  <span class:list={['mt-auto inline-flex items-center gap-2 pt-7 font-medium', t.text]}>
+                    Explore {p.name}
+                    <Icon name="lucide:arrow-right" class="size-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                  </span>
+                </div>
+
+                <div class="pointer-events-none absolute inset-0 bg-canvas-deep opacity-0" data-stack-shade aria-hidden="true"></div>
+              </a>
+            </div>
+          );
+        })}
+      </div>
+    ) : (
     <div class:list={['grid gap-5', featured.length >= 3 ? 'md:grid-cols-2 xl:grid-cols-3' : 'lg:grid-cols-2', heading ? 'mt-14' : 'mt-2']}>
       {featured.map((p, i) => {
         const t = tone[p.accent];
@@ -44,7 +115,9 @@ const tone: Record<Product['accent'], { text: string; pill: string; tile: string
           <a
             href={`/products/${p.slug}/`}
             class:list={['reveal group relative flex flex-col overflow-hidden rounded-3xl border border-line bg-surface/40 transition-all duration-300 hover:-translate-y-1', t.hover]}
+            style={`--tilt-tone: var(--color-${p.accent})`}
             data-delay={String(i + 1)}
+            data-tilt="5"
           >
             <div class="relative aspect-[16/9] overflow-hidden border-b border-line bg-white/[0.02]">
               <Picture
@@ -92,6 +165,7 @@ const tone: Record<Product['accent'], { text: string; pill: string; tile: string
         );
       })}
     </div>
+    )}
 
     <!-- Everything else: one even row -->
     {rest.length > 0 && (
@@ -101,8 +175,10 @@ const tone: Record<Product['accent'], { text: string; pill: string; tile: string
           return (
             <a
               href={`/products/${p.slug}/`}
-              class="reveal group flex flex-col rounded-3xl border border-line bg-surface/40 p-7 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
+              class="reveal group relative flex flex-col rounded-3xl border border-line bg-surface/40 p-7 transition-all duration-300 hover:-translate-y-1 hover:border-line-strong"
+              style={`--tilt-tone: var(--color-${p.accent})`}
               data-delay={String((i % 3) + 1)}
+              data-tilt
             >
               <div class="flex items-center justify-between gap-3">
                 <div class:list={['grid size-11 place-items-center rounded-xl ring-1 ring-inset', p.logo ? 'bg-white/[0.03] ring-line-strong' : t.tile]}>

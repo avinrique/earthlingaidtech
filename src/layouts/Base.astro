@@ -161,6 +161,7 @@ const jsonLd = {
     </a>
 
     <div class="grain" aria-hidden="true"></div>
+    <div class="scroll-progress" aria-hidden="true"></div>
 
     <Header />
 
@@ -218,6 +219,26 @@ const jsonLd = {
           { rootMargin: '150px' },
         );
         marquees.forEach((el) => mio.observe(el));
+      }
+
+      // ---- Motion layer (GSAP, SplitText, Lenis): a lazy chunk, never loaded for reduced
+      // motion. Split headings start hidden (global.css) so their words can rise in; if the
+      // chunk fails or is slow, show them as plain text rather than leave a gap.
+      const showSplit = () =>
+        document.querySelectorAll('[data-split]').forEach((el) => el.setAttribute('data-split-ready', ''));
+      if (reduce) {
+        showSplit();
+      } else {
+        const safety = window.setTimeout(showSplit, 2500);
+        import('@/scripts/motion')
+          .then((m) => {
+            m.initMotion(); // throws → the catch below shows the headings
+            window.clearTimeout(safety);
+          })
+          .catch(() => {
+            window.clearTimeout(safety);
+            showSplit();
+          });
       }
     </script>
   </body>

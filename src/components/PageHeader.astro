@@ -19,7 +19,7 @@ const alignCls = align === 'center' ? 'items-center text-center mx-auto' : 'item
   <div class="container-app pt-32 pb-14 md:pt-40 md:pb-20">
     <div class:list={['flex max-w-3xl flex-col gap-5', alignCls]}>
       <Eyebrow class="reveal">{eyebrow}</Eyebrow>
-      <h1 class="reveal font-display text-page font-semibold text-ink" data-delay="1" set:html={title} />
+      <h1 class="font-display text-page font-semibold text-ink" data-split set:html={title} />
       {subtitle && (
         <p class="reveal max-w-2xl text-lg leading-relaxed text-muted" data-delay="2">{subtitle}</p>
       )}

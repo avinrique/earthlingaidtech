@@ -15,7 +15,7 @@ const alignCls = align === 'center' ? 'items-center text-center mx-auto' : 'item
   {eyebrow && (
     <Eyebrow class="reveal">{eyebrow}</Eyebrow>
   )}
-  <h2 class="reveal text-balance text-section" data-delay="1" set:html={title} />
+  <h2 class="text-balance text-section" data-split set:html={title} />
   {subtitle && (
     <p class="reveal max-w-xl text-lg leading-relaxed text-muted" data-delay="2">{subtitle}</p>
   )}

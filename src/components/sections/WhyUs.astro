@@ -27,8 +27,9 @@ import { whyUs, rnd } from '@/data/site';
     <div class="grid gap-4 sm:grid-cols-2">
       {whyUs.map((w, i) => (
         <div
-          class="reveal group flex gap-4 rounded-2xl border border-line bg-surface/30 p-5 transition-colors duration-300 hover:border-line-strong"
+          class="reveal group relative flex gap-4 rounded-2xl border border-line bg-surface/30 p-5 transition-colors duration-300 hover:border-line-strong"
           data-delay={String((i % 2) + 1)}
+          data-tilt="8"
         >
           <div class="grid size-10 shrink-0 place-items-center rounded-lg bg-white/[0.03] ring-1 ring-inset ring-line-strong transition-colors group-hover:ring-accent/30">
             <Icon name={`lucide:${w.icon}`} class="size-5 text-accent" aria-hidden="true" />
